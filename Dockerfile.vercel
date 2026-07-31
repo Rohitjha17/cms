@@ -22,10 +22,15 @@ RUN mkdir -p /out/demo /tmp/cms-demo-build/uploads \
        dotnet Cms.Api.dll
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends nginx \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY --from=build /out/api ./api
 COPY --from=build /out/admin ./admin
 COPY --from=build /out/demo/cms.db ./demo-seed/cms.db
+COPY vercel/nginx.conf /etc/nginx/nginx.conf
 COPY --chmod=755 vercel/entrypoint.sh /app/entrypoint.sh
 
 ENV ASPNETCORE_ENVIRONMENT=Development \

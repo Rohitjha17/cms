@@ -19,9 +19,9 @@ Amazon S3.
    vercel --prod
    ```
 
-Vercel detects `Dockerfile.vercel` and builds the container. The Admin UI
-receives public traffic and forwards `/api` and `/swagger` to the internal API
-process.
+Vercel detects `Dockerfile.vercel` and builds the container. An immediate
+gateway prevents cold-start errors while the Admin UI starts, and the Admin
+forwards `/api` and `/swagger` to the internal API process.
 
 ## Demo accounts
 

@@ -8,14 +8,17 @@ if [ ! -f /tmp/cms-demo/cms.db ]; then
 fi
 
 cleanup() {
-    kill "${API_PID:-}" "${ADMIN_PID:-}" 2>/dev/null || true
+    kill "${NGINX_PID:-}" "${API_PID:-}" "${ADMIN_PID:-}" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
+
+nginx -c /etc/nginx/nginx.conf -g 'daemon off;' &
+NGINX_PID=$!
 
 (cd /app/api && ASPNETCORE_URLS=http://127.0.0.1:5101 dotnet Cms.Api.dll) &
 API_PID=$!
 
-(cd /app/admin && ASPNETCORE_URLS="http://0.0.0.0:${PORT}" dotnet Cms.Admin.dll) &
+(cd /app/admin && ASPNETCORE_URLS=http://127.0.0.1:5201 dotnet Cms.Admin.dll) &
 ADMIN_PID=$!
 
 wait "$ADMIN_PID"
