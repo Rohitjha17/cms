@@ -7,10 +7,10 @@ RUN dotnet publish src/Cms.Api/Cms.Api.csproj -c Release -o /out/api --no-restor
 RUN dotnet publish src/Cms.Admin/Cms.Admin.csproj -c Release -o /out/admin --no-restore
 RUN mkdir -p /out/demo /tmp/cms-demo-build/uploads \
     && cd /out/api \
-    && ASPNETCORE_ENVIRONMENT=Development \
+    && env ASPNETCORE_ENVIRONMENT=Development \
        Database__Provider=Sqlite \
        Database__ApplyMigrationsOnStartup=false \
-       "ConnectionStrings__Sqlite=Data Source=/out/demo/cms.db" \
+       'ConnectionStrings__Sqlite=Data Source=/out/demo/cms.db' \
        Storage__Provider=Local \
        Storage__LocalRootPath=/tmp/cms-demo-build/uploads \
        Storage__LocalBaseUrl=/uploads \
