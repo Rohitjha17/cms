@@ -28,7 +28,7 @@ ENV ASPNETCORE_ENVIRONMENT=Development \
     DemoMode__Enabled=true \
     Proxy__TrustForwardedHeaders=true \
     Seed__EnableDemoData=true \
-    PORT=8080
+    PORT=80
 
-EXPOSE 8080
+EXPOSE 80
 ENTRYPOINT ["/app/entrypoint.sh"]
