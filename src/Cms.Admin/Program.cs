@@ -57,7 +57,10 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
-await DatabaseSeeder.SeedAsync(app.Services);
+if (!builder.Configuration.GetValue<bool>("Seed:SkipStartup"))
+{
+    await DatabaseSeeder.SeedAsync(app.Services);
+}
 
 if (trustForwardedHeaders)
 {

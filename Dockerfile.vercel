@@ -5,6 +5,21 @@ COPY . .
 RUN dotnet restore Cms.sln
 RUN dotnet publish src/Cms.Api/Cms.Api.csproj -c Release -o /out/api --no-restore
 RUN dotnet publish src/Cms.Admin/Cms.Admin.csproj -c Release -o /out/admin --no-restore
+RUN mkdir -p /out/demo /tmp/cms-demo-build/uploads \
+    && cd /out/api \
+    && ASPNETCORE_ENVIRONMENT=Development \
+       Database__Provider=Sqlite \
+       Database__ApplyMigrationsOnStartup=false \
+       "ConnectionStrings__Sqlite=Data Source=/out/demo/cms.db" \
+       Storage__Provider=Local \
+       Storage__LocalRootPath=/tmp/cms-demo-build/uploads \
+       Storage__LocalBaseUrl=/uploads \
+       DemoMode__Enabled=true \
+       DemoMode__SeedOnly=true \
+       Seed__EnableDemoData=true \
+       Seed__DemoAdminPassword=Admin@12345 \
+       Jwt__Key=CmsVercelImageBuildOnlyKey_AtLeast_32_Bytes \
+       dotnet Cms.Api.dll
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 RUN apt-get update \
@@ -14,6 +29,7 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /out/api ./api
 COPY --from=build /out/admin ./admin
+COPY --from=build /out/demo/cms.db ./demo-seed/cms.db
 COPY vercel/nginx.conf.template /etc/nginx/nginx.conf.template
 COPY --chmod=755 vercel/entrypoint.sh /app/entrypoint.sh
 
@@ -28,6 +44,7 @@ ENV ASPNETCORE_ENVIRONMENT=Development \
     DemoMode__Enabled=true \
     Proxy__TrustForwardedHeaders=true \
     Seed__EnableDemoData=true \
+    Seed__SkipStartup=true \
     PORT=80
 
 EXPOSE 80

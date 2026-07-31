@@ -3,13 +3,16 @@ set -eu
 
 mkdir -p /tmp/cms-demo/uploads /tmp/cms-demo/home
 export HOME=/tmp/cms-demo/home
+if [ ! -f /tmp/cms-demo/cms.db ]; then
+    cp /app/demo-seed/cms.db /tmp/cms-demo/cms.db
+fi
 
 cleanup() {
     kill "${API_PID:-}" "${ADMIN_PID:-}" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
 
-ASPNETCORE_URLS=http://127.0.0.1:5101 dotnet /app/api/Cms.Api.dll &
+(cd /app/api && ASPNETCORE_URLS=http://127.0.0.1:5101 dotnet Cms.Api.dll) &
 API_PID=$!
 
 attempt=0
@@ -22,7 +25,7 @@ until curl --fail --silent http://127.0.0.1:5101/swagger/v1/swagger.json >/dev/n
     sleep 1
 done
 
-ASPNETCORE_URLS=http://127.0.0.1:5201 dotnet /app/admin/Cms.Admin.dll &
+(cd /app/admin && ASPNETCORE_URLS=http://127.0.0.1:5201 dotnet Cms.Admin.dll) &
 ADMIN_PID=$!
 
 attempt=0
