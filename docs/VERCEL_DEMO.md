@@ -19,9 +19,9 @@ Amazon S3.
    vercel --prod
    ```
 
-Vercel detects `Dockerfile.vercel`, builds the container, and routes the public
-URL to nginx. The Admin UI is at `/`, Swagger is at `/swagger`, and API routes
-are under `/api`.
+Vercel detects `Dockerfile.vercel` and builds the container. The Admin UI
+receives public traffic and forwards `/api` and `/swagger` to the internal API
+process.
 
 ## Demo accounts
 

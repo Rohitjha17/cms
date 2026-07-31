@@ -1,3 +1,4 @@
+using Cms.Admin.Middleware;
 using Cms.Application.DependencyInjection;
 using Cms.Domain.Constants;
 using Cms.Infrastructure.DependencyInjection;
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddHttpClient("DemoApiGateway");
 
 builder.Services.AddAuthorization(options =>
 {
@@ -74,6 +76,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseMiddleware<DemoApiGatewayMiddleware>();
 app.UseStaticFiles();
 app.UseLocalMediaFiles();
 app.UseRouting();
