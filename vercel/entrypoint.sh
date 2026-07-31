@@ -15,27 +15,20 @@ trap cleanup EXIT INT TERM
 (cd /app/api && ASPNETCORE_URLS=http://127.0.0.1:5101 dotnet Cms.Api.dll) &
 API_PID=$!
 
-attempt=0
-until curl --fail --silent http://127.0.0.1:5101/swagger/v1/swagger.json >/dev/null; do
-    attempt=$((attempt + 1))
-    if ! kill -0 "$API_PID" 2>/dev/null || [ "$attempt" -ge 60 ]; then
-        echo "CMS API did not become ready." >&2
-        exit 1
-    fi
-    sleep 1
-done
-
 (cd /app/admin && ASPNETCORE_URLS=http://127.0.0.1:5201 dotnet Cms.Admin.dll) &
 ADMIN_PID=$!
 
 attempt=0
-until curl --fail --silent http://127.0.0.1:5201/Account/Login >/dev/null; do
+until curl --fail --silent http://127.0.0.1:5101/swagger/v1/swagger.json >/dev/null \
+    && curl --fail --silent http://127.0.0.1:5201/Account/Login >/dev/null; do
     attempt=$((attempt + 1))
-    if ! kill -0 "$ADMIN_PID" 2>/dev/null || [ "$attempt" -ge 60 ]; then
-        echo "CMS Admin did not become ready." >&2
+    if ! kill -0 "$API_PID" 2>/dev/null \
+        || ! kill -0 "$ADMIN_PID" 2>/dev/null \
+        || [ "$attempt" -ge 300 ]; then
+        echo "CMS API or Admin did not become ready." >&2
         exit 1
     fi
-    sleep 1
+    sleep 0.1
 done
 
 envsubst '${PORT}' </etc/nginx/nginx.conf.template >/tmp/nginx.conf
