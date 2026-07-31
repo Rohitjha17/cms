@@ -28,3 +28,4 @@ appsettings.*.local.json
 .venv/
 requirements.pdf
 .vercel
+/shared/vercel-*-test*
