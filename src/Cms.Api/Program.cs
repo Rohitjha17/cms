@@ -8,6 +8,7 @@ using Cms.Infrastructure.Storage;
 using Cms.Infrastructure.Tenancy;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
@@ -123,6 +124,10 @@ if (!builder.Configuration.GetValue<bool>("Seed:SkipStartup"))
 
 if (builder.Configuration.GetValue<bool>("DemoMode:SeedOnly"))
 {
+    var dataProtectionProvider = app.Services.GetRequiredService<IDataProtectionProvider>();
+    _ = dataProtectionProvider
+        .CreateProtector("Cms.VercelDemo.ImageSeed")
+        .Protect("ready");
     return;
 }
 

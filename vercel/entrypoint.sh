@@ -1,11 +1,12 @@
 #!/bin/sh
 set -eu
 
-mkdir -p /tmp/cms-demo/uploads /tmp/cms-demo/home
+mkdir -p /tmp/cms-demo/uploads /tmp/cms-demo/home/.aspnet/DataProtection-Keys
 export HOME=/tmp/cms-demo/home
 if [ ! -f /tmp/cms-demo/cms.db ]; then
     cp /app/demo-seed/cms.db /tmp/cms-demo/cms.db
 fi
+cp /app/demo-seed/dataprotection/*.xml /tmp/cms-demo/home/.aspnet/DataProtection-Keys/
 
 cleanup() {
     kill "${NGINX_PID:-}" "${API_PID:-}" "${ADMIN_PID:-}" 2>/dev/null || true

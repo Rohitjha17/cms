@@ -5,9 +5,10 @@ COPY . .
 RUN dotnet restore Cms.sln
 RUN dotnet publish src/Cms.Api/Cms.Api.csproj -c Release -o /out/api --no-restore
 RUN dotnet publish src/Cms.Admin/Cms.Admin.csproj -c Release -o /out/admin --no-restore
-RUN mkdir -p /out/demo /tmp/cms-demo-build/uploads \
+RUN mkdir -p /out/demo/home /tmp/cms-demo-build/uploads \
     && cd /out/api \
-    && env ASPNETCORE_ENVIRONMENT=Development \
+    && env HOME=/out/demo/home \
+       ASPNETCORE_ENVIRONMENT=Development \
        Database__Provider=Sqlite \
        Database__ApplyMigrationsOnStartup=false \
        'ConnectionStrings__Sqlite=Data Source=/out/demo/cms.db' \
@@ -30,6 +31,7 @@ WORKDIR /app
 COPY --from=build /out/api ./api
 COPY --from=build /out/admin ./admin
 COPY --from=build /out/demo/cms.db ./demo-seed/cms.db
+COPY --from=build /out/demo/home/.aspnet/DataProtection-Keys ./demo-seed/dataprotection
 COPY vercel/nginx.conf /etc/nginx/nginx.conf
 COPY --chmod=755 vercel/entrypoint.sh /app/entrypoint.sh
 
