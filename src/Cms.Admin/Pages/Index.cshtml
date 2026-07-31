@@ -1,0 +1,65 @@
+@page
+@model Cms.Admin.Pages.IndexModel
+@{
+    ViewData["Title"] = "Overview";
+}
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Workspace overview</div>
+        <h1>Good to see you again</h1>
+        <p>Your digital campus is ready to evolve. Continue shaping a clear, compelling experience for every visitor.</p>
+    </div>
+    <div class="page-header__actions">
+        <a class="btn btn-secondary" asp-area="CMS" asp-page="/HomePage/Preview" target="_blank">
+            <svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+            View website
+        </a>
+        <a class="btn" asp-area="CMS" asp-page="/HomePage/Index">
+            Manage home page
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></svg>
+        </a>
+    </div>
+</div>
+
+<div class="metric-grid">
+    <article class="metric-card">
+        <div class="metric-card__top"><span class="metric-card__icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h8M8 17h5"/></svg></span></div>
+        <strong class="metric-card__value">21</strong><span class="metric-card__label">Homepage sections</span>
+    </article>
+    <article class="metric-card">
+        <div class="metric-card__top"><span class="metric-card__icon success"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span></div>
+        <strong class="metric-card__value">Live</strong><span class="metric-card__label">Website status</span>
+    </article>
+    <article class="metric-card">
+        <div class="metric-card__top"><span class="metric-card__icon neutral"><svg viewBox="0 0 24 24"><path d="M3 5h18v14H3zM8 19v2M16 19v2"/></svg></span></div>
+        <strong class="metric-card__value">2</strong><span class="metric-card__label">Managed websites</span>
+    </article>
+    <article class="metric-card">
+        <div class="metric-card__top"><span class="metric-card__icon warning"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg></span></div>
+        <strong class="metric-card__value">S3</strong><span class="metric-card__label">Media-ready storage</span>
+    </article>
+</div>
+
+<section class="panel">
+    <header class="panel__header">
+        <div><strong>Continue building</strong><small>Your most important content workspace</small></div>
+    </header>
+    <div class="panel__body">
+        <div class="preview-copy">
+            <div class="mini-preview">
+                <div class="mini-preview__content">
+                    <span class="mini-preview__kicker">Dynamic experience</span>
+                    <h3>Build a home page your institution is proud of.</h3>
+                    <p>Manage stories, imagery, calls to action and structured content without touching code.</p>
+                    <span class="mini-preview__button">Explore editor</span>
+                </div>
+            </div>
+            <div>
+                <span class="preview-section__eyebrow">Home page CMS</span>
+                <h2 style="font-family:inherit;font-size:1.65rem">Your full website narrative, in one place</h2>
+                <p class="preview-section__description">Every section is tenant-specific, sortable and instantly publishable. Start with the hero, then refine messages, statistics, events, galleries and calls to action.</p>
+                <a class="btn" asp-area="CMS" asp-page="/HomePage/Index">Open composition workspace</a>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,29 @@
+@model Cms.Admin.ViewComponents.SiteSwitcherViewModel
+
+<div class="site-switcher" data-dropdown>
+    <button class="site-switcher__trigger" type="button" data-dropdown-trigger aria-expanded="false">
+        <span class="site-switcher__mark">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21h16M6 21V7l6-4 6 4v14M9 10h2m2 0h2m-6 4h2m2 0h2m-6 4h6"/></svg>
+        </span>
+        <span>
+            <small>Current website</small>
+            <strong>@(Model.CurrentSiteName ?? "Select a website")</strong>
+        </span>
+        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+    </button>
+    <div class="site-switcher__menu" data-dropdown-menu>
+        <div class="dropdown-label">Switch website</div>
+        @foreach (var site in Model.Sites)
+        {
+            <a class="site-option @(site.Key == Model.CurrentSiteKey ? "is-active" : null)"
+               href="?site=@site.Key">
+                <span class="site-option__icon">@site.Type[..1]</span>
+                <span><strong>@site.Name</strong><small>@site.Type portal</small></span>
+                @if (site.Key == Model.CurrentSiteKey)
+                {
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+                }
+            </a>
+        }
+    </div>
+</div>

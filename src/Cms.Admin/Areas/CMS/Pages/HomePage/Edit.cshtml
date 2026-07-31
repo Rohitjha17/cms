@@ -1,0 +1,193 @@
+@page "{sectionKey}"
+@model Cms.Admin.Areas.CMS.Pages.HomePage.EditModel
+@{
+    ViewData["Title"] = $"Edit {Model.Input.Title}";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Home page · @Model.SectionKey.Replace("_", " ")</div>
+        <h1>@(Model.Input.Title ?? Model.SectionKey)</h1>
+        <p>Fine-tune content, media and section-specific settings. Changes are tenant-safe and reflected on the website immediately.</p>
+    </div>
+    <div class="page-header__actions">
+        <a class="btn btn-secondary" asp-page="Index">
+            <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+            All sections
+        </a>
+        <a class="btn btn-secondary" asp-page="Preview" asp-route-sectionKey="@Model.SectionKey" target="_blank">
+            <svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+            Preview
+        </a>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="notice">
+        <svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>
+        @Model.StatusMessage
+    </div>
+}
+
+<form method="post" enctype="multipart/form-data" id="section-form" class="editor-layout">
+    <input type="hidden" asp-for="SectionKey" />
+    <div class="editor-main">
+        <section class="panel">
+            <header class="panel__header">
+                <div><strong>Content & messaging</strong><small>Keep the hierarchy clear and visitor-focused.</small></div>
+                <span class="status-pill @(Model.IsActiveChecked ? null : "is-inactive")">@(Model.IsActiveChecked ? "Published" : "Hidden")</span>
+            </header>
+            <div class="panel__body">
+                <div asp-validation-summary="ModelOnly" class="error"></div>
+                <div class="field-grid">
+                    <label class="field full">
+                        <span>Section title <small><b id="title-count">0</b>/250</small></span>
+                        <input asp-for="Input.Title" id="section-title" data-count="title-count" maxlength="250" required placeholder="Give this section a clear heading" />
+                        <span asp-validation-for="Input.Title" class="error"></span>
+                    </label>
+                    <label class="field full">
+                        <span>Subtitle <small><b id="subtitle-count">0</b>/500</small></span>
+                        <input asp-for="Input.SubTitle" id="section-subtitle" data-count="subtitle-count" maxlength="500" placeholder="Add a concise supporting message" />
+                    </label>
+                    <div class="field full">
+                        <label>Description <small>Rich text</small></label>
+                        <div id="editor" class="editor"></div>
+                        <input type="hidden" asp-for="Input.Description" id="description-field" />
+                        <span class="field-help">Use short paragraphs and meaningful headings for accessible, scannable content.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <header class="panel__header">
+                <div><strong>Call to action</strong><small>Connect this section to a meaningful next step.</small></div>
+            </header>
+            <div class="panel__body field-grid">
+                <label class="field">
+                    <span>Button text</span>
+                    <input asp-for="Input.ButtonText" id="section-button" maxlength="100" placeholder="e.g. Discover more" />
+                </label>
+                <label class="field">
+                    <span>Button destination</span>
+                    <span class="input-with-icon">
+                        <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1"/></svg>
+                        <input asp-for="Input.ButtonLink" placeholder="/admissions or https://…" />
+                    </span>
+                    <span asp-validation-for="Input.ButtonLink" class="error"></span>
+                </label>
+            </div>
+        </section>
+
+        <section class="panel">
+            <header class="panel__header">
+                <div><strong>Section configuration</strong><small>Purpose-built controls for @Model.SectionKey.Replace("_", " ").</small></div>
+            </header>
+            <div class="panel__body">
+                <div class="config-builder" id="config-builder"></div>
+                <details class="advanced-config">
+                    <summary>Advanced JSON configuration</summary>
+                    <textarea asp-for="Input.JsonData" id="json-config" rows="9" class="code" spellcheck="false" placeholder="{}"></textarea>
+                    <span asp-validation-for="Input.JsonData" class="error"></span>
+                </details>
+            </div>
+        </section>
+
+        <section class="panel">
+            <header class="panel__header">
+                <div><strong>Media assets</strong><small>Use high-quality, optimized imagery. Files are isolated by tenant and site.</small></div>
+            </header>
+            <div class="panel__body field-grid">
+                <div class="field">
+                    <label>Primary image <small>JPEG, PNG, WebP · max 5 MB</small></label>
+                    <label class="media-dropzone">
+                        <input type="file" name="imageFile" accept="image/jpeg,image/png,image/webp,image/gif" id="image-file" />
+                        <span>
+                            <span class="media-dropzone__icon"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 14v5h14v-5"/></svg></span>
+                            <strong>Drop or choose an image</strong>
+                            <small>Recommended 1600 × 900 px</small>
+                        </span>
+                    </label>
+                    <input asp-for="Input.ImageUrl" id="image-url" placeholder="Or paste an image URL" />
+                </div>
+                <div class="field">
+                    <label>Background image <small>Optional</small></label>
+                    <label class="media-dropzone">
+                        <input type="file" name="backgroundFile" accept="image/jpeg,image/png,image/webp,image/gif" id="bg-image-file" />
+                        <span>
+                            <span class="media-dropzone__icon"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 14v5h14v-5"/></svg></span>
+                            <strong>Upload a background</strong>
+                            <small>Use a wide, low-contrast image</small>
+                        </span>
+                    </label>
+                    <input asp-for="Input.BackgroundImageUrl" id="bg-image-url" placeholder="Or paste a background URL" />
+                </div>
+                <div class="media-preview" @(!string.IsNullOrWhiteSpace(Model.Input.ImageUrl) ? null : "hidden")>
+                    <img id="image-preview" src="@(Model.Input.ImageUrl ?? "")" alt="Primary image preview" />
+                </div>
+                <div class="media-preview" @(!string.IsNullOrWhiteSpace(Model.Input.BackgroundImageUrl) ? null : "hidden")>
+                    <img id="background-preview" src="@(Model.Input.BackgroundImageUrl ?? "")" alt="Background image preview" />
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <aside class="editor-aside">
+        <section class="panel">
+            <header class="panel__header">
+                <div><strong>Instant preview</strong><small>Content approximation</small></div>
+            </header>
+            <div class="panel__body">
+                <div class="mini-preview">
+                    <div class="mini-preview__content">
+                        <span class="mini-preview__kicker">@Model.SectionKey.Replace("_", " ")</span>
+                        <h3 id="mini-preview-title">@Model.Input.Title</h3>
+                        <p id="mini-preview-copy">@Model.Input.SubTitle</p>
+                        <span class="mini-preview__button" id="mini-preview-button">@(Model.Input.ButtonText ?? "Learn more")</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel publish-card">
+            <header class="panel__header">
+                <div><strong>Publishing</strong><small>Manage visibility and placement.</small></div>
+            </header>
+            <div class="panel__body">
+                <div class="publish-status">
+                    <span><strong>Visible on website</strong><small style="display:block;color:var(--text-faint)">Updates publish immediately</small></span>
+                    <label class="switch"><input asp-for="IsActiveChecked" /><span></span></label>
+                </div>
+                <div class="publish-meta">
+                    <label class="field">
+                        <span>Display position</span>
+                        <input asp-for="Input.DisplayOrder" type="number" min="0" />
+                    </label>
+                    <div class="publish-meta__row"><span>Section key</span><strong>@Model.SectionKey</strong></div>
+                    <div class="publish-meta__row"><span>Last updated</span><strong>@(Model.LastUpdated?.ToString("dd MMM yyyy") ?? "Not edited yet")</strong></div>
+                </div>
+                <div class="publish-actions">
+                    <button type="submit" class="btn">
+                        <svg viewBox="0 0 24 24"><path d="M5 4h12l2 2v14H5zM8 4v6h8V4M8 20v-6h8v6"/></svg>
+                        Save & publish
+                    </button>
+                    <a class="btn btn-secondary" asp-page="Preview" asp-route-sectionKey="@Model.SectionKey" target="_blank">Preview section</a>
+                    <button class="btn btn-secondary" type="submit" asp-page-handler="Delete" formnovalidate
+                            onclick="return confirm('Hide this section from the website?');">
+                        Hide section
+                    </button>
+                </div>
+            </div>
+        </section>
+    </aside>
+</form>
+
+@section Scripts {
+<script>
+    window.initHomePageEditor({
+        sectionKey: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SectionKey)),
+        description: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Input.Description ?? ""))
+    });
+</script>
+}

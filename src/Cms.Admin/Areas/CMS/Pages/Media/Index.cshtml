@@ -1,0 +1,83 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.Media.IndexModel
+@{
+    ViewData["Title"] = "Media library";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Content assets</div>
+        <h1>Media library</h1>
+        <p>Upload, reuse and manage tenant-isolated images and PDF documents.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="notice">@Model.StatusMessage</div>
+}
+
+<div asp-validation-summary="All" class="validation-summary"></div>
+
+<section class="form-card media-library-upload">
+    <div class="form-card__header">
+        <div><span class="step-number">01</span><span><strong>Upload asset</strong><small>Images up to 5 MB; PDFs up to 15 MB.</small></span></div>
+    </div>
+    <div class="form-card__body">
+        <form method="post" enctype="multipart/form-data" asp-page-handler="Upload" class="media-upload-row">
+            <label class="field">
+                <span>Asset type</span>
+                <select asp-for="UploadKind">
+                    <option value="image">Image</option>
+                    <option value="document">PDF document</option>
+                </select>
+            </label>
+            <label class="field">
+                <span>Choose file</span>
+                <input asp-for="Upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" />
+            </label>
+            <button class="btn" type="submit">Upload asset</button>
+        </form>
+    </div>
+</section>
+
+<div class="media-library-grid">
+    @foreach (var file in Model.Files)
+    {
+        <article class="media-library-card">
+            @if (file.MediaType == "Image")
+            {
+                <img src="@file.Url" alt="@file.OriginalFileName" loading="lazy" />
+            }
+            else
+            {
+                <a class="media-document-preview" href="@file.Url" target="_blank" rel="noopener">
+                    <strong>PDF</strong>
+                    <span>Open document</span>
+                </a>
+            }
+            <div class="media-library-card__body">
+                <strong title="@file.OriginalFileName">@file.OriginalFileName</strong>
+                <small>@file.MediaType · @((file.FileSizeBytes / 1024d).ToString("N0")) KB · @file.CreatedDate.ToString("dd MMM yyyy")</small>
+                <div class="media-library-card__actions">
+                    <button class="btn btn-secondary btn-sm" type="button" data-copy-value="@file.Url">Copy URL</button>
+                    @if (Model.CanDelete)
+                    {
+                        <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Delete this media file permanently?');">
+                            <input type="hidden" name="mediaId" value="@file.Id" />
+                            <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </article>
+    }
+</div>
+
+@if (Model.Files.Count == 0)
+{
+    <div class="section-empty">
+        <strong>Your media library is empty</strong>
+        <p>Upload the first image or document above.</p>
+    </div>
+}

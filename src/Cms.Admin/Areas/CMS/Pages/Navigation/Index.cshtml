@@ -1,0 +1,76 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.Navigation.IndexModel
+@{
+    ViewData["Title"] = "Navigation";
+}
+
+<div class="page-header">
+    <div><div class="eyebrow">Website structure</div><h1>Navigation</h1><p>Build ordered header, footer and utility menus without changing frontend code.</p></div>
+</div>
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice">@Model.StatusMessage</div> }
+
+<div class="content-manager-layout">
+    <section class="form-card">
+        <div class="form-card__header"><div><span class="step-number">01</span><span><strong>Menus</strong><small>@Model.Menus.Count configured location(s)</small></span></div></div>
+        <div class="content-list">
+            @foreach (var menu in Model.Menus)
+            {
+                <article>
+                    <span><strong>@menu.Name</strong><small>@menu.Location · @menu.Items.Count item(s) · @(menu.IsActive ? "Active" : "Hidden")</small></span>
+                    <span class="content-list__actions">
+                        <a class="btn btn-secondary btn-sm" asp-route-edit="@menu.Id">Edit</a>
+                        @if (Model.CanDelete)
+                        {
+                            <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Delete this menu?');"><input type="hidden" name="id" value="@menu.Id" /><button class="btn btn-secondary btn-sm">Delete</button></form>
+                        }
+                    </span>
+                </article>
+            }
+        </div>
+    </section>
+
+    <section class="form-card">
+        <div class="form-card__header"><div><span class="step-number">02</span><span><strong>@(Model.EditId.HasValue ? "Edit menu" : "New menu")</strong><small>Arrange links in display order</small></span></div></div>
+        <div class="form-card__body">
+            <form method="post" asp-page-handler="Save">
+                <input asp-for="EditId" type="hidden" />
+                <div asp-validation-summary="All" class="validation-summary"></div>
+                <div class="field-grid">
+                    <label class="field"><span>Name</span><input asp-for="Input.Name" /></label>
+                    <label class="field"><span>Location key</span><input asp-for="Input.Location" placeholder="header" /></label>
+                    <label class="switch-row full"><input asp-for="Input.IsActive" /><span><strong>Active menu</strong><small>Expose this menu through the public navigation API.</small></span></label>
+                </div>
+                <div class="config-collection menu-builder">
+                    <div class="config-collection__header"><span><strong>Menu items</strong><small>Links are returned in this order.</small></span><button type="button" class="btn btn-secondary btn-sm" data-add-menu-item>Add link</button></div>
+                    <div data-menu-items>
+                        @for (var i = 0; i < Model.Input.Items.Count; i++)
+                        {
+                            <div class="config-item" data-menu-item>
+                                <div class="config-item__header"><strong>Link @(i + 1)</strong><button type="button" data-remove-menu-item>×</button></div>
+                                <div class="config-item__fields">
+                                    <label class="field"><span>Label</span><input asp-for="Input.Items[i].Label" /></label>
+                                    <label class="field"><span>URL</span><input asp-for="Input.Items[i].Url" /></label>
+                                    <label class="field"><span>Target</span><select asp-for="Input.Items[i].Target"><option value="_self">Same window</option><option value="_blank">New window</option></select></label>
+                                    <label class="switch-row"><input asp-for="Input.Items[i].IsActive" /><span><strong>Active</strong></span></label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-actions"><button class="btn" type="submit">Save menu</button>@if (Model.EditId.HasValue) { <a class="btn btn-secondary" asp-page="Index">Cancel</a> }</div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<template id="menu-item-template">
+    <div class="config-item" data-menu-item>
+        <div class="config-item__header"><strong>New link</strong><button type="button" data-remove-menu-item>×</button></div>
+        <div class="config-item__fields">
+            <label class="field"><span>Label</span><input data-name="Label" /></label>
+            <label class="field"><span>URL</span><input data-name="Url" value="/" /></label>
+            <label class="field"><span>Target</span><select data-name="Target"><option value="_self">Same window</option><option value="_blank">New window</option></select></label>
+            <label class="switch-row"><input data-name="IsActive" type="checkbox" checked value="true" /><span><strong>Active</strong></span></label>
+        </div>
+    </div>
+</template>

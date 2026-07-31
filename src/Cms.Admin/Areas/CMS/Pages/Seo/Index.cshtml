@@ -1,0 +1,25 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.Seo.IndexModel
+@{
+    ViewData["Title"] = "SEO settings";
+}
+
+<div class="page-header">
+    <div><div class="eyebrow">Search and sharing</div><h1>SEO settings</h1><p>Manage site-wide search metadata and social sharing defaults.</p></div>
+</div>
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice">@Model.StatusMessage</div> }
+
+<section class="form-card settings-narrow">
+    <div class="form-card__header"><div><span class="step-number">01</span><span><strong>Default metadata</strong><small>Individual page metadata can override these values.</small></span></div></div>
+    <div class="form-card__body">
+        <form method="post" class="field-grid">
+            <div asp-validation-summary="All" class="validation-summary full"></div>
+            <label class="field full"><span>Meta title</span><input asp-for="Input.MetaTitle" /><small>Recommended: 50–60 characters.</small></label>
+            <label class="field full"><span>Meta description</span><textarea asp-for="Input.MetaDescription" rows="3"></textarea></label>
+            <label class="field full"><span>Keywords</span><input asp-for="Input.MetaKeywords" /></label>
+            <label class="field full"><span>Open Graph image URL</span><input asp-for="Input.OgImageUrl" /></label>
+            <label class="field full"><span>Canonical URL</span><input asp-for="Input.CanonicalUrl" /></label>
+            <div class="full form-actions"><button class="btn" type="submit">Save SEO settings</button></div>
+        </form>
+    </div>
+</section>

@@ -1,0 +1,30 @@
+name: CMS CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          cache: true
+          cache-dependency-path: "**/*.csproj"
+
+      - name: Restore
+        run: dotnet restore Cms.sln
+
+      - name: Build
+        run: dotnet build Cms.sln --configuration Release --no-restore --warnaserror
+
+      - name: Test
+        run: dotnet test Cms.sln --configuration Release --no-build --collect:"XPlat Code Coverage"

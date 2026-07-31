@@ -1,0 +1,41 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.Tenants.IndexModel
+@{
+    ViewData["Title"] = "Tenant management";
+}
+
+<div class="page-header">
+    <div><div class="eyebrow">Platform administration</div><h1>Tenants and sites</h1><p>Provision institutions, domains and School or College sites from one protected workspace.</p></div>
+</div>
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice">@Model.StatusMessage</div> }
+
+<div class="content-manager-layout">
+    <section class="form-card">
+        <div class="form-card__header"><div><span class="step-number">01</span><span><strong>Institutions</strong><small>@Model.Tenants.Count tenant(s)</small></span></div></div>
+        <div class="content-list">
+            @foreach (var tenant in Model.Tenants)
+            {
+                <article>
+                    <span><strong>@tenant.Name</strong><small>@tenant.Code · @tenant.Sites.Count site(s) · @(tenant.IsActive ? "Active" : "Disabled")</small></span>
+                    <a class="btn btn-secondary btn-sm" asp-route-edit="@tenant.Id">Edit</a>
+                </article>
+            }
+        </div>
+    </section>
+    <section class="form-card">
+        <div class="form-card__header"><div><span class="step-number">02</span><span><strong>@(Model.EditId.HasValue ? "Edit tenant" : "New tenant")</strong><small>Domains and site provisioning</small></span></div></div>
+        <div class="form-card__body">
+            <form method="post" asp-page-handler="Save" class="field-grid">
+                <input asp-for="EditId" type="hidden" />
+                <div asp-validation-summary="All" class="validation-summary full"></div>
+                <label class="field"><span>Institution name</span><input asp-for="Input.Name" /></label>
+                <label class="field"><span>Tenant code</span><input asp-for="Input.Code" placeholder="abc-school" /></label>
+                <label class="field full"><span>Logo URL</span><input asp-for="Input.LogoUrl" /></label>
+                <label class="field full"><span>Domains</span><textarea asp-for="DomainsText" rows="4" placeholder="school.example.com|true|true"></textarea><small>One per line: domain | primary | active</small></label>
+                <label class="field full"><span>Sites</span><textarea asp-for="SitesText" rows="5" placeholder="ABC School|school|School|true|true"></textarea><small>One per line: name | key | School/College | default | active</small></label>
+                <label class="switch-row full"><input asp-for="Input.IsActive" /><span><strong>Active tenant</strong><small>Allow requests and content management for this institution.</small></span></label>
+                <div class="full form-actions"><button class="btn" type="submit">Save tenant</button>@if (Model.EditId.HasValue) { <a class="btn btn-secondary" asp-page="Index">Cancel</a> }</div>
+            </form>
+        </div>
+    </section>
+</div>

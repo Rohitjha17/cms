@@ -1,0 +1,108 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.HomePage.CreateModel
+@{
+    ViewData["Title"] = "Add home page section";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Home page composition</div>
+        <h1>Add a custom section</h1>
+        <p>Create a reusable, tenant-specific content block without changing the database schema.</p>
+    </div>
+    <div class="page-header__actions">
+        <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="editor-layout">
+    <div class="editor-main">
+        <section class="panel">
+            <header class="panel__header">
+                <div><strong>Section identity</strong><small>Use a stable key that describes the section purpose.</small></div>
+            </header>
+            <div class="panel__body field-grid">
+                <label class="field">
+                    <span>Section key <small>Required</small></span>
+                    <input asp-for="Input.SectionKey" placeholder="e.g. campus_life" required pattern="[a-z0-9_]+" />
+                    <span class="field-help">Lowercase letters, numbers and underscores only.</span>
+                </label>
+                <label class="field">
+                    <span>Display order</span>
+                    <input asp-for="Input.DisplayOrder" type="number" min="0" />
+                </label>
+                <label class="field full">
+                    <span>Section title <small>Required</small></span>
+                    <input asp-for="Input.Title" placeholder="e.g. Campus Life" required />
+                </label>
+                <label class="field full">
+                    <span>Subtitle</span>
+                    <input asp-for="Input.SubTitle" placeholder="A concise supporting line" />
+                </label>
+                <label class="field full">
+                    <span>Description</span>
+                    <textarea asp-for="Input.Description" rows="6" placeholder="Tell visitors what makes this content important…"></textarea>
+                </label>
+            </div>
+        </section>
+
+        <section class="panel">
+            <header class="panel__header">
+                <div><strong>Call to action</strong><small>Guide visitors toward the next meaningful step.</small></div>
+            </header>
+            <div class="panel__body field-grid">
+                <label class="field">
+                    <span>Button text</span>
+                    <input asp-for="Input.ButtonText" placeholder="Explore more" />
+                </label>
+                <label class="field">
+                    <span>Button URL</span>
+                    <input asp-for="Input.ButtonLink" placeholder="/campus-life" />
+                </label>
+            </div>
+        </section>
+
+        <section class="panel">
+            <header class="panel__header">
+                <div><strong>Flexible configuration</strong><small>Add section-specific structured content as valid JSON.</small></div>
+            </header>
+            <div class="panel__body">
+                <label class="field">
+                    <span>JSON configuration</span>
+                    <textarea asp-for="Input.JsonData" class="code" rows="9" placeholder='{"items":[]}'></textarea>
+                </label>
+            </div>
+        </section>
+    </div>
+
+    <aside class="editor-aside">
+        <section class="panel">
+            <header class="panel__header"><div><strong>Media</strong><small>Optimized images, maximum 5 MB.</small></div></header>
+            <div class="panel__body">
+                <label class="media-dropzone">
+                    <input type="file" name="imageFile" accept="image/jpeg,image/png,image/webp,image/gif" />
+                    <span><span class="media-dropzone__icon"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 14v5h14v-5"/></svg></span><strong>Upload section image</strong><small>JPEG, PNG, WebP or GIF</small></span>
+                </label>
+                <label class="field" style="margin-top:12px">
+                    <span>Or use image URL</span>
+                    <input asp-for="Input.ImageUrl" placeholder="https://…" />
+                </label>
+            </div>
+        </section>
+        <section class="panel publish-card">
+            <header class="panel__header"><div><strong>Publishing</strong><small>Control website visibility.</small></div></header>
+            <div class="panel__body">
+                <div class="publish-status">
+                    <span><strong>Publish immediately</strong><small style="display:block;color:var(--text-faint)">Visible after saving</small></span>
+                    <label class="switch"><input asp-for="Input.IsActive" /><span></span></label>
+                </div>
+                <div class="publish-actions" style="margin-top:15px">
+                    <button class="btn" type="submit">
+                        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                        Create section
+                    </button>
+                </div>
+            </div>
+        </section>
+    </aside>
+</form>

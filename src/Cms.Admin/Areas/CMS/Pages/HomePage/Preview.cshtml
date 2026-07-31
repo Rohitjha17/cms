@@ -1,0 +1,163 @@
+@page "{sectionKey?}"
+@model Cms.Admin.Areas.CMS.Pages.HomePage.PreviewModel
+@{
+    ViewData["Title"] = "Website preview";
+    IEnumerable<Cms.Application.DTOs.HomePage.HomePageSectionDto> sections =
+        Model.SingleSection is null ? Model.Sections : new[] { Model.SingleSection! };
+}
+
+<div class="preview-shell">
+    <header class="preview-toolbar">
+        <a class="action-button" asp-page="Index" title="Back to sections">
+            <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+        </a>
+        <div class="preview-toolbar__title">
+            <strong>@(Model.SingleSection is null ? "Full home page preview" : $"{Model.SingleSection.Title} preview")</strong>
+            <small>@Model.SiteName · Changes from the CMS are reflected immediately</small>
+        </div>
+        <div class="device-toggle" aria-label="Preview device size">
+            <button class="is-active" type="button" data-device="desktop" title="Desktop">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>
+            </button>
+            <button type="button" data-device="tablet" title="Tablet">
+                <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M10 19h4"/></svg>
+            </button>
+            <button type="button" data-device="mobile" title="Mobile">
+                <svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 19h2"/></svg>
+            </button>
+        </div>
+        @if (Model.SingleSection is not null)
+        {
+            <a class="btn btn-sm" asp-page="Edit" asp-route-sectionKey="@Model.SingleSection.SectionKey">Edit section</a>
+        }
+    </header>
+
+    <div class="preview-stage" data-preview-stage data-device="desktop">
+        <div class="preview-viewport">
+            <nav class="site-preview__nav">
+                <div class="site-preview__logo">@Model.TenantName</div>
+                <a href="#">About</a>
+                <a href="#">Academics</a>
+                <a href="#">Campus life</a>
+                <a href="#">News</a>
+                <a class="admit" href="#">Admissions</a>
+            </nav>
+
+            @foreach (var item in sections.OrderBy(x => x.DisplayOrder))
+            {
+                @if (item.SectionKey == "hero")
+                {
+                    <section class="preview-hero">
+                        @if (!string.IsNullOrWhiteSpace(item.BackgroundImageUrl ?? item.ImageUrl))
+                        {
+                            <img class="preview-hero__image" src="@(item.BackgroundImageUrl ?? item.ImageUrl)" alt="" />
+                        }
+                        <div class="preview-hero__content">
+                            <span class="preview-hero__eyebrow">@Model.SiteName · Excellence in education</span>
+                            <h1>@(Model.ConfigString(item, "heading") ?? item.Title)</h1>
+                            <p>@(Model.ConfigString(item, "description") ?? item.SubTitle ?? item.Description)</p>
+                            <div class="preview-hero__actions">
+                                <a href="@(item.ButtonLink ?? "#")">@(Model.ConfigString(item, "primaryButton") ?? item.ButtonText ?? "Apply now")</a>
+                                <a class="secondary" href="#">@(Model.ConfigString(item, "secondaryButton") ?? "Explore our campus")</a>
+                            </div>
+                        </div>
+                    </section>
+                }
+                else if (item.SectionKey == "statistics")
+                {
+                    <section class="preview-stats">
+                        <div class="preview-stat"><strong>@Model.ConfigNumber(item, "students").ToString("N0")+</strong><span>Students</span></div>
+                        <div class="preview-stat"><strong>@Model.ConfigNumber(item, "teachers").ToString("N0")+</strong><span>Expert faculty</span></div>
+                        <div class="preview-stat"><strong>@Model.ConfigNumber(item, "placements").ToString("N0")+</strong><span>Placements</span></div>
+                        <div class="preview-stat"><strong>@Model.ConfigNumber(item, "years").ToString("N0")</strong><span>Years of excellence</span></div>
+                    </section>
+                }
+                else if (item.SectionKey is "about" or "welcome" or "principal" or "chairman")
+                {
+                    <section class="preview-section">
+                        <div class="preview-copy">
+                            <div>
+                                @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" alt="@item.Title" />
+                                }
+                                else
+                                {
+                                    <div class="preview-image-placeholder"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h.01M4 17l5-5 4 4 2-2 5 4"/></svg></div>
+                                }
+                            </div>
+                            <div>
+                                <span class="preview-section__eyebrow">@item.SectionKey.Replace("_", " ")</span>
+                                <h2>@item.Title</h2>
+                                <div class="preview-section__description">@Html.Raw(item.Description ?? item.SubTitle ?? "Add compelling content for this section from the CMS.")</div>
+                                @if (!string.IsNullOrWhiteSpace(item.ButtonText))
+                                {
+                                    <a class="preview-link" href="@(item.ButtonLink ?? "#")">@item.ButtonText <span>→</span></a>
+                                }
+                            </div>
+                        </div>
+                    </section>
+                }
+                else if (Model.ConfigItems(item).Count > 0)
+                {
+                    var contentItems = Model.ConfigItems(item);
+                    <section class="preview-section preview-generic">
+                        <span class="preview-section__eyebrow">@item.SectionKey.Replace("_", " ")</span>
+                        <h2>@item.Title</h2>
+                        <p class="preview-section__description">@(item.SubTitle ?? item.Description)</p>
+                        <div class="preview-card-grid">
+                            @foreach (var contentItem in contentItems.Take(6))
+                            {
+                                var imageUrl = Model.ItemValue(contentItem, "imageUrl");
+                                var itemTitle = Model.ItemValue(contentItem, "title");
+                                if (string.IsNullOrWhiteSpace(itemTitle))
+                                {
+                                    itemTitle = Model.ItemValue(contentItem, "name");
+                                }
+                                var itemCopy = Model.ItemValue(contentItem, "description");
+                                if (string.IsNullOrWhiteSpace(itemCopy))
+                                {
+                                    itemCopy = Model.ItemValue(contentItem, "summary");
+                                }
+                                if (string.IsNullOrWhiteSpace(itemCopy))
+                                {
+                                    itemCopy = Model.ItemValue(contentItem, "quote");
+                                }
+                                <article class="preview-content-card">
+                                    @if (!string.IsNullOrWhiteSpace(imageUrl))
+                                    {
+                                        <img src="@imageUrl" alt="@Model.ItemValue(contentItem, "alt")" />
+                                    }
+                                    <div>
+                                        @if (!string.IsNullOrWhiteSpace(Model.ItemValue(contentItem, "date")))
+                                        {
+                                            <small>@Model.ItemValue(contentItem, "date")</small>
+                                        }
+                                        <h3>@itemTitle</h3>
+                                        <p>@itemCopy</p>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    </section>
+                }
+                else
+                {
+                    <section class="preview-section preview-generic">
+                        <span class="preview-section__eyebrow">@item.SectionKey.Replace("_", " ")</span>
+                        <h2>@item.Title</h2>
+                        <div class="preview-section__description">@Html.Raw(item.Description ?? item.SubTitle ?? "This section is ready for content in the CMS.")</div>
+                        @if (!string.IsNullOrWhiteSpace(item.ButtonText))
+                        {
+                            <a class="preview-link" href="@(item.ButtonLink ?? "#")">@item.ButtonText <span>→</span></a>
+                        }
+                    </section>
+                }
+            }
+
+            <footer class="preview-footer">
+                © @DateTime.UtcNow.Year @Model.TenantName · Shaping futures through education
+            </footer>
+        </div>
+    </div>
+</div>

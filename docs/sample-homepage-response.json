@@ -1,0 +1,78 @@
+{
+  "success": true,
+  "message": "Success",
+  "statusCode": 200,
+  "data": {
+    "hero": {
+      "title": "Hero Banner",
+      "subtitle": "Welcome to Demo Academy",
+      "description": null,
+      "buttonText": "Apply Now",
+      "buttonLink": "/admissions",
+      "imageUrl": "https://cdn.example.com/tenant/site/homepage/hero.jpg",
+      "backgroundImageUrl": null,
+      "displayOrder": 1,
+      "isActive": true,
+      "heading": "Welcome to Demo Academy",
+      "primaryButton": "Apply Now",
+      "secondaryButton": "Contact Us",
+      "videoUrl": ""
+    },
+    "about": {
+      "title": "About School",
+      "subtitle": null,
+      "description": "<p>We nurture excellence.</p>",
+      "buttonText": null,
+      "buttonLink": null,
+      "imageUrl": null,
+      "backgroundImageUrl": null,
+      "displayOrder": 3,
+      "isActive": true
+    },
+    "statistics": {
+      "title": "Statistics",
+      "subtitle": null,
+      "description": null,
+      "buttonText": null,
+      "buttonLink": null,
+      "imageUrl": null,
+      "backgroundImageUrl": null,
+      "displayOrder": 6,
+      "isActive": true,
+      "students": 1500,
+      "teachers": 80,
+      "placements": 500,
+      "years": 20
+    },
+    "gallery": {
+      "title": "Gallery",
+      "items": [],
+      "displayOrder": 13,
+      "isActive": true
+    },
+    "upcoming_events": {
+      "title": "Upcoming Events",
+      "items": [],
+      "displayOrder": 12,
+      "isActive": true
+    },
+    "testimonials": {
+      "title": "Testimonials",
+      "items": [],
+      "displayOrder": 15,
+      "isActive": true
+    },
+    "contact": {
+      "title": "Contact Section",
+      "buttonText": "Contact Us",
+      "buttonLink": "/contact",
+      "email": "info@demo.local",
+      "phone": "+1-555-0100",
+      "address": "123 Education Lane",
+      "mapEmbedUrl": "",
+      "displayOrder": 19,
+      "isActive": true
+    }
+  },
+  "errors": null
+}
