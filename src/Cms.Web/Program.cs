@@ -71,6 +71,14 @@ if (!builder.Configuration.GetValue<bool>("Seed:SkipStartup"))
     await DatabaseSeeder.SeedAsync(app.Services);
 }
 
+// Vercel (and similar) mounts the public site under a prefix such as /site while Admin
+// stays at /. Must run before tenant resolution so /{siteKey} prefixes still work.
+var pathBase = builder.Configuration["PathBase"]?.Trim().TrimEnd('/');
+if (!string.IsNullOrWhiteSpace(pathBase))
+{
+    app.UsePathBase(pathBase.StartsWith('/') ? pathBase : "/" + pathBase);
+}
+
 if (trustForwardedHeaders)
 {
     app.UseForwardedHeaders();

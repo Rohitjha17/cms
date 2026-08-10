@@ -5,6 +5,7 @@ COPY . .
 RUN dotnet restore Cms.sln
 RUN dotnet publish src/Cms.Api/Cms.Api.csproj -c Release -o /out/api --no-restore
 RUN dotnet publish src/Cms.Admin/Cms.Admin.csproj -c Release -o /out/admin --no-restore
+RUN dotnet publish src/Cms.Web/Cms.Web.csproj -c Release -o /out/web --no-restore
 RUN mkdir -p /out/demo/home /tmp/cms-demo-build/uploads \
     && cd /out/api \
     && env HOME=/out/demo/home \
@@ -30,6 +31,7 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /out/api ./api
 COPY --from=build /out/admin ./admin
+COPY --from=build /out/web ./web
 COPY --from=build /out/demo/cms.db ./demo-seed/cms.db
 COPY --from=build /out/demo/home/.aspnet/DataProtection-Keys ./demo-seed/dataprotection
 COPY vercel/nginx.conf /etc/nginx/nginx.conf
@@ -45,6 +47,7 @@ ENV ASPNETCORE_ENVIRONMENT=Development \
     Storage__LocalBaseUrl=/uploads \
     DemoMode__Enabled=true \
     Proxy__TrustForwardedHeaders=true \
+    PublicSite__BaseUrl=/site \
     Seed__EnableDemoData=true \
     Seed__SkipStartup=true \
     PORT=80

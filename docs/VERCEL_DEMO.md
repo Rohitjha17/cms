@@ -1,8 +1,14 @@
 # Vercel client demo
 
-This deployment profile runs the API and Admin UI in one Vercel container. It
-uses SQLite and local uploads under `/tmp`, so it does not require SQL Server or
-Amazon S3.
+This deployment profile runs the API, Admin UI, and public school website in one
+Vercel container. It uses SQLite and local uploads under `/tmp`, so it does not
+require SQL Server or Amazon S3.
+
+| Path | App |
+| --- | --- |
+| `/` | Admin CMS |
+| `/site` | Public websites (`/site/school`, `/site/college`) |
+| `/api`, `/swagger` | Proxied API via Admin |
 
 ## Deploy
 

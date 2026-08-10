@@ -9,7 +9,7 @@ fi
 cp /app/demo-seed/dataprotection/*.xml /tmp/cms-demo/home/.aspnet/DataProtection-Keys/
 
 cleanup() {
-    kill "${NGINX_PID:-}" "${API_PID:-}" "${ADMIN_PID:-}" 2>/dev/null || true
+    kill "${NGINX_PID:-}" "${API_PID:-}" "${ADMIN_PID:-}" "${WEB_PID:-}" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
 
@@ -21,5 +21,8 @@ API_PID=$!
 
 (cd /app/admin && ASPNETCORE_URLS=http://127.0.0.1:5201 dotnet Cms.Admin.dll) &
 ADMIN_PID=$!
+
+(cd /app/web && ASPNETCORE_URLS=http://127.0.0.1:5301 PathBase=/site Seed__SkipStartup=true dotnet Cms.Web.dll) &
+WEB_PID=$!
 
 wait "$ADMIN_PID"
