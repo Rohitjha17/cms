@@ -1,0 +1,238 @@
+@page "/{slug}"
+@model Cms.Web.Pages.ContentModel
+@{
+    var content = Model.ContentPage;
+    JsonElement data = default;
+    var hasJson = false;
+    if (!string.IsNullOrWhiteSpace(content.JsonData))
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(content.JsonData);
+            if (doc.RootElement.ValueKind == JsonValueKind.Object)
+            {
+                hasJson = true;
+                data = doc.RootElement.Clone();
+            }
+        }
+        catch { /* ignore invalid JSON at render time */ }
+    }
+}
+
+<article class="page-shell">
+    <header class="page-hero">
+        <div class="shell">
+            <p class="eyebrow">@content.PageType</p>
+            <h1>@content.Title</h1>
+            @if (!string.IsNullOrWhiteSpace(content.Excerpt))
+            {
+                <p class="lede">@content.Excerpt</p>
+            }
+        </div>
+    </header>
+
+    <div class="shell page-body">
+        @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+        {
+            <div class="notice">@Model.StatusMessage</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(content.Content))
+        {
+            <div class="rich-text">@Html.Raw(content.Content)</div>
+        }
+
+        @if (content.PageType == PageType.About && hasJson)
+        {
+            <section class="split-cards">
+                @if (data.TryGetProperty("mission", out var mission))
+                {
+                    <article><h2>Mission</h2><p>@mission.GetString()</p></article>
+                }
+                @if (data.TryGetProperty("vision", out var vision))
+                {
+                    <article><h2>Vision</h2><p>@vision.GetString()</p></article>
+                }
+                @if (data.TryGetProperty("history", out var history))
+                {
+                    <article class="wide"><h2>History</h2><p>@history.GetString()</p></article>
+                }
+            </section>
+        }
+        else if (content.PageType == PageType.Admission && hasJson)
+        {
+            @if (data.TryGetProperty("eligibility", out var eligibility))
+            {
+                <section class="panel"><h2>Eligibility</h2><p>@eligibility.GetString()</p></section>
+            }
+            @if (data.TryGetProperty("processSteps", out var steps) && steps.ValueKind == JsonValueKind.Array)
+            {
+                <section class="steps">
+                    <h2>Admission process</h2>
+                    <ol>
+                        @foreach (var step in steps.EnumerateArray())
+                        {
+                            <li>
+                                <strong>@(step.TryGetProperty("title", out var t) ? t.GetString() : "Step")</strong>
+                                <span>@(step.TryGetProperty("description", out var d) ? d.GetString() : "")</span>
+                            </li>
+                        }
+                    </ol>
+                </section>
+            }
+            @if (data.TryGetProperty("documents", out var docs) && docs.ValueKind == JsonValueKind.Array)
+            {
+                <section class="panel">
+                    <h2>Documents required</h2>
+                    <ul>@foreach (var doc in docs.EnumerateArray()) { <li>@doc.GetString()</li> }</ul>
+                </section>
+            }
+        }
+        else if (content.PageType == PageType.Facilities && hasJson && data.TryGetProperty("items", out var facilities))
+        {
+            <section class="card-grid">
+                @foreach (var item in facilities.EnumerateArray())
+                {
+                    <article>
+                        @if (item.TryGetProperty("imageUrl", out var img) && !string.IsNullOrWhiteSpace(img.GetString()))
+                        {
+                            <img src="@img.GetString()" alt="@(item.TryGetProperty("title", out var ft) ? ft.GetString() : "Facility")" />
+                        }
+                        <h3>@(item.TryGetProperty("title", out var title) ? title.GetString() : "Facility")</h3>
+                        <p>@(item.TryGetProperty("description", out var desc) ? desc.GetString() : "")</p>
+                    </article>
+                }
+            </section>
+        }
+        else if (content.PageType == PageType.Messages && hasJson && data.TryGetProperty("messages", out var messages))
+        {
+            <section class="message-list">
+                @foreach (var item in messages.EnumerateArray())
+                {
+                    <article>
+                        <h2>@(item.TryGetProperty("role", out var role) ? role.GetString() : "Message")</h2>
+                        <p class="name">@(item.TryGetProperty("name", out var name) ? name.GetString() : "")</p>
+                        <blockquote>@(item.TryGetProperty("message", out var msg) ? msg.GetString() : "")</blockquote>
+                    </article>
+                }
+            </section>
+        }
+        else if (content.PageType == PageType.Gallery && hasJson)
+        {
+            var albumGroups = new List<(string Title, List<JsonElement> Media)>();
+            if (data.TryGetProperty("items", out var flatItems) && flatItems.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var group in flatItems.EnumerateArray()
+                    .GroupBy(x => x.TryGetProperty("album", out var albumName) && !string.IsNullOrWhiteSpace(albumName.GetString())
+                        ? albumName.GetString()!
+                        : "Gallery"))
+                {
+                    albumGroups.Add((group.Key, group.ToList()));
+                }
+            }
+            else if (data.TryGetProperty("albums", out var albums) && albums.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var album in albums.EnumerateArray())
+                {
+                    var title = album.TryGetProperty("title", out var at) ? at.GetString() ?? "Gallery" : "Gallery";
+                    var media = album.TryGetProperty("items", out var nested) && nested.ValueKind == JsonValueKind.Array
+                        ? nested.EnumerateArray().ToList()
+                        : [];
+                    albumGroups.Add((title, media));
+                }
+            }
+
+            @foreach (var album in albumGroups)
+            {
+                <section class="gallery-block">
+                    <div class="section-head"><h2>@album.Title</h2></div>
+                    <div class="gallery-grid">
+                        @foreach (var media in album.Media)
+                        {
+                            var type = media.TryGetProperty("type", out var mt) ? mt.GetString() : "image";
+                            var url = media.TryGetProperty("url", out var mu) ? mu.GetString() : "";
+                            var caption = media.TryGetProperty("caption", out var mc) ? mc.GetString() : "";
+                            if (type == "video" && !string.IsNullOrWhiteSpace(url))
+                            {
+                                <figure><iframe src="@url" title="@caption" loading="lazy" allowfullscreen></iframe><figcaption>@caption</figcaption></figure>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(url))
+                            {
+                                <figure><img src="@url" alt="@caption" loading="lazy" /><figcaption>@caption</figcaption></figure>
+                            }
+                        }
+                    </div>
+                </section>
+            }
+        }
+        else if (content.PageType == PageType.Disclosure && hasJson && data.TryGetProperty("documents", out var disclosureDocs))
+        {
+            <section class="disclosure-table">
+                <table>
+                    <thead><tr><th>Title</th><th>Category</th><th>Document</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in disclosureDocs.EnumerateArray())
+                    {
+                        var fileUrl = item.TryGetProperty("fileUrl", out var fu) ? fu.GetString() : "";
+                        <tr>
+                            <td>@(item.TryGetProperty("title", out var dt) ? dt.GetString() : "")</td>
+                            <td>@(item.TryGetProperty("category", out var cat) ? cat.GetString() : "")</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(fileUrl))
+                                {
+                                    <a href="@fileUrl" target="_blank" rel="noopener">Download PDF</a>
+                                }
+                                else
+                                {
+                                    <span>Upload pending</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </section>
+        }
+        else if (content.PageType == PageType.Committee && hasJson && data.TryGetProperty("members", out var members))
+        {
+            <section class="card-grid">
+                @foreach (var member in members.EnumerateArray())
+                {
+                    <article class="person-card">
+                        <h3>@(member.TryGetProperty("name", out var mn) ? mn.GetString() : "")</h3>
+                        <p>@(member.TryGetProperty("role", out var mr) ? mr.GetString() : "")</p>
+                    </article>
+                }
+            </section>
+        }
+        else if (content.PageType == PageType.Contact)
+        {
+            <section class="contact-layout">
+                <div>
+                    @if (hasJson && data.TryGetProperty("intro", out var intro))
+                    {
+                        <p class="lede">@intro.GetString()</p>
+                    }
+                    <ul class="contact-meta">
+                        @if (!string.IsNullOrWhiteSpace(Model.Website.Branding.Address)) { <li>@Model.Website.Branding.Address</li> }
+                        @if (!string.IsNullOrWhiteSpace(Model.Website.Branding.Phone)) { <li>@Model.Website.Branding.Phone</li> }
+                        @if (!string.IsNullOrWhiteSpace(Model.Website.Branding.Email)) { <li>@Model.Website.Branding.Email</li> }
+                    </ul>
+                    <form method="post" asp-page-handler="Contact" class="contact-form">
+                        <div asp-validation-summary="All" class="validation-summary"></div>
+                        <label><span>Name</span><input asp-for="ContactInput.Name" required /></label>
+                        <label><span>Email</span><input asp-for="ContactInput.Email" type="email" required /></label>
+                        <label><span>Phone</span><input asp-for="ContactInput.Phone" /></label>
+                        <label><span>Subject</span><input asp-for="ContactInput.Subject" /></label>
+                        <label class="full"><span>Message</span><textarea asp-for="ContactInput.Message" rows="5" required></textarea></label>
+                        <button type="submit">Send message</button>
+                    </form>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Website.Branding.MapEmbedUrl))
+                {
+                    <iframe class="map" src="@Model.Website.Branding.MapEmbedUrl" loading="lazy" title="Campus map"></iframe>
+                }
+            </section>
+        }
+    </div>
+</article>

@@ -71,23 +71,6 @@ public sealed class TenantManagementService : ITenantManagementService
         tenant.LogoUrl = dto.LogoUrl?.Trim();
         tenant.IsActive = dto.IsActive;
 
-        foreach (var existing in tenant.Domains)
-        {
-            existing.IsActive = false;
-            existing.IsPrimary = false;
-        }
-        foreach (var input in dto.Domains)
-        {
-            var domain = tenant.Domains.FirstOrDefault(x => x.DomainName == input.DomainName);
-            if (domain is null)
-            {
-                domain = new TenantDomain { DomainName = input.DomainName, CreatedDate = DateTime.UtcNow, CreatedBy = Actor };
-                tenant.Domains.Add(domain);
-            }
-            domain.IsActive = input.IsActive;
-            domain.IsPrimary = input.IsPrimary;
-        }
-
         foreach (var existing in tenant.Sites)
         {
             existing.IsActive = false;
@@ -103,8 +86,37 @@ public sealed class TenantManagementService : ITenantManagementService
             }
             site.Name = input.Name.Trim();
             site.WebsiteType = Enum.Parse<WebsiteType>(input.WebsiteType, true);
+            site.HomeVariant = Enum.TryParse<HomeVariant>(input.HomeVariant, true, out var variant)
+                ? variant
+                : HomeVariant.Classic;
             site.IsDefault = input.IsDefault;
             site.IsActive = input.IsActive;
+        }
+
+        // Only additions are accepted here, as a convenience when creating a tenant.
+        // Editing, unbinding and removal belong to the Domains screen, which enforces
+        // global host uniqueness and refuses to take the last live host off a website.
+        foreach (var input in dto.Domains.Where(x => !string.IsNullOrWhiteSpace(x.DomainName)))
+        {
+            if (tenant.Domains.Any(x => x.DomainName == input.DomainName))
+            {
+                continue;
+            }
+
+            var boundSite = string.IsNullOrWhiteSpace(input.SiteKey)
+                ? null
+                : tenant.Sites.FirstOrDefault(s =>
+                    string.Equals(s.SiteKey, input.SiteKey.Trim(), StringComparison.OrdinalIgnoreCase));
+
+            tenant.Domains.Add(new TenantDomain
+            {
+                DomainName = input.DomainName,
+                SiteId = boundSite?.Id,
+                IsPrimary = input.IsPrimary,
+                IsActive = input.IsActive,
+                CreatedDate = DateTime.UtcNow,
+                CreatedBy = Actor
+            });
         }
 
         await _repository.SaveChangesAsync(cancellationToken);
@@ -117,13 +129,23 @@ public sealed class TenantManagementService : ITenantManagementService
     {
         Id = tenant.Id, Name = tenant.Name, Code = tenant.Code,
         LogoUrl = tenant.LogoUrl, IsActive = tenant.IsActive,
-        Domains = tenant.Domains.OrderByDescending(x => x.IsPrimary).Select(x => new TenantDomainInputDto
+        Domains = tenant.Domains.OrderByDescending(x => x.IsPrimary).Select(x =>
         {
-            DomainName = x.DomainName, IsPrimary = x.IsPrimary, IsActive = x.IsActive
+            var siteKey = x.SiteId.HasValue
+                ? tenant.Sites.FirstOrDefault(s => s.Id == x.SiteId)?.SiteKey
+                : null;
+            return new TenantDomainInputDto
+            {
+                DomainName = x.DomainName,
+                SiteKey = siteKey,
+                IsPrimary = x.IsPrimary,
+                IsActive = x.IsActive
+            };
         }).ToList(),
         Sites = tenant.Sites.OrderByDescending(x => x.IsDefault).Select(x => new TenantSiteInputDto
         {
             Name = x.Name, SiteKey = x.SiteKey, WebsiteType = x.WebsiteType.ToString(),
+            HomeVariant = x.HomeVariant.ToString(),
             IsDefault = x.IsDefault, IsActive = x.IsActive
         }).ToList()
     };

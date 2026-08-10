@@ -1,0 +1,43 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.Contacts.IndexModel
+@{
+    ViewData["Title"] = "Contact inbox";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Enquiries</div>
+        <h1>Contact form submissions</h1>
+        <p>Messages submitted from the public Contact page for the selected website.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice">@Model.StatusMessage</div> }
+
+<section class="form-card">
+    <div class="content-list">
+        @if (Model.Submissions.Count == 0)
+        {
+            <article><span><strong>No messages yet</strong><small>Submissions from the public contact form will appear here.</small></span></article>
+        }
+        @foreach (var item in Model.Submissions)
+        {
+            <article>
+                <span>
+                    <strong>@item.Name @(item.IsRead ? "" : "· New")</strong>
+                    <small>
+                        @item.Email @(string.IsNullOrWhiteSpace(item.Phone) ? "" : "· " + item.Phone)
+                        · @item.CreatedDate.ToLocalTime().ToString("g")
+                        @if (!string.IsNullOrWhiteSpace(item.Subject)) { <text>· @item.Subject</text> }
+                        <br />@item.Message
+                    </small>
+                </span>
+                <form method="post" asp-page-handler="MarkRead">
+                    <input type="hidden" name="id" value="@item.Id" />
+                    <input type="hidden" name="isRead" value="@((!item.IsRead).ToString())" />
+                    <button class="btn btn-secondary btn-sm" type="submit">@(item.IsRead ? "Mark unread" : "Mark read")</button>
+                </form>
+            </article>
+        }
+    </div>
+</section>

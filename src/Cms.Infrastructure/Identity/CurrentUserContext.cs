@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Cms.Application.Interfaces;
+using Cms.Domain.Constants;
 using Microsoft.AspNetCore.Http;
 
 namespace Cms.Infrastructure.Identity;
@@ -18,4 +19,9 @@ public sealed class CurrentUserContext : ICurrentUserContext
 
     public string? DisplayName =>
         _httpContextAccessor.HttpContext?.User.Identity?.Name;
+
+    public bool IsSuperAdmin => IsInRole(AppRoles.SuperAdmin);
+
+    public bool IsInRole(string role) =>
+        _httpContextAccessor.HttpContext?.User.IsInRole(role) == true;
 }

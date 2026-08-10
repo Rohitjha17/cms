@@ -1,0 +1,197 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.Users.IndexModel
+@{
+    ViewData["Title"] = "User accounts";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Access control</div>
+        <h1>User accounts</h1>
+        <p>
+            Invite administrators and editors for this institution. Editors manage content;
+            administrators can also manage accounts and provision websites.
+        </p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="notice">@Model.StatusMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.GeneratedResetLink))
+{
+    <div class="notice">
+        <span>
+            <strong>One-time password link for @Model.GeneratedResetLinkEmail</strong><br />
+            <small>Share this over a channel you trust. It can be used once and expires.</small><br />
+            <input class="full" readonly value="@Model.GeneratedResetLink"
+                   onclick="this.select()" aria-label="Password reset link" />
+        </span>
+    </div>
+}
+
+<div class="content-manager-layout">
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">01</span>
+                <span><strong>People with access</strong><small>@Model.Users.Count account(s)</small></span>
+            </div>
+        </div>
+        <div class="content-list">
+            @if (Model.Users.Count == 0)
+            {
+                <article>
+                    <span>
+                        <strong>No accounts yet</strong>
+                        <small>Invite the first administrator for this institution using the form.</small>
+                    </span>
+                </article>
+            }
+            @foreach (var user in Model.Users)
+            {
+                <article>
+                    <span>
+                        <strong>@(string.IsNullOrWhiteSpace(user.FullName) ? user.Email : user.FullName)</strong>
+                        <small>
+                            @user.Email · @user.Role
+                            @if (Model.IsSuperAdmin)
+                            {
+                                <text> · @(user.TenantName ?? "Unassigned")</text>
+                            }
+                            · @(user.IsActive ? "Active" : "Disabled")@(user.IsLockedOut ? " · Locked" : "")
+                        </small>
+                    </span>
+                    <span class="content-list__actions">
+                        <a class="btn btn-secondary btn-sm" asp-route-edit="@user.Id">Edit</a>
+                        <form method="post" asp-page-handler="ResetLink">
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button class="btn btn-secondary btn-sm" type="submit">Reset link</button>
+                        </form>
+                        @if (user.IsLockedOut)
+                        {
+                            <form method="post" asp-page-handler="Unlock">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button class="btn btn-secondary btn-sm" type="submit">Unlock</button>
+                            </form>
+                        }
+                        <form method="post" asp-page-handler="Status">
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <input type="hidden" name="isActive" value="@((!user.IsActive).ToString())" />
+                            <button class="btn btn-secondary btn-sm" type="submit">
+                                @(user.IsActive ? "Disable" : "Enable")
+                            </button>
+                        </form>
+                    </span>
+                </article>
+            }
+        </div>
+    </section>
+
+    @if (string.IsNullOrWhiteSpace(Model.EditId))
+    {
+        <section class="form-card">
+            <div class="form-card__header">
+                <div>
+                    <span class="step-number">02</span>
+                    <span><strong>Invite someone</strong><small>They choose their own password</small></span>
+                </div>
+            </div>
+            <div class="form-card__body">
+                <form method="post" asp-page-handler="Create" class="field-grid">
+                    <div asp-validation-summary="All" class="validation-summary full"></div>
+                    <label class="field">
+                        <span>Work email</span>
+                        <input asp-for="Input.Email" type="email" placeholder="name@institution.edu" required />
+                    </label>
+                    <label class="field">
+                        <span>Full name</span>
+                        <input asp-for="Input.FullName" placeholder="Priya Sharma" />
+                    </label>
+                    <label class="field">
+                        <span>Role</span>
+                        <select asp-for="Input.Role">
+                            @foreach (var role in Model.AssignableRoles)
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                    </label>
+                    @if (Model.IsSuperAdmin)
+                    {
+                        <label class="field">
+                            <span>Institution</span>
+                            <select asp-for="Input.TenantId">
+                                <option value="">Current workspace</option>
+                                @foreach (var tenant in Model.Tenants)
+                                {
+                                    <option value="@tenant.Id">@tenant.Name</option>
+                                }
+                            </select>
+                            <small>Ignored when the role is SuperAdmin.</small>
+                        </label>
+                    }
+                    <label class="field full">
+                        <span>Initial password (optional)</span>
+                        <input asp-for="Input.Password" type="password" autocomplete="new-password"
+                               placeholder="Leave blank to send a set-your-password link" />
+                        <small>Leaving this blank is recommended — the invitee sets their own password.</small>
+                    </label>
+                    <label class="switch-row full">
+                        <input asp-for="Input.IsActive" />
+                        <span>
+                            <strong>Active immediately</strong>
+                            <small>Uncheck to create the account without allowing sign-in yet.</small>
+                        </span>
+                    </label>
+                    <div class="full form-actions">
+                        <button class="btn" type="submit">Create account</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="form-card">
+            <div class="form-card__header">
+                <div>
+                    <span class="step-number">02</span>
+                    <span><strong>Edit account</strong><small>Role and status</small></span>
+                </div>
+            </div>
+            <div class="form-card__body">
+                <form method="post" asp-page-handler="Update" class="field-grid">
+                    <input asp-for="EditId" type="hidden" />
+                    <div asp-validation-summary="All" class="validation-summary full"></div>
+                    <label class="field">
+                        <span>Full name</span>
+                        <input asp-for="EditInput.FullName" />
+                    </label>
+                    <label class="field">
+                        <span>Role</span>
+                        <select asp-for="EditInput.Role">
+                            @foreach (var role in Model.AssignableRoles)
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                    </label>
+                    <label class="switch-row full">
+                        <input asp-for="EditInput.IsActive" />
+                        <span>
+                            <strong>Active</strong>
+                            <small>Disabled accounts cannot sign in but keep their content history.</small>
+                        </span>
+                    </label>
+                    <div class="full form-actions">
+                        <button class="btn" type="submit">Save changes</button>
+                        <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </section>
+    }
+</div>

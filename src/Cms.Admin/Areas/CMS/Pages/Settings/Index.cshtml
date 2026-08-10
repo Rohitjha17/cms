@@ -1,0 +1,99 @@
+@page
+@using Cms.Application.DTOs.SchoolContent
+@model Cms.Admin.Areas.CMS.Pages.Settings.IndexModel
+@{
+    ViewData["Title"] = "Site settings";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Configuration</div>
+        <h1>Site settings</h1>
+        <p>
+            Operational details the school changes through the year. Logo, colours, address and map
+            live under <a asp-page="/Branding/Index">Branding</a>.
+        </p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="notice">@Model.StatusMessage</div>
+}
+
+<form method="post" class="settings-stack">
+    <div asp-validation-summary="All" class="validation-summary"></div>
+
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">01</span>
+                <span><strong>Announcement bar</strong><small>A single line shown across the top of every page</small></span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <div class="field-grid">
+                <label class="field full">
+                    <span>Notice text</span>
+                    <input asp-for="Input.NoticeTicker" placeholder="Admissions for 2026–27 are now open" />
+                    <small class="hint">Leave blank to hide the bar.</small>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">02</span>
+                <span><strong>Admissions</strong><small>Drives the admissions call-to-action on the website</small></span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <div class="field-grid">
+                <label class="field">
+                    <span>Status</span>
+                    <select asp-for="Input.AdmissionStatus" asp-items="Html.GetEnumSelectList<AdmissionStatus>()"></select>
+                </label>
+                <label class="field"><span>Enquiry phone</span><input asp-for="Input.AdmissionsPhone" placeholder="+91 98765 43210" /></label>
+
+                <label class="field"><span>Enquiry email</span><input asp-for="Input.AdmissionsEmail" type="email" placeholder="admissions@school.edu" /></label>
+                <label class="field"><span>Office hours</span><input asp-for="Input.OfficeHours" placeholder="Mon–Sat, 9:00–15:00" /></label>
+
+                <label class="field full">
+                    <span>Prospectus / brochure</span>
+                    <span class="upload-row">
+                        <input asp-for="Input.BrochureUrl" id="settings-brochure-url" placeholder="/uploads/… or https://…" />
+                        <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#settings-brochure-url">Browse media</button>
+                    </span>
+                </label>
+
+                <label class="field full"><span>Online application link</span><input asp-for="Input.ApplicationUrl" placeholder="https://apply.school.edu" /></label>
+            </div>
+        </div>
+    </section>
+
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">03</span>
+                <span><strong>Social and messaging</strong><small>Shown in the website footer</small></span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <div class="field-grid">
+                <label class="field"><span>WhatsApp number</span><input asp-for="Input.WhatsAppNumber" placeholder="+919876543210" /></label>
+                <label class="field"><span>Facebook</span><input asp-for="Input.Facebook" placeholder="https://facebook.com/…" /></label>
+                <label class="field"><span>Instagram</span><input asp-for="Input.Instagram" placeholder="https://instagram.com/…" /></label>
+                <label class="field"><span>YouTube</span><input asp-for="Input.YouTube" placeholder="https://youtube.com/@@…" /></label>
+                <label class="field"><span>X / Twitter</span><input asp-for="Input.Twitter" placeholder="https://x.com/…" /></label>
+                <label class="field"><span>LinkedIn</span><input asp-for="Input.LinkedIn" placeholder="https://linkedin.com/school/…" /></label>
+            </div>
+        </div>
+    </section>
+
+    <div class="form-actions form-actions--sticky">
+        <button class="btn" type="submit">Save site settings</button>
+        <span class="hint">Changes appear on the public website immediately.</span>
+    </div>
+</form>

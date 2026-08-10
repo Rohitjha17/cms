@@ -46,6 +46,13 @@ public static class DatabaseSeeder
             }
         }
 
+        // Page gallery is platform catalog data — always ensure it exists.
+        await PageTemplateSeed.EnsureAsync(db);
+
+        // The platform console must exist in every environment, otherwise a clean
+        // production database has no host that resolves and no account that can sign in.
+        await PlatformSeed.EnsureAsync(db, userManager, configuration, logger);
+
         if (!environment.IsDevelopment() && !configuration.GetValue<bool>("Seed:EnableDemoData"))
         {
             return;
@@ -87,24 +94,34 @@ public static class DatabaseSeeder
             {
                 Id = DemoSchoolSiteId,
                 TenantId = DemoTenantId,
-                Name = "Demo School",
+                Name = "Cambridge High School",
                 SiteKey = "school",
                 WebsiteType = WebsiteType.School,
+                HomeVariant = HomeVariant.Classic,
                 IsDefault = true,
                 IsActive = true,
-                CreatedDate = DateTime.UtcNow
+                Tagline = "Excellence in schooling since day one",
+                PrimaryColor = "#0f2d5c",
+                SecondaryColor = "#c9a227",
+                CreatedDate = DateTime.UtcNow,
+                CreatedBy = "seed"
             });
 
             db.Sites.Add(new Site
             {
                 Id = DemoCollegeSiteId,
                 TenantId = DemoTenantId,
-                Name = "Demo College",
+                Name = "Cambridge College of Arts & Science",
                 SiteKey = "college",
                 WebsiteType = WebsiteType.College,
+                HomeVariant = HomeVariant.Academic,
                 IsDefault = false,
                 IsActive = true,
-                CreatedDate = DateTime.UtcNow
+                Tagline = "Where ambition meets opportunity",
+                PrimaryColor = "#12263f",
+                SecondaryColor = "#8b6b2e",
+                CreatedDate = DateTime.UtcNow,
+                CreatedBy = "seed"
             });
 
             await db.SaveChangesAsync();
@@ -113,6 +130,22 @@ public static class DatabaseSeeder
 
         await HomePageSeed.EnsureSectionsAsync(db, DemoTenantId, DemoSchoolSiteId);
         await HomePageSeed.EnsureSectionsAsync(db, DemoTenantId, DemoCollegeSiteId);
+        await SchoolWebsiteSeed.EnsureAsync(
+            db, DemoTenantId, DemoSchoolSiteId, HomeVariant.Classic,
+            "Cambridge High School", "Excellence in schooling since day one");
+        await SchoolWebsiteSeed.EnsureAsync(
+            db, DemoTenantId, DemoCollegeSiteId, HomeVariant.Academic,
+            "Cambridge College of Arts & Science", "Where ambition meets opportunity");
+        await SchoolContentSeed.EnsureAsync(db, DemoTenantId, DemoSchoolSiteId);
+        await SchoolContentSeed.EnsureAsync(db, DemoTenantId, DemoCollegeSiteId);
+
+        // Demo domains intentionally host both /school and /college portals.
+        var demoDomains = await db.TenantDomains.IgnoreQueryFilters()
+            .Where(x => x.TenantId == DemoTenantId
+                && (x.DomainName == "localhost" || x.DomainName == "127.0.0.1"))
+            .ToListAsync();
+        foreach (var demoDomain in demoDomains) demoDomain.SiteId = null;
+        await db.SaveChangesAsync();
 
         var demoPassword = configuration["Seed:DemoAdminPassword"]
             ?? (environment.IsDevelopment()

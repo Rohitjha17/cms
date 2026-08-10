@@ -19,5 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Cms.Api\Cms.Api.csproj" />
     <ProjectReference Include="..\..\src\Cms.Infrastructure\Cms.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Cms.Web\Cms.Web.csproj" Aliases="webapp" />
+    <ProjectReference Include="..\..\src\Cms.Admin\Cms.Admin.csproj" Aliases="adminapp" />
   </ItemGroup>
 </Project>

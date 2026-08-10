@@ -29,6 +29,10 @@ public class TenantDomainConfiguration : IEntityTypeConfiguration<TenantDomain>
             .WithMany(t => t.Domains)
             .HasForeignKey(x => x.TenantId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(x => x.Site)
+            .WithMany(s => s.Domains)
+            .HasForeignKey(x => x.SiteId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
 
@@ -40,6 +44,17 @@ public class SiteConfiguration : IEntityTypeConfiguration<Site>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
         builder.Property(x => x.SiteKey).HasMaxLength(50).IsRequired();
+        builder.Property(x => x.LogoUrl).HasMaxLength(1000);
+        builder.Property(x => x.FaviconUrl).HasMaxLength(1000);
+        builder.Property(x => x.Tagline).HasMaxLength(250);
+        builder.Property(x => x.PrimaryColor).HasMaxLength(20);
+        builder.Property(x => x.SecondaryColor).HasMaxLength(20);
+        builder.Property(x => x.HeaderImageUrl).HasMaxLength(1000);
+        builder.Property(x => x.FooterText).HasMaxLength(1000);
+        builder.Property(x => x.Address).HasMaxLength(500);
+        builder.Property(x => x.Phone).HasMaxLength(50);
+        builder.Property(x => x.Email).HasMaxLength(200);
+        builder.Property(x => x.MapEmbedUrl).HasMaxLength(2000);
         builder.HasIndex(x => new { x.TenantId, x.SiteKey }).IsUnique();
         builder.HasOne(x => x.Tenant)
             .WithMany(t => t.Sites)
@@ -104,11 +119,48 @@ public class PageConfiguration : IEntityTypeConfiguration<Page>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Title).HasMaxLength(250).IsRequired();
         builder.Property(x => x.Slug).HasMaxLength(250).IsRequired();
+        builder.Property(x => x.TemplateKey).HasMaxLength(100);
         builder.Property(x => x.Excerpt).HasMaxLength(500);
         builder.Property(x => x.FeaturedImageUrl).HasMaxLength(1000);
         builder.Property(x => x.MetaTitle).HasMaxLength(250);
         builder.Property(x => x.MetaDescription).HasMaxLength(500);
         builder.HasIndex(x => new { x.TenantId, x.SiteId, x.Slug }).IsUnique();
+        builder.HasIndex(x => new { x.TenantId, x.SiteId, x.PageType });
+        builder.HasOne(x => x.Site)
+            .WithMany(s => s.Pages)
+            .HasForeignKey(x => x.SiteId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+public class PageTemplateConfiguration : IEntityTypeConfiguration<PageTemplate>
+{
+    public void Configure(EntityTypeBuilder<PageTemplate> builder)
+    {
+        builder.ToTable("PageTemplates");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.TemplateKey).HasMaxLength(100).IsRequired();
+        builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
+        builder.Property(x => x.Description).HasMaxLength(1000);
+        builder.Property(x => x.DefaultSlug).HasMaxLength(250).IsRequired();
+        builder.Property(x => x.DefaultTitle).HasMaxLength(250);
+        builder.HasIndex(x => x.TemplateKey).IsUnique();
+        builder.HasIndex(x => x.DisplayOrder);
+    }
+}
+
+public class ContactSubmissionConfiguration : IEntityTypeConfiguration<ContactSubmission>
+{
+    public void Configure(EntityTypeBuilder<ContactSubmission> builder)
+    {
+        builder.ToTable("ContactSubmissions");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
+        builder.Property(x => x.Email).HasMaxLength(200).IsRequired();
+        builder.Property(x => x.Phone).HasMaxLength(50);
+        builder.Property(x => x.Subject).HasMaxLength(250);
+        builder.Property(x => x.Message).HasMaxLength(4000).IsRequired();
+        builder.HasIndex(x => new { x.TenantId, x.SiteId, x.CreatedDate });
     }
 }
 
@@ -169,5 +221,20 @@ public class ContentEntryConfiguration : IEntityTypeConfiguration<ContentEntry>
         builder.Property(x => x.ImageUrl).HasMaxLength(1000);
         builder.HasIndex(x => new { x.TenantId, x.SiteId, x.ContentType, x.Key }).IsUnique();
         builder.HasIndex(x => new { x.TenantId, x.SiteId, x.ContentType, x.DisplayOrder });
+    }
+}
+
+public sealed class ActivityLogConfiguration : IEntityTypeConfiguration<ActivityLog>
+{
+    public void Configure(EntityTypeBuilder<ActivityLog> builder)
+    {
+        builder.ToTable("ActivityLogs");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.ActorId).HasMaxLength(450).IsRequired();
+        builder.Property(x => x.Action).HasMaxLength(30).IsRequired();
+        builder.Property(x => x.EntityType).HasMaxLength(150).IsRequired();
+        builder.Property(x => x.EntityId).HasMaxLength(100).IsRequired();
+        builder.Property(x => x.ChangedProperties).HasMaxLength(2000);
+        builder.HasIndex(x => new { x.TenantId, x.SiteId, x.CreatedDate });
     }
 }

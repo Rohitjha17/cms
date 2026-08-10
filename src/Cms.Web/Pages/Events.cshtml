@@ -1,0 +1,121 @@
+@page "/events/{key?}"
+@using Cms.Application.DTOs.SchoolContent
+@model Cms.Web.Pages.EventsModel
+@{
+    var basePath = Model.Website.BasePath;
+}
+
+@if (Model.Event is { } current)
+{
+    <article class="page-shell">
+        <header class="page-hero">
+            <div class="shell">
+                <p class="eyebrow">Event</p>
+                <h1>@current.Title</h1>
+                <p class="lede">@Cms.Web.Pages.EventsModel.Schedule(current)</p>
+            </div>
+        </header>
+        <div class="shell page-body">
+            @if (!string.IsNullOrWhiteSpace(current.ImageUrl))
+            {
+                <img class="article-image" src="@current.ImageUrl" alt="@current.Title" />
+            }
+            <ul class="contact-meta">
+                <li><strong>When:</strong> @Cms.Web.Pages.EventsModel.Schedule(current)</li>
+                @if (!string.IsNullOrWhiteSpace(current.Venue))
+                {
+                    <li><strong>Where:</strong> @current.Venue</li>
+                }
+            </ul>
+            @if (!string.IsNullOrWhiteSpace(current.Summary))
+            {
+                <p class="lede">@current.Summary</p>
+            }
+            @if (!string.IsNullOrWhiteSpace(current.Body))
+            {
+                <div class="rich-text">@Html.Raw(current.Body)</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(current.RegistrationUrl))
+            {
+                <p><a class="btn" href="@current.RegistrationUrl" target="_blank" rel="noopener">Register for this event</a></p>
+            }
+            <p><a class="text-link" href="@(basePath)/events">← All events</a></p>
+        </div>
+    </article>
+}
+else
+{
+    <article class="page-shell">
+        <header class="page-hero">
+            <div class="shell">
+                <p class="eyebrow">Calendar</p>
+                <h1>Events</h1>
+                <p class="lede">What is coming up at @Model.Website.Branding.Name.</p>
+            </div>
+        </header>
+        <div class="shell page-body">
+            @if (Model.Upcoming.Count == 0 && Model.Past.Count == 0)
+            {
+                <p class="lede">No events are scheduled at the moment. Please check back soon.</p>
+            }
+
+            @if (Model.Upcoming.Count > 0)
+            {
+                <section>
+                    <div class="section-head"><h2>Upcoming</h2></div>
+                    <div class="event-list">
+                        @foreach (var item in Model.Upcoming)
+                        {
+                            <article class="event-card">
+                                <div class="event-card__date">
+                                    <strong>@(item.StartsOn?.ToString("dd") ?? "--")</strong>
+                                    <span>@(item.StartsOn?.ToString("MMM yyyy") ?? "TBC")</span>
+                                </div>
+                                <div>
+                                    <h3><a href="@(basePath)/events/@item.Key">@item.Title</a></h3>
+                                    <p class="event-card__meta">
+                                        @Cms.Web.Pages.EventsModel.Schedule(item)
+                                        @if (!string.IsNullOrWhiteSpace(item.Venue))
+                                        {
+                                            <text> · @item.Venue</text>
+                                        }
+                                    </p>
+                                    @if (!string.IsNullOrWhiteSpace(item.Summary))
+                                    {
+                                        <p>@item.Summary</p>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(item.RegistrationUrl))
+                                    {
+                                        <a class="text-link" href="@item.RegistrationUrl" target="_blank" rel="noopener">Register</a>
+                                    }
+                                </div>
+                            </article>
+                        }
+                    </div>
+                </section>
+            }
+
+            @if (Model.Past.Count > 0)
+            {
+                <section>
+                    <div class="section-head"><h2>Past events</h2></div>
+                    <div class="event-list is-past">
+                        @foreach (var item in Model.Past)
+                        {
+                            <article class="event-card">
+                                <div class="event-card__date">
+                                    <strong>@(item.StartsOn?.ToString("dd") ?? "--")</strong>
+                                    <span>@(item.StartsOn?.ToString("MMM yyyy") ?? "")</span>
+                                </div>
+                                <div>
+                                    <h3><a href="@(basePath)/events/@item.Key">@item.Title</a></h3>
+                                    <p class="event-card__meta">@Cms.Web.Pages.EventsModel.Schedule(item)</p>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                </section>
+            }
+        </div>
+    </article>
+}

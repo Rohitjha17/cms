@@ -31,6 +31,18 @@ public sealed class IndexModel : PageModel
     public async Task OnGetAsync(CancellationToken cancellationToken) =>
         Files = await _mediaService.GetAllAsync(cancellationToken: cancellationToken);
 
+    public async Task<IActionResult> OnGetListAsync(string? type, CancellationToken cancellationToken)
+    {
+        var files = await _mediaService.GetAllAsync(type, cancellationToken);
+        return new JsonResult(files.Select(file => new
+        {
+            id = file.Id,
+            fileName = file.OriginalFileName,
+            url = file.Url,
+            mediaType = file.MediaType
+        }));
+    }
+
     public async Task<IActionResult> OnPostUploadAsync(CancellationToken cancellationToken)
     {
         if (Upload is null)

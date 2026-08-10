@@ -1,6 +1,8 @@
 using Cms.Application.DTOs.Tenancy;
 using Cms.Application.Interfaces;
 using Cms.Domain.Constants;
+using Cms.Domain.Enums;
+using Cms.Shared.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -9,6 +11,9 @@ namespace Cms.Admin.Areas.CMS.Pages.Tenants;
 
 public sealed class IndexModel : PageModel
 {
+    private const int BlankDomainRows = 3;
+    private const int BlankSiteRows = 2;
+
     private readonly ITenantManagementService _service;
     private readonly IValidator<SaveTenantDto> _validator;
 
@@ -21,13 +26,27 @@ public sealed class IndexModel : PageModel
     public IReadOnlyList<TenantManagementDto> Tenants { get; private set; } = [];
     [BindProperty] public Guid? EditId { get; set; }
     [BindProperty] public SaveTenantDto Input { get; set; } = new();
-    [BindProperty] public string DomainsText { get; set; } = string.Empty;
-    [BindProperty] public string SitesText { get; set; } = string.Empty;
     [TempData] public string? StatusMessage { get; set; }
+
+    public IReadOnlyList<string> WebsiteTypes { get; } = Enum.GetNames<WebsiteType>();
+
+    public IReadOnlyList<string> HomeVariants { get; } = Enum.GetNames<HomeVariant>();
+
+    /// <summary>Site keys a domain can be bound to, taken from the rows currently on screen.</summary>
+    public IReadOnlyList<string> AvailableSiteKeys =>
+        Input.Sites
+            .Select(x => x.SiteKey?.Trim() ?? string.Empty)
+            .Where(x => x.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
     public async Task<IActionResult> OnGetAsync(Guid? edit, CancellationToken cancellationToken)
     {
-        if (!User.IsInRole(AppRoles.SuperAdmin)) return Forbid();
+        if (!User.IsInRole(AppRoles.SuperAdmin))
+        {
+            return Forbid();
+        }
+
         await LoadAsync(cancellationToken);
         if (edit.HasValue)
         {
@@ -35,29 +54,53 @@ public sealed class IndexModel : PageModel
             EditId = tenant.Id;
             Input = new SaveTenantDto
             {
-                Name = tenant.Name, Code = tenant.Code, LogoUrl = tenant.LogoUrl, IsActive = tenant.IsActive
+                Name = tenant.Name,
+                Code = tenant.Code,
+                LogoUrl = tenant.LogoUrl,
+                IsActive = tenant.IsActive,
+                Domains = tenant.Domains.ToList(),
+                Sites = tenant.Sites.ToList()
             };
-            DomainsText = string.Join(Environment.NewLine, tenant.Domains.Select(x =>
-                $"{x.DomainName}|{x.IsPrimary.ToString().ToLowerInvariant()}|{x.IsActive.ToString().ToLowerInvariant()}"));
-            SitesText = string.Join(Environment.NewLine, tenant.Sites.Select(x =>
-                $"{x.Name}|{x.SiteKey}|{x.WebsiteType}|{x.IsDefault.ToString().ToLowerInvariant()}|{x.IsActive.ToString().ToLowerInvariant()}"));
         }
+
+        PadRows();
         return Page();
     }
 
     public async Task<IActionResult> OnPostSaveAsync(CancellationToken cancellationToken)
     {
-        if (!User.IsInRole(AppRoles.SuperAdmin)) return Forbid();
-        Input.Domains = ParseDomains(DomainsText);
-        Input.Sites = ParseSites(SitesText);
+        if (!User.IsInRole(AppRoles.SuperAdmin))
+        {
+            return Forbid();
+        }
+
+        Normalize();
+
         var validation = await _validator.ValidateAsync(Input, cancellationToken);
         if (!validation.IsValid)
         {
-            foreach (var error in validation.Errors) ModelState.AddModelError(string.Empty, error.ErrorMessage);
+            foreach (var error in validation.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.ErrorMessage);
+            }
+
             await LoadAsync(cancellationToken);
+            PadRows();
             return Page();
         }
-        await _service.SaveAsync(EditId, Input, cancellationToken);
+
+        try
+        {
+            await _service.SaveAsync(EditId, Input, cancellationToken);
+        }
+        catch (AppException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            await LoadAsync(cancellationToken);
+            PadRows();
+            return Page();
+        }
+
         StatusMessage = EditId.HasValue ? "Tenant updated." : "Tenant created.";
         return RedirectToPage();
     }
@@ -65,25 +108,67 @@ public sealed class IndexModel : PageModel
     private async Task LoadAsync(CancellationToken cancellationToken) =>
         Tenants = await _service.GetAllAsync(cancellationToken);
 
-    private static List<TenantDomainInputDto> ParseDomains(string value) =>
-        Lines(value).Select(parts => new TenantDomainInputDto
-        {
-            DomainName = parts[0],
-            IsPrimary = parts.Length > 1 && bool.TryParse(parts[1], out var primary) && primary,
-            IsActive = parts.Length <= 2 || !bool.TryParse(parts[2], out var active) || active
-        }).ToList();
+    /// <summary>
+    /// Drops the blank rows the form always renders and tidies the values the service
+    /// and validator expect to be lower-case and trimmed.
+    /// </summary>
+    private void Normalize()
+    {
+        Input.Name = Input.Name?.Trim() ?? string.Empty;
+        Input.Code = Input.Code?.Trim().ToLowerInvariant() ?? string.Empty;
+        Input.LogoUrl = string.IsNullOrWhiteSpace(Input.LogoUrl) ? null : Input.LogoUrl.Trim();
 
-    private static List<TenantSiteInputDto> ParseSites(string value) =>
-        Lines(value).Where(parts => parts.Length >= 3).Select(parts => new TenantSiteInputDto
-        {
-            Name = parts[0],
-            SiteKey = parts[1],
-            WebsiteType = parts[2],
-            IsDefault = parts.Length > 3 && bool.TryParse(parts[3], out var isDefault) && isDefault,
-            IsActive = parts.Length <= 4 || !bool.TryParse(parts[4], out var active) || active
-        }).ToList();
+        Input.Domains = Input.Domains
+            .Where(x => !string.IsNullOrWhiteSpace(x.DomainName))
+            .Select(x => new TenantDomainInputDto
+            {
+                DomainName = x.DomainName.Trim().ToLowerInvariant(),
+                SiteKey = string.IsNullOrWhiteSpace(x.SiteKey) ? null : x.SiteKey.Trim().ToLowerInvariant(),
+                IsPrimary = x.IsPrimary,
+                IsActive = x.IsActive
+            })
+            .ToList();
 
-    private static IEnumerable<string[]> Lines(string value) =>
-        value.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(line => line.Split('|', StringSplitOptions.TrimEntries));
+        Input.Sites = Input.Sites
+            .Where(x => !string.IsNullOrWhiteSpace(x.SiteKey) || !string.IsNullOrWhiteSpace(x.Name))
+            .Select(x => new TenantSiteInputDto
+            {
+                Name = x.Name?.Trim() ?? string.Empty,
+                SiteKey = x.SiteKey?.Trim().ToLowerInvariant() ?? string.Empty,
+                WebsiteType = string.IsNullOrWhiteSpace(x.WebsiteType) ? "School" : x.WebsiteType.Trim(),
+                HomeVariant = string.IsNullOrWhiteSpace(x.HomeVariant) ? "Classic" : x.HomeVariant.Trim(),
+                IsDefault = x.IsDefault,
+                IsActive = x.IsActive
+            })
+            .ToList();
+    }
+
+    /// <summary>
+    /// Appends spare blank rows so several domains or sites can be added in one save
+    /// without relying on JavaScript. Blank rows are discarded again by <see cref="Normalize"/>.
+    /// </summary>
+    private void PadRows()
+    {
+        var blankSites = Input.Sites.Count(x => string.IsNullOrWhiteSpace(x.SiteKey));
+        for (var i = blankSites; i < BlankSiteRows; i++)
+        {
+            Input.Sites.Add(new TenantSiteInputDto
+            {
+                WebsiteType = nameof(WebsiteType.School),
+                HomeVariant = nameof(HomeVariant.Classic),
+                IsActive = true,
+                IsDefault = Input.Sites.Count == 0
+            });
+        }
+
+        var blankDomains = Input.Domains.Count(x => string.IsNullOrWhiteSpace(x.DomainName));
+        for (var i = blankDomains; i < BlankDomainRows; i++)
+        {
+            Input.Domains.Add(new TenantDomainInputDto
+            {
+                IsActive = true,
+                IsPrimary = Input.Domains.Count == 0
+            });
+        }
+    }
 }

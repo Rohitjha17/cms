@@ -2,7 +2,7 @@ using Cms.Domain.Common;
 
 namespace Cms.Domain.Entities;
 
-/// <summary>Schema placeholder for future SEO module.</summary>
+/// <summary>Search metadata defaults for one website.</summary>
 public class SeoSetting : BaseEntity, ITenantEntity, ISiteEntity
 {
     public Guid TenantId { get; set; }
@@ -12,4 +12,10 @@ public class SeoSetting : BaseEntity, ITenantEntity, ISiteEntity
     public string? MetaKeywords { get; set; }
     public string? OgImageUrl { get; set; }
     public string? CanonicalUrl { get; set; }
+
+    /// <summary>
+    /// When false the website asks search engines not to index it. Used while a school's
+    /// site is still being prepared.
+    /// </summary>
+    public bool AllowIndexing { get; set; } = true;
 }

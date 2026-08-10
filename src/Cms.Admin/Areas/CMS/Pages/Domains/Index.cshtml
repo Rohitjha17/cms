@@ -1,0 +1,228 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.Domains.IndexModel
+@{
+    ViewData["Title"] = "Domains";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Hosting</div>
+        <h1>Domains</h1>
+        <p>Every address that reaches this workspace. A visitor's host name decides which website they see.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="notice">@Model.StatusMessage</div>
+}
+
+@if (Model.UnreachableWebsites.Count > 0)
+{
+    <div class="notice notice--warning">
+        <span>
+            @string.Join(", ", Model.UnreachableWebsites.Select(x => x.Name))
+            @(Model.UnreachableWebsites.Count == 1 ? "has" : "have") no live domain, so
+            @(Model.UnreachableWebsites.Count == 1 ? "it is" : "they are") not reachable by the public.
+            Add a domain below, or leave one unbound to serve every website by path.
+        </span>
+    </div>
+}
+
+<section class="explainer">
+    <h2>How a visitor reaches the right website</h2>
+    <ol class="explainer__flow">
+        <li><strong>Request arrives</strong><span>noida.school.edu/about</span></li>
+        <li><strong>Host looked up</strong><span>matched in this table</span></li>
+        <li><strong>Website resolved</strong><span>its branding, menu and pages load</span></li>
+        <li><strong>Page served</strong><span>content is scoped to that website only</span></li>
+    </ol>
+    <p class="explainer__note">
+        Bind a domain to one website and that school gets clean addresses like
+        <code>/about</code>. Leave it unbound and the one host serves every website in this
+        workspace under its own path, like <code>/school/about</code> and <code>/college/about</code>.
+    </p>
+</section>
+
+<section class="form-card">
+    <div class="form-card__header">
+        <div>
+            <span class="step-number">01</span>
+            <span><strong>Bound domains</strong><small>@Model.Domains.Count host(s) pointing here</small></span>
+        </div>
+    </div>
+    <div class="form-card__body">
+        @if (Model.Domains.Count == 0)
+        {
+            <div class="empty-state">
+                <strong>No domains yet</strong>
+                <span>Add the school's address below, then point its DNS at this server.</span>
+            </div>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Domain</th>
+                        <th>Serves</th>
+                        <th>Example URL</th>
+                        <th>Primary</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var domain in Model.Domains)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@domain.DomainName</strong>
+                                @if (string.Equals(domain.DomainName, Model.CurrentHost, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <span class="chip chip--accent">You are here</span>
+                                }
+                            </td>
+                            <td>
+                                @if (domain.IsShared)
+                                {
+                                    <span class="chip">All websites</span>
+                                }
+                                else
+                                {
+                                    @domain.SiteName
+                                }
+                            </td>
+                            <td><code class="url-hint">@domain.ExampleUrl</code></td>
+                            <td>@(domain.IsPrimary ? "Yes" : "—")</td>
+                            <td>
+                                <span class="badge @(domain.IsActive ? "on" : "off")">@(domain.IsActive ? "Live" : "Disabled")</span>
+                            </td>
+                            <td>
+                                @if (Model.CanManage)
+                                {
+                                    <span class="content-list__actions">
+                                        <a class="btn btn-secondary btn-sm" asp-route-edit="@domain.Id">Edit</a>
+                                        <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Remove @domain.DomainName? Visitors using it will no longer reach this website.');">
+                                            <input type="hidden" name="id" value="@domain.Id" />
+                                            <button class="btn btn-secondary btn-sm" type="submit">Remove</button>
+                                        </form>
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</section>
+
+@if (Model.CanManage)
+{
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">02</span>
+                <span><strong>@(Model.EditId.HasValue ? "Edit domain" : "Add a domain")</strong><small>Host names only — no https:// and no path</small></span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <form method="post" asp-page-handler="Save" class="field-grid">
+                <input type="hidden" asp-for="EditId" />
+                <div asp-validation-summary="All" class="validation-summary full"></div>
+
+                <label class="field">
+                    <span>Domain</span>
+                    <input asp-for="Input.DomainName" placeholder="noida.cambridgeschool.edu.in" required />
+                    <small class="field-help">A host may serve only one workspace, anywhere on the platform.</small>
+                </label>
+
+                <label class="field">
+                    <span>Serves</span>
+                    <select asp-for="Input.SiteId">
+                        <option value="">All websites (path prefix)</option>
+                        @foreach (var site in Model.Websites)
+                        {
+                            <option value="@site.Id" selected="@(Model.Input.SiteId == site.Id)">@site.Name</option>
+                        }
+                    </select>
+                    <small class="field-help">Bind to one website for clean root URLs.</small>
+                </label>
+
+                <label class="switch-row full">
+                    <input asp-for="Input.IsPrimary" />
+                    <span><strong>Primary address for this website</strong><small>The canonical address used in links and search results.</small></span>
+                </label>
+
+                <label class="switch-row full">
+                    <input asp-for="Input.IsActive" />
+                    <span><strong>Live</strong><small>Uncheck to stop serving this host without deleting it.</small></span>
+                </label>
+
+                <div class="full form-actions">
+                    <button class="btn" type="submit">@(Model.EditId.HasValue ? "Save domain" : "Add domain")</button>
+                    @if (Model.EditId.HasValue)
+                    {
+                        <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+                    }
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">03</span>
+                <span><strong>DNS for the school's IT team</strong><small>Send these records once the domain is added above</small></span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <p class="form-section-hint">
+                Point the host at this deployment, then the CMS does the rest. Use a CNAME for a
+                subdomain, or A records for a root domain — your hosting provider supplies the target.
+            </p>
+            @if (Model.DeploymentHost is null && Model.ServerIp is null)
+            {
+                <div class="notice notice--warning">
+                    <span>
+                        No DNS target is configured, so exact records cannot be shown. Set
+                        <code class="url-hint">Platform:DeploymentHost</code> (for subdomains) and
+                        <code class="url-hint">Platform:ServerIp</code> (for apex domains) in this
+                        deployment's configuration.
+                    </span>
+                </div>
+            }
+            else
+            {
+                <table class="data-table">
+                    <thead><tr><th>Type</th><th>Name</th><th>Points to</th></tr></thead>
+                    <tbody>
+                        @if (Model.DeploymentHost is not null)
+                        {
+                            <tr>
+                                <td>CNAME</td>
+                                <td><code class="url-hint">subdomain</code></td>
+                                <td><code class="url-hint">@Model.DeploymentHost</code></td>
+                            </tr>
+                        }
+                        @if (Model.ServerIp is not null)
+                        {
+                            <tr>
+                                <td>A</td>
+                                <td><code class="url-hint">@@</code></td>
+                                <td><code class="url-hint">@Model.ServerIp</code></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            <p class="form-section-hint" style="margin-top:12px">
+                HTTPS certificates are issued by the hosting platform, not by the CMS. Once DNS
+                propagates, a newly added host becomes reachable here within the tenant resolution
+                cache window (<code class="url-hint">Tenancy:ResolutionCacheSeconds</code>).
+            </p>
+        </div>
+    </section>
+}

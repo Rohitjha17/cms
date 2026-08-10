@@ -18,6 +18,24 @@ public sealed class SavePageValidator : AbstractValidator<SavePageDto>
         RuleFor(x => x.MetaDescription).MaximumLength(500);
         RuleFor(x => x.FeaturedImageUrl).Must(url => UrlHelper.IsValidUrl(url))
             .When(x => !string.IsNullOrWhiteSpace(x.FeaturedImageUrl));
+        RuleFor(x => x.JsonData).Must(IsValidJsonObject)
+            .When(x => !string.IsNullOrWhiteSpace(x.JsonData))
+            .WithMessage("Structured JSON must be a valid JSON object.");
+        RuleFor(x => x.PageType).IsInEnum();
+        RuleFor(x => x.MenuOrder).GreaterThanOrEqualTo(0);
+    }
+
+    private static bool IsValidJsonObject(string? value)
+    {
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(value!);
+            return document.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 
@@ -111,7 +129,7 @@ public sealed class SaveTenantValidator : AbstractValidator<SaveTenantDto>
         {
             site.RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
             site.RuleFor(x => x.SiteKey).NotEmpty().MaximumLength(50).Matches("^[a-z0-9_-]+$");
-            site.RuleFor(x => x.WebsiteType).Must(x => x is "School" or "College");
+            site.RuleFor(x => x.WebsiteType).Must(x => x is "School" or "College" or "Other");
         });
     }
 }

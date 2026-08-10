@@ -1,0 +1,50 @@
+@using Cms.Application.DTOs.SchoolContent
+@model SchoolEventDto
+@{
+    var start = Model.StartsOn;
+    string schedule;
+    if (start is null)
+    {
+        schedule = "Date to be confirmed";
+    }
+    else if (Model.EndsOn is DateTime end)
+    {
+        schedule = end.Date == start.Value.Date
+            ? $"{start.Value:ddd d MMM yyyy, HH:mm} – {end:HH:mm}"
+            : $"{start.Value:d MMM yyyy} – {end:d MMM yyyy}";
+    }
+    else
+    {
+        schedule = start.Value.ToString("ddd d MMM yyyy, HH:mm");
+    }
+}
+
+<article>
+    <span class="event-row">
+        <span class="event-row__date">
+            <strong>@(start?.ToString("dd") ?? "--")</strong>
+            <small>@(start?.ToString("MMM") ?? "TBC")</small>
+        </span>
+        <span class="content-list__text">
+            <strong>@Model.Title</strong>
+            <small>
+                @schedule
+                @if (!string.IsNullOrWhiteSpace(Model.Venue))
+                {
+                    <text> · @Model.Venue</text>
+                }
+                · @(Model.IsPublished ? "Published" : "Hidden")
+            </small>
+        </span>
+    </span>
+    <span class="content-list__actions">
+        <a class="btn btn-secondary btn-sm" asp-page="Index" asp-route-edit="@Model.Id">Edit</a>
+        @if (User.IsInRole(Cms.Domain.Constants.AppRoles.SuperAdmin) || User.IsInRole(Cms.Domain.Constants.AppRoles.TenantAdmin))
+        {
+            <form method="post" asp-page="Index" asp-page-handler="Delete" onsubmit="return confirm('Delete this event?');">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
+            </form>
+        }
+    </span>
+</article>

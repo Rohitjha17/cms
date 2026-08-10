@@ -3,6 +3,7 @@ using Cms.Application.DependencyInjection;
 using Cms.Api.Middleware;
 using Cms.Domain.Constants;
 using Cms.Infrastructure.DependencyInjection;
+using Cms.Infrastructure.Http;
 using Cms.Infrastructure.Persistence.Seed;
 using Cms.Infrastructure.Storage;
 using Cms.Infrastructure.Tenancy;
@@ -95,6 +96,15 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
+    options.AddPolicy("public-forms", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(10),
+                QueueLimit = 0
+            }));
 });
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
@@ -143,8 +153,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseSecurityHeaders();
 if (!app.Environment.IsDevelopment())
 {
+    app.UseHsts();
     app.UseHttpsRedirection();
 }
 app.UseStaticFiles();

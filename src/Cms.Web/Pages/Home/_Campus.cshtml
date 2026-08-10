@@ -1,0 +1,59 @@
+@model PublicWebsiteDto
+@using Cms.Web.Helpers
+@{
+    var brand = Model.Branding;
+    var basePath = Model.BasePath;
+    var hero = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "hero");
+    var why = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "why_choose_us");
+    var events = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "upcoming_events");
+    var gallery = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "gallery");
+    var heroJson = SectionJson.Parse(hero?.JsonData);
+    var whyJson = SectionJson.Parse(why?.JsonData);
+    var eventsJson = SectionJson.Parse(events?.JsonData);
+    var galleryJson = SectionJson.Parse(gallery?.JsonData);
+    var banner = brand.HeaderImageUrl ?? "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1800&q=80";
+}
+<section class="hero hero-campus" style="--hero:url('@banner')">
+    <div class="shell">
+        <h1>Life at @brand.Name</h1>
+        <p>@(SectionJson.GetString(heroJson, "description") ?? hero?.Description ?? brand.Tagline)</p>
+        <a class="btn" href="@(basePath)/facilities">Explore facilities</a>
+    </div>
+</section>
+<section class="shell campus-panels">
+    <article>
+        <h2>@(why?.Title ?? "Campus highlights")</h2>
+        <p>@(SectionJson.GetString(whyJson, "intro") ?? why?.Description)</p>
+        <ul>
+            @foreach (var item in SectionJson.GetArray(whyJson, "items").Take(4))
+            {
+                <li>@(item.TryGetProperty("title", out var t) ? t.GetString() : "")</li>
+            }
+        </ul>
+        <a class="text-link" href="@(basePath)/facilities">Facilities</a>
+    </article>
+    <article>
+        <h2>@(events?.Title ?? "This season")</h2>
+        @foreach (var item in SectionJson.GetArray(eventsJson, "items").Take(3))
+        {
+            <p><strong>@(item.TryGetProperty("title", out var et) ? et.GetString() : "")</strong><br />
+            @(item.TryGetProperty("date", out var ed) ? ed.GetString() : "") · @(item.TryGetProperty("location", out var el) ? el.GetString() : "")</p>
+        }
+        <a class="text-link" href="@(basePath)/gallery">Campus gallery</a>
+    </article>
+</section>
+@if (gallery is not null)
+{
+    <section class="shell section">
+        <div class="gallery-grid">
+            @foreach (var item in SectionJson.GetArray(galleryJson, "items").Take(4))
+            {
+                var imageUrl = item.TryGetProperty("imageUrl", out var iu) ? iu.GetString() : "";
+                if (!string.IsNullOrWhiteSpace(imageUrl))
+                {
+                    <figure><img src="@imageUrl" alt="" /></figure>
+                }
+            }
+        </div>
+    </section>
+}

@@ -30,6 +30,11 @@ public sealed class MediaController : ControllerBase
         return Ok(ApiResponse<IReadOnlyList<MediaFileDto>>.Ok(data));
     }
 
+    [HttpGet("{mediaId:guid}")]
+    public async Task<ActionResult<ApiResponse<MediaFileDto>>> Get(
+        Guid mediaId, CancellationToken cancellationToken) =>
+        Ok(ApiResponse<MediaFileDto>.Ok(await _mediaService.GetAsync(mediaId, cancellationToken)));
+
     [HttpPost("images")]
     [RequestSizeLimit(6 * 1024 * 1024)]
     public async Task<ActionResult<ApiResponse<UploadImageResultDto>>> UploadImage(
@@ -50,6 +55,29 @@ public sealed class MediaController : ControllerBase
     {
         var data = await _mediaService.UploadDocumentAsync(file, folder, cancellationToken);
         return StatusCode(StatusCodes.Status201Created, ApiResponse<UploadImageResultDto>.Created(data));
+    }
+
+    [HttpPost("videos")]
+    [RequestSizeLimit(101 * 1024 * 1024)]
+    public async Task<ActionResult<ApiResponse<UploadImageResultDto>>> UploadVideo(
+        IFormFile file, [FromForm] string? folder, CancellationToken cancellationToken)
+    {
+        var data = await _mediaService.UploadVideoAsync(file, folder, cancellationToken);
+        return StatusCode(StatusCodes.Status201Created, ApiResponse<UploadImageResultDto>.Created(data));
+    }
+
+    [HttpPut("{mediaId:guid}")]
+    public async Task<ActionResult<ApiResponse<MediaFileDto>>> Update(
+        Guid mediaId, UpdateMediaDto dto, CancellationToken cancellationToken) =>
+        Ok(ApiResponse<MediaFileDto>.Ok(
+            await _mediaService.UpdateAsync(mediaId, dto, cancellationToken), "Media updated."));
+
+    [HttpPatch("{mediaId:guid}/status")]
+    public async Task<ActionResult<ApiResponse>> SetStatus(
+        Guid mediaId, SetMediaStatusDto dto, CancellationToken cancellationToken)
+    {
+        await _mediaService.SetStatusAsync(mediaId, dto.IsActive, cancellationToken);
+        return Ok(ApiResponse.Ok(dto.IsActive ? "Media activated." : "Media deactivated."));
     }
 
     [HttpDelete("{mediaId:guid}")]

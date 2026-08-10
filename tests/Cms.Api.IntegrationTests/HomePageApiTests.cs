@@ -76,6 +76,23 @@ public sealed class HomePageApiTests : IClassFixture<CmsApiFactory>
         Assert.Equal(404, json.RootElement.GetProperty("statusCode").GetInt32());
     }
 
+    [Fact]
+    public async Task TenantAdmin_CannotModifyGlobalPageTemplates()
+    {
+        var token = await LoginAsync();
+        using var request = SiteRequest(HttpMethod.Post, "/api/websites/templates", "school");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = JsonContent.Create(new
+        {
+            templateKey = "malicious-global-template",
+            name = "Blocked template",
+            defaultSlug = "blocked"
+        });
+
+        using var response = await _client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
     private async Task<string> LoginAsync()
     {
         using var response = await _client.PostAsJsonAsync("/api/auth/login", new

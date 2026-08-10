@@ -1,7 +1,9 @@
 using Cms.Admin.Middleware;
+using Cms.Admin.Services;
 using Cms.Application.DependencyInjection;
 using Cms.Domain.Constants;
 using Cms.Infrastructure.DependencyInjection;
+using Cms.Infrastructure.Http;
 using Cms.Infrastructure.Persistence.Seed;
 using Cms.Infrastructure.Storage;
 using Cms.Infrastructure.Tenancy;
@@ -14,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHttpClient("DemoApiGateway");
+builder.Services.AddScoped<IPublicSiteLink, PublicSiteLink>();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -48,7 +51,10 @@ builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AuthorizeAreaFolder("CMS", "/", "CmsAccess");
     options.Conventions.AuthorizePage("/Index", "CmsAccess");
+    options.Conventions.AuthorizePage("/Account/ChangePassword", "CmsAccess");
     options.Conventions.AllowAnonymousToPage("/Account/Login");
+    options.Conventions.AllowAnonymousToPage("/Account/ForgotPassword");
+    options.Conventions.AllowAnonymousToPage("/Account/ResetPassword");
 });
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -76,6 +82,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseSecurityHeaders();
 app.UseMiddleware<DemoApiGatewayMiddleware>();
 app.UseStaticFiles();
 app.UseLocalMediaFiles();
@@ -87,4 +94,8 @@ app.UseMiddleware<TenantAuthorizationMiddleware>();
 app.UseAuthorization();
 app.MapRazorPages();
 
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+
 app.Run();
+
+public partial class Program;

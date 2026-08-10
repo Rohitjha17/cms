@@ -5,36 +5,161 @@
 }
 
 <div class="page-header">
-    <div><div class="eyebrow">Platform administration</div><h1>Tenants and sites</h1><p>Provision institutions, domains and School or College sites from one protected workspace.</p></div>
+    <div>
+        <div class="eyebrow">Platform administration</div>
+        <h1>Tenants and sites</h1>
+        <p>Provision institutions, domains and School or College sites from one protected workspace.</p>
+    </div>
 </div>
 @if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice">@Model.StatusMessage</div> }
 
 <div class="content-manager-layout">
     <section class="form-card">
-        <div class="form-card__header"><div><span class="step-number">01</span><span><strong>Institutions</strong><small>@Model.Tenants.Count tenant(s)</small></span></div></div>
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">01</span>
+                <span><strong>Institutions</strong><small>@Model.Tenants.Count tenant(s)</small></span>
+            </div>
+        </div>
         <div class="content-list">
+            @if (Model.Tenants.Count == 0)
+            {
+                <article>
+                    <span><strong>No tenants yet</strong><small>Create the first institution using the form.</small></span>
+                </article>
+            }
             @foreach (var tenant in Model.Tenants)
             {
                 <article>
-                    <span><strong>@tenant.Name</strong><small>@tenant.Code · @tenant.Sites.Count site(s) · @(tenant.IsActive ? "Active" : "Disabled")</small></span>
+                    <span>
+                        <strong>@tenant.Name</strong>
+                        <small>
+                            @tenant.Code · @tenant.Sites.Count site(s) ·
+                            @(tenant.Domains.Count) domain(s) · @(tenant.IsActive ? "Active" : "Disabled")
+                        </small>
+                    </span>
                     <a class="btn btn-secondary btn-sm" asp-route-edit="@tenant.Id">Edit</a>
                 </article>
             }
         </div>
     </section>
+
     <section class="form-card">
-        <div class="form-card__header"><div><span class="step-number">02</span><span><strong>@(Model.EditId.HasValue ? "Edit tenant" : "New tenant")</strong><small>Domains and site provisioning</small></span></div></div>
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">02</span>
+                <span>
+                    <strong>@(Model.EditId.HasValue ? "Edit tenant" : "New tenant")</strong>
+                    <small>Domains and site provisioning</small>
+                </span>
+            </div>
+        </div>
         <div class="form-card__body">
             <form method="post" asp-page-handler="Save" class="field-grid">
                 <input asp-for="EditId" type="hidden" />
                 <div asp-validation-summary="All" class="validation-summary full"></div>
-                <label class="field"><span>Institution name</span><input asp-for="Input.Name" /></label>
-                <label class="field"><span>Tenant code</span><input asp-for="Input.Code" placeholder="abc-school" /></label>
-                <label class="field full"><span>Logo URL</span><input asp-for="Input.LogoUrl" /></label>
-                <label class="field full"><span>Domains</span><textarea asp-for="DomainsText" rows="4" placeholder="school.example.com|true|true"></textarea><small>One per line: domain | primary | active</small></label>
-                <label class="field full"><span>Sites</span><textarea asp-for="SitesText" rows="5" placeholder="ABC School|school|School|true|true"></textarea><small>One per line: name | key | School/College | default | active</small></label>
-                <label class="switch-row full"><input asp-for="Input.IsActive" /><span><strong>Active tenant</strong><small>Allow requests and content management for this institution.</small></span></label>
-                <div class="full form-actions"><button class="btn" type="submit">Save tenant</button>@if (Model.EditId.HasValue) { <a class="btn btn-secondary" asp-page="Index">Cancel</a> }</div>
+
+                <label class="field">
+                    <span>Institution name</span>
+                    <input asp-for="Input.Name" placeholder="Cambridge High School" required />
+                </label>
+                <label class="field">
+                    <span>Tenant code</span>
+                    <input asp-for="Input.Code" placeholder="cambridge-high" required />
+                    <small>Lower-case letters, numbers and hyphens.</small>
+                </label>
+                <label class="field full">
+                    <span>Logo URL</span>
+                    <input asp-for="Input.LogoUrl" placeholder="https://…" />
+                </label>
+
+                <div class="full">
+                    <h3>Sites</h3>
+                    <p class="hint">Exactly one site must be the default. Blank rows are ignored.</p>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Key</th>
+                                <th>Type</th>
+                                <th>Home design</th>
+                                <th>Default</th>
+                                <th>Active</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.Input.Sites.Count; i++)
+                            {
+                                <tr>
+                                    <td><input asp-for="Input.Sites[i].Name" placeholder="Cambridge High School" /></td>
+                                    <td><input asp-for="Input.Sites[i].SiteKey" placeholder="school" /></td>
+                                    <td>
+                                        <select asp-for="Input.Sites[i].WebsiteType">
+                                            @foreach (var type in Model.WebsiteTypes)
+                                            {
+                                                <option value="@type">@type</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select asp-for="Input.Sites[i].HomeVariant">
+                                            @foreach (var variant in Model.HomeVariants)
+                                            {
+                                                <option value="@variant">@variant</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td><input asp-for="Input.Sites[i].IsDefault" /></td>
+                                    <td><input asp-for="Input.Sites[i].IsActive" /></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="full">
+                    <h3>Domains</h3>
+                    <p class="hint">
+                        Domains are managed on their own screen, where host uniqueness is enforced and a
+                        website cannot be left with no live address by accident.
+                        <a asp-area="CMS" asp-page="/Domains/Index">Open Domains</a>
+                    </p>
+                    @if (Model.Input.Domains.Count > 0)
+                    {
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>Domain</th><th>Bound site</th><th>Primary</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var domain in Model.Input.Domains)
+                                {
+                                    <tr>
+                                        <td><strong>@domain.DomainName</strong></td>
+                                        <td>@(string.IsNullOrWhiteSpace(domain.SiteKey) ? "All websites" : domain.SiteKey)</td>
+                                        <td>@(domain.IsPrimary ? "Yes" : "—")</td>
+                                        <td><span class="badge @(domain.IsActive ? "on" : "off")">@(domain.IsActive ? "Live" : "Disabled")</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div class="empty-state"><strong>No domains bound yet</strong><span>Add one from the Domains screen.</span></div>
+                    }
+                </div>
+
+                <label class="switch-row full">
+                    <input asp-for="Input.IsActive" />
+                    <span>
+                        <strong>Active tenant</strong>
+                        <small>Allow requests and content management for this institution.</small>
+                    </span>
+                </label>
+                <div class="full form-actions">
+                    <button class="btn" type="submit">Save tenant</button>
+                    @if (Model.EditId.HasValue) { <a class="btn btn-secondary" asp-page="Index">Cancel</a> }
+                </div>
             </form>
         </div>
     </section>

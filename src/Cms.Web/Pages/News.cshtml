@@ -1,0 +1,91 @@
+@page "/news/{key?}"
+@using Cms.Application.DTOs.SchoolContent
+@model Cms.Web.Pages.NewsModel
+@{
+    var basePath = Model.Website.BasePath;
+}
+
+@if (Model.Article is { } article)
+{
+    <article class="page-shell">
+        <header class="page-hero">
+            <div class="shell">
+                <p class="eyebrow">@article.Category</p>
+                <h1>@article.Headline</h1>
+                @if (article.PublishDate.HasValue)
+                {
+                    <p class="lede">@article.PublishDate.Value.ToString("d MMMM yyyy")</p>
+                }
+            </div>
+        </header>
+        <div class="shell page-body">
+            @if (!string.IsNullOrWhiteSpace(article.ImageUrl))
+            {
+                <img class="article-image" src="@article.ImageUrl" alt="@article.Headline" />
+            }
+            @if (!string.IsNullOrWhiteSpace(article.Summary))
+            {
+                <p class="lede">@article.Summary</p>
+            }
+            @if (!string.IsNullOrWhiteSpace(article.Body))
+            {
+                <div class="rich-text">@Html.Raw(article.Body)</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(article.AttachmentUrl))
+            {
+                <p><a class="btn" href="@article.AttachmentUrl" target="_blank" rel="noopener">Download the circular</a></p>
+            }
+            <p><a class="text-link" href="@(basePath)/news">← All news and notices</a></p>
+        </div>
+    </article>
+}
+else
+{
+    <article class="page-shell">
+        <header class="page-hero">
+            <div class="shell">
+                <p class="eyebrow">Announcements</p>
+                <h1>News and notices</h1>
+                <p class="lede">Circulars, achievements and updates from @Model.Website.Branding.Name.</p>
+            </div>
+        </header>
+        <div class="shell page-body">
+            @if (Model.Articles.Count == 0)
+            {
+                <p class="lede">There are no announcements at the moment. Please check back soon.</p>
+            }
+            <div class="news-list">
+                @foreach (var item in Model.Articles)
+                {
+                    <article class="news-item @(string.IsNullOrWhiteSpace(item.ImageUrl) ? "news-item--text" : null) @(item.IsFeatured ? "is-featured" : null)">
+                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" alt="@item.Headline" loading="lazy" />
+                        }
+                        <div>
+                            <p class="news-item__meta">
+                                <span class="tag">@item.Category</span>
+                                @if (item.PublishDate.HasValue)
+                                {
+                                    <text>@item.PublishDate.Value.ToString("d MMM yyyy")</text>
+                                }
+                            </p>
+                            <h2><a href="@(basePath)/news/@item.Key">@item.Headline</a></h2>
+                            @if (!string.IsNullOrWhiteSpace(item.Summary))
+                            {
+                                <p>@item.Summary</p>
+                            }
+                            <p class="news-item__actions">
+                                <a class="text-link" href="@(basePath)/news/@item.Key">Read more</a>
+                                @if (!string.IsNullOrWhiteSpace(item.AttachmentUrl))
+                                {
+                                    <a class="text-link" href="@item.AttachmentUrl" target="_blank" rel="noopener">Download PDF</a>
+                                }
+                            </p>
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+    </article>
+}

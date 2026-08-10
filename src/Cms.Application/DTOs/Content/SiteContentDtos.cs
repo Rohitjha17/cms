@@ -1,15 +1,22 @@
+using Cms.Domain.Enums;
+
 namespace Cms.Application.DTOs.Content;
 
 public sealed class PageDto
 {
     public Guid Id { get; set; }
+    public PageType PageType { get; set; }
+    public string? TemplateKey { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public string? Excerpt { get; set; }
     public string? Content { get; set; }
+    public string? JsonData { get; set; }
     public string? FeaturedImageUrl { get; set; }
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
+    public bool ShowInMenu { get; set; }
+    public int MenuOrder { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedDate { get; set; }
     public DateTime? UpdatedDate { get; set; }
@@ -17,13 +24,18 @@ public sealed class PageDto
 
 public sealed class SavePageDto
 {
+    public PageType PageType { get; set; } = PageType.Custom;
+    public string? TemplateKey { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public string? Excerpt { get; set; }
     public string? Content { get; set; }
+    public string? JsonData { get; set; }
     public string? FeaturedImageUrl { get; set; }
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
+    public bool ShowInMenu { get; set; } = true;
+    public int MenuOrder { get; set; }
     public bool IsActive { get; set; } = true;
 }
 
@@ -61,6 +73,7 @@ public sealed class SeoSettingDto
     public string? MetaKeywords { get; set; }
     public string? OgImageUrl { get; set; }
     public string? CanonicalUrl { get; set; }
+    public bool AllowIndexing { get; set; } = true;
 }
 
 public sealed class ContentEntryDto

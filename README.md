@@ -1,6 +1,6 @@
 ## Summary
 
-Production-ready **Multi-Tenant School & College CMS** (.NET 8) with a fully dynamic **Home Page CMS**. No homepage content is hardcoded — every section is stored per `TenantId` + `SiteId` and editable via Admin or REST API.
+Multi-tenant **School & College CMS** (.NET 8) with a dynamic public website, Admin workspace, REST API, tenant/site isolation, and configurable SQL Server and Amazon S3 infrastructure.
 
 ## Solution layout
 
@@ -59,6 +59,20 @@ Demo tenant, content and credentials are seeded automatically only in Developmen
 demo seeding is disabled unless `Seed__EnableDemoData=true` and
 `Seed__DemoAdminPassword` is explicitly provided.
 
+On a clean production database, set the platform console values so the CMS is reachable and
+has a first administrator — without them no host resolves and no account exists:
+
+```bash
+Platform__Domain="admin.yourcompany.com"
+Platform__SuperAdminEmail="ops@yourcompany.com"
+Platform__SuperAdminPassword="a-strong-initial-password"
+Platform__AdminBaseUrl="https://admin.yourcompany.com"
+Email__Host="smtp.yourprovider.com"
+Email__FromAddress="no-reply@yourcompany.com"
+```
+
+Full walkthrough, including onboarding a school: [docs/PRODUCTION_SETUP.md](docs/PRODUCTION_SETUP.md).
+
 Apply EF migrations as a deployment step in production. Startup migration is enabled by
 default only in Development to avoid races between multiple application instances.
 
@@ -86,6 +100,8 @@ dotnet run --project src/Cms.Admin
 For a containerized local stack:
 
 ```bash
+export MSSQL_SA_PASSWORD="replace-with-a-strong-local-password"
+export JWT_KEY="replace-with-at-least-32-random-bytes"
 docker compose up --build
 ```
 
@@ -145,18 +161,57 @@ Additional self-contained CMS modules are available under the protected Admin wo
 - Navigation menus with ordered menu items
 - Shared media library with image and PDF upload, reuse and deletion
 - Site-wide SEO settings
-- Flexible Events, News, People, Departments, Settings and Theme content
+- Faculty and staff directory grouped by leadership, teaching, administration and support
+- News, notices and circulars with categories, featured pinning and PDF attachments
+- Events with start/end times, venue and registration links, split into upcoming and past
+- Site settings: announcement bar, admissions status and contacts, social links
+- Flexible Departments content for anything outside those modules
 - SuperAdmin tenant, domain and School/College site provisioning
+- User accounts: invite administrators and editors, activate/deactivate, unlock, issue
+  single-use password links; tenant-scoped and unable to escalate privileges
+- Self-service forgot password, reset password and change password
 
 Public APIs are exposed under `/api/pages`, `/api/navigation`, `/api/seo` and
 `/api/content/{type}`. Protected media management is under `/api/media`; SuperAdmin
-tenant management is under `/api/tenants`.
+tenant management is under `/api/tenants`. Account administration is under `/api/users`,
+with anonymous, rate-limited `POST /api/users/forgot-password` and
+`POST /api/users/reset-password`.
+
+### Public URL shapes
+
+Both hosting models are served by the same deployment, decided by whether a `TenantDomains`
+row is bound to a site:
+
+| Domain binding | Example host | Page URL |
+|----------------|--------------|----------|
+| Bound to one site | `noida.cambridgeschool.edu.in` | `/about`, `/admission` |
+| Shared by the tenant's sites | `abc.com` | `/school/about`, `/college/departments` |
+
+On a shared host the leading site segment is moved into the request's path base, so any site
+key works — `/junior-wing/about` is as valid as `/school/about` — and generated links, static
+assets, `robots.txt` and `sitemap.xml` stay correct in both shapes. Site-bound custom domains
+remain authoritative and cannot be overridden by anonymous headers, query strings, or cookies.
+
+`GET /robots.txt`, `GET /sitemap.xml` and `GET /health` are served per resolved website.
+
+Content modules are rendered publicly at `/faculty`, `/news`, `/news/{key}`, `/events` and
+`/events/{key}` (behind the site prefix on a shared domain). Site settings drive the
+announcement bar and the footer's social links on every page.
+
+Media APIs support image, PDF and MP4/WebM uploads plus list, detail, metadata update,
+active/inactive status and deletion. Tenant administrator audit history is available at
+`/api/activity-logs`. Public contact submissions are rate limited.
 
 ## Quality and security
 
 - Authenticated tenant claims are checked against the host-resolved tenant on every request.
 - EF tenant/site filters fail closed when context is unresolved.
-- Login lockout and per-IP rate limiting protect both API and Admin authentication.
+- Login lockout and per-IP rate limiting protect both API and Admin authentication. Public
+  form submissions are throttled per IP; reading pages never is.
+- Every response carries `Content-Security-Policy`, `X-Content-Type-Options`,
+  `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy`.
+- Host-to-tenant resolution is cached per process for `Tenancy:ResolutionCacheSeconds`
+  (default 30, `0` disables); a newly bound domain becomes reachable within that window.
 - Upload folders and storage paths are constrained; extensions are derived from verified media types.
 - GitHub Actions builds with warnings as errors and runs the test suite.
 
@@ -164,8 +219,11 @@ tenant management is under `/api/tenants`.
 dotnet test Cms.sln
 ```
 
-The suite currently includes 7 application tests and 4 API integration tests covering
-authentication, response envelopes and School/College site isolation.
+The suite covers authentication, response envelopes, School/College site isolation,
+password and account validation rules, cross-tenant data isolation asserted through the
+HTTP boundary with distinct hosts, and the privilege boundaries around account
+administration (no self-service privilege escalation, no cross-tenant visibility, no
+self-lockout).
 
 External deployment work is intentionally not embedded in source: production SQL and S3/CDN
 credentials, real domains/DNS, trusted HTTPS certificates, hosting, monitoring destinations,

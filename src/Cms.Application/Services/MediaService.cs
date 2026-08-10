@@ -20,6 +20,7 @@ public class MediaService : IMediaService
     private readonly ICurrentUserContext _currentUserContext;
     private readonly UploadImageValidator _imageValidator;
     private readonly UploadDocumentValidator _documentValidator;
+    private readonly UploadVideoValidator _videoValidator;
     private readonly ILogger<MediaService> _logger;
 
     public MediaService(
@@ -30,6 +31,7 @@ public class MediaService : IMediaService
         ICurrentUserContext currentUserContext,
         UploadImageValidator imageValidator,
         UploadDocumentValidator documentValidator,
+        UploadVideoValidator videoValidator,
         ILogger<MediaService> logger)
     {
         _storage = storage;
@@ -39,6 +41,7 @@ public class MediaService : IMediaService
         _currentUserContext = currentUserContext;
         _imageValidator = imageValidator;
         _documentValidator = documentValidator;
+        _videoValidator = videoValidator;
         _logger = logger;
     }
 
@@ -69,6 +72,19 @@ public class MediaService : IMediaService
         return await UploadValidatedAsync(file, folder ?? "documents", MediaType.Document, cancellationToken);
     }
 
+    public async Task<UploadImageResultDto> UploadVideoAsync(
+        IFormFile file, string? folder = null, CancellationToken cancellationToken = default)
+    {
+        var validation = await _videoValidator.ValidateAsync(file, cancellationToken);
+        if (!validation.IsValid)
+        {
+            throw new ValidationAppException(
+                "Invalid video upload.", validation.Errors.Select(e => e.ErrorMessage));
+        }
+
+        return await UploadValidatedAsync(file, folder ?? "videos", MediaType.Video, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<MediaFileDto>> GetAllAsync(
         string? mediaType = null,
         CancellationToken cancellationToken = default)
@@ -83,6 +99,40 @@ public class MediaService : IMediaService
 
         return media.Select(ToDto).ToList();
     }
+
+    public async Task<MediaFileDto> GetAsync(Guid mediaId, CancellationToken cancellationToken = default)
+    {
+        var (tenantId, siteId) = RequireTenantSite();
+        var media = await _mediaRepository.GetByIdAsync(tenantId, siteId, mediaId, cancellationToken)
+            ?? throw new NotFoundException("Media file was not found.");
+        return ToDto(media);
+    }
+
+    public async Task<MediaFileDto> UpdateAsync(
+        Guid mediaId, UpdateMediaDto dto, CancellationToken cancellationToken = default)
+    {
+        var (tenantId, siteId) = RequireTenantSite();
+        var media = await _mediaRepository.GetByIdAsync(tenantId, siteId, mediaId, cancellationToken)
+            ?? throw new NotFoundException("Media file was not found.");
+
+        if (!string.IsNullOrWhiteSpace(dto.OriginalFileName))
+        {
+            var safeName = Path.GetFileName(dto.OriginalFileName.Trim());
+            if (safeName.Length > 255) throw new ValidationAppException("File name is too long.");
+            media.OriginalFileName = safeName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.Folder)) media.Folder = NormalizeFolder(dto.Folder);
+        if (dto.IsActive.HasValue) media.IsActive = dto.IsActive.Value;
+        media.UpdatedDate = DateTime.UtcNow;
+        media.UpdatedBy = _currentUserContext.UserId ?? "system";
+        await _mediaRepository.SaveChangesAsync(cancellationToken);
+        return ToDto(media);
+    }
+
+    public async Task SetStatusAsync(
+        Guid mediaId, bool isActive, CancellationToken cancellationToken = default) =>
+        await UpdateAsync(mediaId, new UpdateMediaDto { IsActive = isActive }, cancellationToken);
 
     public async Task DeleteAsync(Guid mediaId, CancellationToken cancellationToken = default)
     {
@@ -103,12 +153,7 @@ public class MediaService : IMediaService
         CancellationToken cancellationToken)
     {
         var (tenantId, siteId) = RequireTenantSite();
-        var targetFolder = folder.Trim().ToLowerInvariant();
-        if (!Regex.IsMatch(targetFolder, "^[a-z0-9][a-z0-9_-]{0,49}$"))
-        {
-            throw new ValidationAppException(
-                "Invalid media folder. Use letters, numbers, hyphens, or underscores only.");
-        }
+        var targetFolder = NormalizeFolder(folder);
         await using var stream = file.OpenReadStream();
         var stored = await _storage.UploadAsync(stream, file.FileName, file.ContentType, targetFolder, cancellationToken);
 
@@ -129,8 +174,16 @@ public class MediaService : IMediaService
             CreatedBy = _currentUserContext.UserId ?? "system"
         };
 
-        await _mediaRepository.AddAsync(media, cancellationToken);
-        await _mediaRepository.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _mediaRepository.AddAsync(media, cancellationToken);
+            await _mediaRepository.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            await _storage.DeleteAsync(stored.StorageKey, cancellationToken);
+            throw;
+        }
 
         _logger.LogInformation("Uploaded media {MediaId} to {Url}", media.Id, media.Url);
 
@@ -155,6 +208,18 @@ public class MediaService : IMediaService
         return (_tenantContext.TenantId.Value, _siteContext.SiteId.Value);
     }
 
+    private static string NormalizeFolder(string folder)
+    {
+        var targetFolder = folder.Trim().ToLowerInvariant();
+        if (!Regex.IsMatch(targetFolder, "^[a-z0-9][a-z0-9_-]{0,49}$"))
+        {
+            throw new ValidationAppException(
+                "Invalid media folder. Use letters, numbers, hyphens, or underscores only.");
+        }
+
+        return targetFolder;
+    }
+
     private static MediaFileDto ToDto(MediaFile media) => new()
     {
         Id = media.Id,
@@ -165,6 +230,8 @@ public class MediaService : IMediaService
         Url = media.Url,
         MediaType = media.MediaType.ToString(),
         Folder = media.Folder,
-        CreatedDate = media.CreatedDate
+        IsActive = media.IsActive,
+        CreatedDate = media.CreatedDate,
+        UpdatedDate = media.UpdatedDate
     };
 }

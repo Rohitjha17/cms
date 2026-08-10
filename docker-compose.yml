@@ -4,7 +4,7 @@ services:
     platform: linux/amd64
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Your_password123}"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in your environment}"
     ports:
       - "1433:1433"
     volumes:
@@ -16,8 +16,8 @@ services:
       dockerfile: src/Cms.Api/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Server=sql,1433;Database=CmsDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Your_password123};TrustServerCertificate=True"
-      Jwt__Key: "${JWT_KEY:-CmsDevelopmentOnlyKey_Replace_InProduction_32!}"
+      ConnectionStrings__DefaultConnection: "Server=sql,1433;Database=CmsDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+      Jwt__Key: "${JWT_KEY:?Set a random JWT_KEY of at least 32 bytes}"
       Database__ApplyMigrationsOnStartup: "true"
     depends_on:
       - sql
@@ -32,12 +32,27 @@ services:
       dockerfile: src/Cms.Admin/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Server=sql,1433;Database=CmsDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Your_password123};TrustServerCertificate=True"
+      ConnectionStrings__DefaultConnection: "Server=sql,1433;Database=CmsDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD};TrustServerCertificate=True"
       Database__ApplyMigrationsOnStartup: "true"
     depends_on:
       - sql
     ports:
       - "5201:8080"
+    volumes:
+      - cms-uploads:/shared/uploads
+
+  web:
+    build:
+      context: .
+      dockerfile: src/Cms.Web/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=sql,1433;Database=CmsDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+      Database__ApplyMigrationsOnStartup: "true"
+    depends_on:
+      - sql
+    ports:
+      - "5301:8080"
     volumes:
       - cms-uploads:/shared/uploads
 

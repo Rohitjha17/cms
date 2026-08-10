@@ -1,0 +1,62 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.Branding.IndexModel
+@using Cms.Domain.Enums
+@{
+    ViewData["Title"] = "Branding";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">School self-service</div>
+        <h1>Website branding</h1>
+        <p>Manage title, menu identity, logo, header image, footer, colors and contact details for the selected website.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice">@Model.StatusMessage</div> }
+
+<section class="form-card">
+    <div class="form-card__body">
+        <form method="post" asp-page-handler="Save" class="field-grid">
+            <div asp-validation-summary="All" class="validation-summary full"></div>
+            <label class="field"><span>Website title</span><input asp-for="Input.Name" /></label>
+            <label class="field"><span>Site key</span><input asp-for="Input.SiteKey" readonly /></label>
+            <label class="field">
+                <span>Website type</span>
+                <select asp-for="Input.WebsiteType" asp-items="Html.GetEnumSelectList<WebsiteType>()"></select>
+            </label>
+            <label class="field">
+                <span>Home design</span>
+                <select asp-for="Input.HomeVariant" asp-items="Html.GetEnumSelectList<HomeVariant>()"></select>
+            </label>
+            <label class="field full"><span>Tagline</span><input asp-for="Input.Tagline" /></label>
+            <label class="field full"><span>Logo URL</span>
+                <div class="media-url-row">
+                    <input asp-for="Input.LogoUrl" id="brand-logo-url" />
+                    <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#brand-logo-url">Browse</button>
+                </div>
+            </label>
+            <label class="field full"><span>Favicon URL</span>
+                <div class="media-url-row">
+                    <input asp-for="Input.FaviconUrl" id="brand-favicon-url" />
+                    <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#brand-favicon-url">Browse</button>
+                </div>
+            </label>
+            <label class="field full"><span>Header / banner image URL</span>
+                <div class="media-url-row">
+                    <input asp-for="Input.HeaderImageUrl" id="brand-header-url" />
+                    <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#brand-header-url">Browse</button>
+                </div>
+            </label>
+            <label class="field"><span>Primary color</span><input asp-for="Input.PrimaryColor" /></label>
+            <label class="field"><span>Secondary color</span><input asp-for="Input.SecondaryColor" /></label>
+            <label class="field full"><span>Footer text</span><textarea asp-for="Input.FooterText" rows="2"></textarea></label>
+            <label class="field full"><span>Address</span><input asp-for="Input.Address" /></label>
+            <label class="field"><span>Phone</span><input asp-for="Input.Phone" /></label>
+            <label class="field"><span>Email</span><input asp-for="Input.Email" /></label>
+            <label class="field full"><span>Map embed URL</span><input asp-for="Input.MapEmbedUrl" /></label>
+            <label class="field full"><span>Social links JSON</span><textarea asp-for="Input.SocialLinksJson" rows="3" placeholder='{"facebook":"","instagram":"","youtube":""}'></textarea></label>
+            <div class="full form-actions"><button class="btn" type="submit">Save branding</button></div>
+        </form>
+    </div>
+</section>

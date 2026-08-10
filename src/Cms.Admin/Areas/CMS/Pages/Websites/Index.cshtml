@@ -1,0 +1,203 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.Websites.IndexModel
+@using Cms.Domain.Enums
+@inject Cms.Admin.Services.IPublicSiteLink PublicSite
+@{
+    ViewData["Title"] = "Websites";
+
+    // Each variant is described by what the visitor actually sees, so the choice is made
+    // on layout rather than on an enum name.
+    var designs = new (HomeVariant Variant, string Name, string Summary, string Best)[]
+    {
+        (HomeVariant.Classic, "Classic", "Full-width photo hero, statistics band, welcome and gallery.", "Most schools"),
+        (HomeVariant.Modern, "Modern", "Split hero with the photo beside the headline, then course cards.", "Schools with strong photography"),
+        (HomeVariant.Campus, "Campus", "Tall hero with large facility panels underneath.", "Large campuses"),
+        (HomeVariant.Academic, "Academic", "Results-led hero, statistics and department columns.", "Colleges and senior schools"),
+        (HomeVariant.Prestige, "Prestige", "Centred framed hero with a leadership quote.", "Heritage institutions")
+    };
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Website factory</div>
+        <h1>Websites</h1>
+        <p>Every school or college you host is a website here. Create one, pick its home design and starter pages, then bind its domain.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="notice">@Model.StatusMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.CreatedSiteKey))
+{
+    <section class="next-steps">
+        <h2>Next steps for this website</h2>
+        <ol>
+            <li><a asp-area="CMS" asp-page="/Branding/Index" asp-route-site="@Model.CreatedSiteKey">Upload the logo and set colours</a></li>
+            <li><a asp-area="CMS" asp-page="/HomePage/Index" asp-route-site="@Model.CreatedSiteKey">Fill in the home page sections</a></li>
+            <li><a asp-area="CMS" asp-page="/Pages/Index" asp-route-site="@Model.CreatedSiteKey">Edit the starter pages</a></li>
+            <li><a asp-area="CMS" asp-page="/Tenants/Index">Bind a domain</a> so the school can be reached at its own address</li>
+        </ol>
+    </section>
+}
+
+<section class="form-card">
+    <div class="form-card__header">
+        <div>
+            <span class="step-number">01</span>
+            <span><strong>Your websites</strong><small>@Model.Websites.Count website(s) in this workspace</small></span>
+        </div>
+    </div>
+    <div class="form-card__body">
+        @if (Model.Websites.Count == 0)
+        {
+            <div class="empty-state">
+                <strong>No websites yet</strong>
+                <span>Create the first one below. It takes about a minute.</span>
+            </div>
+        }
+        <div class="website-grid">
+            @foreach (var site in Model.Websites)
+            {
+                <article class="website-card">
+                    <header>
+                        <span class="website-card__mark" style="--mark:@(site.PrimaryColor ?? "#6558e8")">@(site.Name.Length > 0 ? site.Name[0].ToString() : "?")</span>
+                        <span>
+                            <strong>@site.Name</strong>
+                            <small>@site.SiteKey · @site.WebsiteType</small>
+                        </span>
+                        @if (site.IsDefault)
+                        {
+                            <span class="chip chip--accent">Default</span>
+                        }
+                    </header>
+
+                    <dl class="website-card__facts">
+                        <div><dt>Home design</dt><dd>@site.HomeVariant</dd></div>
+                        <div><dt>Pages</dt><dd>@site.PageCount</dd></div>
+                        <div>
+                            <dt>Domain</dt>
+                            <dd>@(site.Domains.Count == 0 ? "Not bound" : string.Join(", ", site.Domains))</dd>
+                        </div>
+                        <div><dt>Status</dt><dd>@(site.IsActive ? "Active" : "Disabled")</dd></div>
+                    </dl>
+
+                    <div class="website-card__actions">
+                        <a class="btn btn-sm" asp-area="CMS" asp-page="/Branding/Index" asp-route-site="@site.SiteKey">Manage this website</a>
+                        <a class="btn btn-secondary btn-sm" asp-area="" asp-page="/Index" asp-route-site="@site.SiteKey">Open workspace</a>
+                        @if (PublicSite.Url is not null)
+                        {
+                            <a class="btn btn-secondary btn-sm" href="@PublicSite.Url" target="_blank" rel="noopener">View live</a>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    </div>
+</section>
+
+@if (Model.CanProvision)
+{
+    <section class="form-card" id="create">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">02</span>
+                <span><strong>Add a new website</strong><small>Creates the pages, menu and home sections in one step</small></span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <form method="post" asp-page-handler="Provision">
+                <div asp-validation-summary="All" class="validation-summary"></div>
+
+                <h3 class="form-section-title">The institution</h3>
+                <div class="field-grid">
+                    <label class="field"><span>Website name</span><input asp-for="Input.Name" placeholder="Cambridge High School, Noida" required /></label>
+                    <label class="field">
+                        <span>Site key</span>
+                        <input asp-for="Input.SiteKey" placeholder="cambridge-noida" required />
+                        <small class="field-help">Lower-case, used in the URL when one domain hosts several websites.</small>
+                    </label>
+                    <label class="field">
+                        <span>Website type</span>
+                        <select asp-for="Input.WebsiteType" asp-items="Html.GetEnumSelectList<WebsiteType>()"></select>
+                    </label>
+                    <label class="field">
+                        <span>Domain (optional)</span>
+                        <input asp-for="Input.DomainName" placeholder="noida.cambridgeschool.edu.in" />
+                        <small class="field-help">Bind now, or later from Tenants.</small>
+                    </label>
+                </div>
+
+                <h3 class="form-section-title">Home page design</h3>
+                <p class="form-section-hint">This decides how the home page is laid out. It can be changed at any time from Branding.</p>
+                <div class="design-picker">
+                    @foreach (var design in designs)
+                    {
+                        <label class="design-option">
+                            <input type="radio" asp-for="Input.HomeVariant" value="@design.Variant" />
+                            <span class="design-option__card">
+                                <span class="design-preview design-preview--@design.Variant.ToString().ToLowerInvariant()" aria-hidden="true">
+                                    <span class="dp-hero"></span>
+                                    <span class="dp-row"><i></i><i></i><i></i><i></i></span>
+                                    <span class="dp-body"><i></i><i></i></span>
+                                </span>
+                                <span class="design-option__text">
+                                    <strong>@design.Name</strong>
+                                    <small>@design.Summary</small>
+                                    <em>Best for: @design.Best</em>
+                                </span>
+                            </span>
+                        </label>
+                    }
+                </div>
+
+                <h3 class="form-section-title">Starter pages</h3>
+                <p class="form-section-hint">
+                    Chosen pages are created with placeholder content and added to the menu.
+                    More can be assigned later from the Page gallery.
+                </p>
+                <div class="template-picker">
+                    @foreach (var template in Model.Templates.Where(t => t.IsActive).OrderBy(t => t.DisplayOrder))
+                    {
+                        <label class="template-option">
+                            <input type="checkbox" name="Input.TemplateKeys" value="@template.TemplateKey"
+                                   checked="@(Model.Input.TemplateKeys.Contains(template.TemplateKey))" />
+                            <span>
+                                <strong>@template.Name</strong>
+                                <small>@(string.IsNullOrWhiteSpace(template.Description) ? "/" + template.DefaultSlug : template.Description)</small>
+                            </span>
+                        </label>
+                    }
+                </div>
+
+                <h3 class="form-section-title">Identity and contact</h3>
+                <div class="field-grid">
+                    <label class="field"><span>Primary colour</span><input asp-for="Input.PrimaryColor" type="color" /></label>
+                    <label class="field"><span>Accent colour</span><input asp-for="Input.SecondaryColor" type="color" /></label>
+                    <label class="field full"><span>Tagline</span><input asp-for="Input.Tagline" placeholder="Excellence in schooling since 1998" /></label>
+                    <label class="field"><span>Phone</span><input asp-for="Input.Phone" /></label>
+                    <label class="field"><span>Email</span><input asp-for="Input.Email" type="email" /></label>
+                    <label class="field full"><span>Address</span><input asp-for="Input.Address" /></label>
+                    <label class="field full">
+                        <span>Logo</span>
+                        <span class="upload-row">
+                            <input asp-for="Input.LogoUrl" id="new-site-logo" placeholder="/uploads/… or https://…" />
+                            <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#new-site-logo">Browse media</button>
+                        </span>
+                    </label>
+                    <label class="switch-row full">
+                        <input asp-for="Input.IsDefault" type="checkbox" />
+                        <span><strong>Make this the default website</strong><small>Served when a shared domain does not name a site in the URL.</small></span>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn" type="submit">Create website</button>
+                    <span class="hint">Pages, menu, SEO defaults and home sections are all created for you.</span>
+                </div>
+            </form>
+        </div>
+    </section>
+}

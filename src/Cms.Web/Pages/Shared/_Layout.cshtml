@@ -1,0 +1,155 @@
+@inject Cms.Application.Interfaces.IWebsiteService WebsiteService
+@inject Cms.Application.Interfaces.ISchoolContentService SchoolContent
+@{
+    PublicWebsiteDto? shell = ViewData["Website"] as PublicWebsiteDto;
+    if (shell is null)
+    {
+        try { shell = await WebsiteService.GetPublicWebsiteAsync(Context.RequestAborted); }
+        catch { shell = new PublicWebsiteDto(); }
+    }
+    var brand = shell.Branding;
+    var primary = string.IsNullOrWhiteSpace(brand.PrimaryColor) ? "#0f2d5c" : brand.PrimaryColor;
+    var secondary = string.IsNullOrWhiteSpace(brand.SecondaryColor) ? "#c9a227" : brand.SecondaryColor;
+    var title = ViewData["Title"] as string ?? brand.Name;
+    // PathBase already carries any "/{siteKey}" prefix, so compare against the full request path.
+    // "/school" + "/" would otherwise produce a trailing slash that matches no menu URL.
+    var path = ((Context.Request.PathBase.Value ?? string.Empty) + (Context.Request.Path.Value ?? "/"))
+        .TrimEnd('/');
+    if (path.Length == 0) { path = "/"; }
+    var homeUrl = shell.BasePath.Length == 0 ? "/" : shell.BasePath;
+    var quickLinks = shell.Navigation.Where(x => x.Url != homeUrl).Take(4).ToList();
+
+    Cms.Application.DTOs.SchoolContent.SiteSettingsDto settings;
+    try { settings = await SchoolContent.GetSettingsAsync(Context.RequestAborted); }
+    catch { settings = new Cms.Application.DTOs.SchoolContent.SiteSettingsDto(); }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(shell.Seo.MetaTitle is { Length: > 0 } ? $"{title} · {shell.Seo.MetaTitle}" : title)</title>
+    @if (!string.IsNullOrWhiteSpace(shell.Seo.MetaDescription))
+    {
+        <meta name="description" content="@shell.Seo.MetaDescription" />
+    }
+    @if (!string.IsNullOrWhiteSpace(shell.Seo.MetaKeywords))
+    {
+        <meta name="keywords" content="@shell.Seo.MetaKeywords" />
+    }
+    <meta property="og:title" content="@title" />
+    @if (!string.IsNullOrWhiteSpace(shell.Seo.MetaDescription))
+    {
+        <meta property="og:description" content="@shell.Seo.MetaDescription" />
+    }
+    @if (!string.IsNullOrWhiteSpace(shell.Seo.OgImageUrl))
+    {
+        <meta property="og:image" content="@shell.Seo.OgImageUrl" />
+    }
+    @if (!shell.Seo.AllowIndexing)
+    {
+        <meta name="robots" content="noindex, nofollow" />
+    }
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    @if (!string.IsNullOrWhiteSpace(shell.Seo.CanonicalUrl))
+    {
+        <link rel="canonical" href="@shell.Seo.CanonicalUrl" />
+    }
+    @if (!string.IsNullOrWhiteSpace(brand.FaviconUrl))
+    {
+        <link rel="icon" href="@brand.FaviconUrl" />
+    }
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>:root{--brand:@primary;--accent:@secondary;}</style>
+</head>
+<body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant()">
+    @if (!string.IsNullOrWhiteSpace(settings.NoticeTicker))
+    {
+        <div class="notice-bar"><div class="shell"><span>@settings.NoticeTicker</span></div></div>
+    }
+    <div class="top-meta">
+        <div class="shell">
+            <span>@(brand.Tagline ?? "Admissions open · Visit campus · Enquire today")</span>
+            <span>
+                @if (!string.IsNullOrWhiteSpace(brand.Phone)) { <a href="tel:@brand.Phone">@brand.Phone</a> }
+                @if (!string.IsNullOrWhiteSpace(brand.Email)) { <text> · <a href="mailto:@brand.Email">@brand.Email</a></text> }
+            </span>
+        </div>
+    </div>
+    <header class="site-header">
+        <div class="shell">
+            <a class="brand" href="@homeUrl">
+                @if (!string.IsNullOrWhiteSpace(brand.LogoUrl))
+                {
+                    <img src="@brand.LogoUrl" alt="@brand.Name" />
+                }
+                <span>
+                    <strong>@brand.Name</strong>
+                    @if (!string.IsNullOrWhiteSpace(brand.Tagline))
+                    {
+                        <small>@brand.Tagline</small>
+                    }
+                </span>
+            </a>
+            <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false">Menu</button>
+            <nav aria-label="Primary" data-primary-nav>
+                @foreach (var item in shell.Navigation)
+                {
+                    // Home matches only its own URL; every other entry also matches its subtree,
+                    // otherwise Home would stay highlighted on every page of the site.
+                    var isHome = item.Url == homeUrl || item.Url == "/";
+                    var active = string.Equals(item.Url, path, StringComparison.OrdinalIgnoreCase)
+                        || (!isHome && path.StartsWith(item.Url + "/", StringComparison.OrdinalIgnoreCase));
+                    <a href="@item.Url" target="@(item.Target ?? "_self")" class="@(active ? "is-active" : null)">@item.Label</a>
+                }
+            </nav>
+        </div>
+    </header>
+    <main>
+        @RenderBody()
+    </main>
+    <footer class="site-footer">
+        <div class="shell footer-grid">
+            <div>
+                <strong>@brand.Name</strong>
+                <p>@(brand.FooterText ?? $"© {DateTime.UtcNow.Year} {brand.Name}. All rights reserved.")</p>
+            </div>
+            <div>
+                <strong>Visit</strong>
+                @if (!string.IsNullOrWhiteSpace(brand.Address)) { <p>@brand.Address</p> }
+                @if (!string.IsNullOrWhiteSpace(brand.Phone)) { <p>@brand.Phone</p> }
+            </div>
+            <div>
+                <strong>Connect</strong>
+                @if (!string.IsNullOrWhiteSpace(brand.Email)) { <p><a href="mailto:@brand.Email">@brand.Email</a></p> }
+                @if (settings.HasSocialLinks)
+                {
+                    <p class="social-links">
+                        @if (!string.IsNullOrWhiteSpace(settings.Facebook)) { <a href="@settings.Facebook" target="_blank" rel="noopener">Facebook</a> }
+                        @if (!string.IsNullOrWhiteSpace(settings.Instagram)) { <a href="@settings.Instagram" target="_blank" rel="noopener">Instagram</a> }
+                        @if (!string.IsNullOrWhiteSpace(settings.YouTube)) { <a href="@settings.YouTube" target="_blank" rel="noopener">YouTube</a> }
+                        @if (!string.IsNullOrWhiteSpace(settings.Twitter)) { <a href="@settings.Twitter" target="_blank" rel="noopener">X</a> }
+                        @if (!string.IsNullOrWhiteSpace(settings.LinkedIn)) { <a href="@settings.LinkedIn" target="_blank" rel="noopener">LinkedIn</a> }
+                    </p>
+                }
+                @if (quickLinks.Count > 0)
+                {
+                    <p>
+                        @for (var i = 0; i < quickLinks.Count; i++)
+                        {
+                            if (i > 0) { <text> · </text> }
+                            <a href="@quickLinks[i].Url">@quickLinks[i].Label</a>
+                        }
+                    </p>
+                }
+            </div>
+        </div>
+    </footer>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

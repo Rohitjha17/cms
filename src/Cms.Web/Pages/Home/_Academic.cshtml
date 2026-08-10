@@ -1,0 +1,54 @@
+@model PublicWebsiteDto
+@using Cms.Web.Helpers
+@{
+    var brand = Model.Branding;
+    var basePath = Model.BasePath;
+    var hero = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "hero");
+    var departments = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "departments");
+    var achievements = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "achievements");
+    var stats = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "statistics");
+    var heroJson = SectionJson.Parse(hero?.JsonData);
+    var departmentsJson = SectionJson.Parse(departments?.JsonData);
+    var achievementsJson = SectionJson.Parse(achievements?.JsonData);
+    var statsJson = SectionJson.Parse(stats?.JsonData);
+}
+<section class="hero hero-academic">
+    <div class="shell">
+        <p class="eyebrow">Academic excellence</p>
+        <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name)</h1>
+        <p>@(SectionJson.GetString(heroJson, "description") ?? hero?.Description ?? brand.Tagline)</p>
+        <div class="cta-row">
+            <a class="btn" href="@(basePath)/admission">Admission guide</a>
+            <a class="btn btn-ghost" href="@(basePath)/mandatory-disclosure">Mandatory disclosure</a>
+        </div>
+    </div>
+</section>
+@if (stats is not null)
+{
+    <section class="shell stats-grid">
+        <div class="stat"><strong>@(SectionJson.GetString(statsJson, "students") ?? "—")</strong><span>Students</span></div>
+        <div class="stat"><strong>@(SectionJson.GetString(statsJson, "teachers") ?? "—")</strong><span>Faculty</span></div>
+        <div class="stat"><strong>@(SectionJson.GetString(statsJson, "years") ?? "—")</strong><span>Years</span></div>
+        <div class="stat"><strong>@(SectionJson.GetString(statsJson, "placements") ?? "—")</strong><span>Outcomes</span></div>
+    </section>
+}
+<section class="shell academic-columns">
+    <article>
+        <h2>@(departments?.Title ?? "Departments")</h2>
+        @foreach (var item in SectionJson.GetArray(departmentsJson, "items"))
+        {
+            <p><strong>@(item.TryGetProperty("title", out var t) ? t.GetString() : "")</strong> — @(item.TryGetProperty("description", out var d) ? d.GetString() : "")</p>
+        }
+        <a class="text-link" href="@(basePath)/about">About the institution</a>
+    </article>
+    <article>
+        <h2>@(achievements?.Title ?? "Recognition")</h2>
+        @foreach (var item in SectionJson.GetArray(achievementsJson, "items"))
+        {
+            <p><strong>@(item.TryGetProperty("title", out var t) ? t.GetString() : "")</strong>
+            (@(item.TryGetProperty("year", out var y) ? y.GetString() : ""))<br />
+            @(item.TryGetProperty("description", out var d) ? d.GetString() : "")</p>
+        }
+        <a class="text-link" href="@(basePath)/messages">Leadership messages</a>
+    </article>
+</section>

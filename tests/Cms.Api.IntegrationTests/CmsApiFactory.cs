@@ -20,6 +20,7 @@ public sealed class CmsApiFactory : WebApplicationFactory<Program>
             configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Database:ApplyMigrationsOnStartup"] = "false",
+                ["ConnectionStrings:DefaultConnection"] = "Server=test-only",
                 ["Seed:EnableDemoData"] = "true",
                 ["Seed:DemoAdminPassword"] = "Admin@12345",
                 ["Storage:Provider"] = "Local",

@@ -4,6 +4,11 @@
     ViewData["Title"] = "Website preview";
     IEnumerable<Cms.Application.DTOs.HomePage.HomePageSectionDto> sections =
         Model.SingleSection is null ? Model.Sections : new[] { Model.SingleSection! };
+    var brand = Model.Website.Branding;
+    var navigation = Model.Website.Navigation;
+    var brandName = string.IsNullOrWhiteSpace(brand.Name) ? Model.SiteName : brand.Name;
+    var brandPrimary = string.IsNullOrWhiteSpace(brand.PrimaryColor) ? "#0f2d5c" : brand.PrimaryColor;
+    var brandAccent = string.IsNullOrWhiteSpace(brand.SecondaryColor) ? "#c9a227" : brand.SecondaryColor;
 }
 
 <div class="preview-shell">
@@ -26,21 +31,38 @@
                 <svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 19h2"/></svg>
             </button>
         </div>
+        @if (Model.LiveSiteUrl is not null)
+        {
+            <a class="btn btn-secondary btn-sm" href="@Model.LiveSiteUrl" target="_blank" rel="noopener">Open live site</a>
+        }
         @if (Model.SingleSection is not null)
         {
             <a class="btn btn-sm" asp-page="Edit" asp-route-sectionKey="@Model.SingleSection.SectionKey">Edit section</a>
         }
     </header>
 
-    <div class="preview-stage" data-preview-stage data-device="desktop">
+    <div class="preview-stage" data-preview-stage data-device="desktop" style="--preview-brand:@brandPrimary; --preview-accent:@brandAccent;">
         <div class="preview-viewport">
+            @* Header mirrors the published site: its branding and its own navigation menu. *@
             <nav class="site-preview__nav">
-                <div class="site-preview__logo">@Model.TenantName</div>
-                <a href="#">About</a>
-                <a href="#">Academics</a>
-                <a href="#">Campus life</a>
-                <a href="#">News</a>
-                <a class="admit" href="#">Admissions</a>
+                <div class="site-preview__logo">
+                    @if (!string.IsNullOrWhiteSpace(brand.LogoUrl))
+                    {
+                        <img src="@brand.LogoUrl" alt="@brandName" />
+                    }
+                    <span>@brandName</span>
+                </div>
+                @if (navigation.Count > 0)
+                {
+                    @foreach (var link in navigation.Skip(1).Take(5))
+                    {
+                        <span class="site-preview__link">@link.Label</span>
+                    }
+                }
+                else
+                {
+                    <span class="site-preview__empty">Add pages to build this menu</span>
+                }
             </nav>
 
             @foreach (var item in sections.OrderBy(x => x.DisplayOrder))
@@ -53,23 +75,41 @@
                             <img class="preview-hero__image" src="@(item.BackgroundImageUrl ?? item.ImageUrl)" alt="" />
                         }
                         <div class="preview-hero__content">
-                            <span class="preview-hero__eyebrow">@Model.SiteName · Excellence in education</span>
+                            @if (!string.IsNullOrWhiteSpace(brand.Tagline))
+                            {
+                                <span class="preview-hero__eyebrow">@brandName · @brand.Tagline</span>
+                            }
+                            else
+                            {
+                                <span class="preview-hero__eyebrow">@brandName</span>
+                            }
                             <h1>@(Model.ConfigString(item, "heading") ?? item.Title)</h1>
                             <p>@(Model.ConfigString(item, "description") ?? item.SubTitle ?? item.Description)</p>
                             <div class="preview-hero__actions">
-                                <a href="@(item.ButtonLink ?? "#")">@(Model.ConfigString(item, "primaryButton") ?? item.ButtonText ?? "Apply now")</a>
-                                <a class="secondary" href="#">@(Model.ConfigString(item, "secondaryButton") ?? "Explore our campus")</a>
+                                @{
+                                    var primaryLabel = Model.ConfigString(item, "primaryButton") ?? item.ButtonText;
+                                    var secondaryLabel = Model.ConfigString(item, "secondaryButton");
+                                }
+                                @if (!string.IsNullOrWhiteSpace(primaryLabel))
+                                {
+                                    <span class="preview-cta">@primaryLabel</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(secondaryLabel))
+                                {
+                                    <span class="preview-cta secondary">@secondaryLabel</span>
+                                }
                             </div>
                         </div>
                     </section>
                 }
                 else if (item.SectionKey == "statistics")
                 {
+                    @* Labels match the published homepage so the preview is not a different story. *@
                     <section class="preview-stats">
                         <div class="preview-stat"><strong>@Model.ConfigNumber(item, "students").ToString("N0")+</strong><span>Students</span></div>
-                        <div class="preview-stat"><strong>@Model.ConfigNumber(item, "teachers").ToString("N0")+</strong><span>Expert faculty</span></div>
+                        <div class="preview-stat"><strong>@Model.ConfigNumber(item, "teachers").ToString("N0")+</strong><span>Teachers</span></div>
                         <div class="preview-stat"><strong>@Model.ConfigNumber(item, "placements").ToString("N0")+</strong><span>Placements</span></div>
-                        <div class="preview-stat"><strong>@Model.ConfigNumber(item, "years").ToString("N0")</strong><span>Years of excellence</span></div>
+                        <div class="preview-stat"><strong>@Model.ConfigNumber(item, "years").ToString("N0")+</strong><span>Years</span></div>
                     </section>
                 }
                 else if (item.SectionKey is "about" or "welcome" or "principal" or "chairman")
@@ -156,7 +196,9 @@
             }
 
             <footer class="preview-footer">
-                © @DateTime.UtcNow.Year @Model.TenantName · Shaping futures through education
+                @(string.IsNullOrWhiteSpace(brand.FooterText)
+                    ? $"© {DateTime.UtcNow.Year} {brandName}. All rights reserved."
+                    : brand.FooterText)
             </footer>
         </div>
     </div>

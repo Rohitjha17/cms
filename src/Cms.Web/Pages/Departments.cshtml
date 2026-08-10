@@ -1,0 +1,53 @@
+@page "/departments"
+@model Cms.Web.Pages.DepartmentsModel
+
+<article class="page-shell">
+    <header class="page-hero">
+        <div class="shell">
+            <p class="eyebrow">Academics</p>
+            <h1>Departments</h1>
+            <p class="lede">The academic departments and programmes at @Model.Website.Branding.Name.</p>
+        </div>
+    </header>
+
+    <div class="shell page-body">
+        @if (Model.Departments.Count == 0)
+        {
+            <p class="lede">Department information is being prepared and will be published shortly.</p>
+        }
+
+        <div class="card-grid">
+            @foreach (var department in Model.Departments)
+            {
+                <article>
+                    @if (!string.IsNullOrWhiteSpace(department.ImageUrl))
+                    {
+                        <img src="@department.ImageUrl" alt="@department.Name" loading="lazy" />
+                    }
+                    <h3>@department.Name</h3>
+                    @if (!string.IsNullOrWhiteSpace(department.HeadOfDepartment))
+                    {
+                        <p class="people-card__role">Head: @department.HeadOfDepartment</p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(department.Summary))
+                    {
+                        <p>@department.Summary</p>
+                    }
+                    @if (department.Programmes.Count > 0)
+                    {
+                        <ul class="programme-list">
+                            @foreach (var programme in department.Programmes)
+                            {
+                                <li>@programme</li>
+                            }
+                        </ul>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(department.Email))
+                    {
+                        <p class="people-card__contact"><a href="mailto:@department.Email">@department.Email</a></p>
+                    }
+                </article>
+            }
+        </div>
+    </div>
+</article>

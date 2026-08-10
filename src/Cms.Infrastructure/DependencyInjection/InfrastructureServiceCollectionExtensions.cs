@@ -1,4 +1,7 @@
+using Amazon;
+using Amazon.S3;
 using Cms.Application.Interfaces;
+using Cms.Infrastructure.Email;
 using Cms.Infrastructure.Identity;
 using Cms.Infrastructure.Persistence;
 using Cms.Infrastructure.Repositories;
@@ -8,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Cms.Infrastructure.DependencyInjection;
 
@@ -17,9 +21,12 @@ public static class InfrastructureServiceCollectionExtensions
     {
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
         services.Configure<AwsOptions>(configuration.GetSection(AwsOptions.SectionName));
+        services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ISiteContext, SiteContext>();
+        services.AddMemoryCache();
+        services.AddScoped<ITenantHostResolver, TenantHostResolver>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
@@ -61,10 +68,35 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IMediaRepository, MediaRepository>();
         services.AddScoped<ISiteContentRepository, SiteContentRepository>();
         services.AddScoped<ITenantManagementRepository, TenantManagementRepository>();
+        services.AddScoped<IWebsiteRepository, WebsiteRepository>();
+        services.AddScoped<IUserManagementService, UserManagementService>();
+
+        // Real SMTP only when configured; otherwise the CMS surfaces one-time reset links
+        // in the UI rather than pretending mail was delivered.
+        var smtpHost = configuration.GetValue<string>($"{EmailOptions.SectionName}:Host");
+        var smtpFrom = configuration.GetValue<string>($"{EmailOptions.SectionName}:FromAddress");
+        if (!string.IsNullOrWhiteSpace(smtpHost) && !string.IsNullOrWhiteSpace(smtpFrom))
+        {
+            services.AddScoped<IEmailSender, SmtpEmailSender>();
+        }
+        else
+        {
+            services.AddScoped<IEmailSender, NullEmailSender>();
+        }
 
         var storageProvider = configuration.GetValue<string>($"{StorageOptions.SectionName}:Provider") ?? "Local";
         if (string.Equals(storageProvider, "S3", StringComparison.OrdinalIgnoreCase))
         {
+            // One S3 client for the process: it is thread-safe, pools connections and must not
+            // be rebuilt (and leaked) per request.
+            services.AddSingleton<IAmazonS3>(provider =>
+            {
+                var aws = provider.GetRequiredService<IOptions<AwsOptions>>().Value;
+                var region = RegionEndpoint.GetBySystemName(aws.Region);
+                return string.IsNullOrWhiteSpace(aws.AccessKey) || string.IsNullOrWhiteSpace(aws.SecretKey)
+                    ? new AmazonS3Client(region)
+                    : new AmazonS3Client(aws.AccessKey, aws.SecretKey, region);
+            });
             services.AddScoped<IFileStorageService, S3StorageService>();
         }
         else

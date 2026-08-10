@@ -1,6 +1,7 @@
 using Cms.Application.DTOs.Content;
 using Cms.Application.Interfaces;
 using Cms.Domain.Entities;
+using Cms.Domain.Enums;
 using Cms.Shared.Exceptions;
 using FluentValidation;
 using Ganss.Xss;
@@ -14,6 +15,7 @@ public sealed class SiteContentService : ISiteContentService
     private readonly ITenantContext _tenantContext;
     private readonly ISiteContext _siteContext;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IWebsiteService _websiteService;
     private readonly IValidator<SavePageDto> _pageValidator;
     private readonly IValidator<SaveMenuDto> _menuValidator;
     private readonly IValidator<SeoSettingDto> _seoValidator;
@@ -24,6 +26,7 @@ public sealed class SiteContentService : ISiteContentService
         ITenantContext tenantContext,
         ISiteContext siteContext,
         ICurrentUserContext currentUser,
+        IWebsiteService websiteService,
         IValidator<SavePageDto> pageValidator,
         IValidator<SaveMenuDto> menuValidator,
         IValidator<SeoSettingDto> seoValidator,
@@ -33,6 +36,7 @@ public sealed class SiteContentService : ISiteContentService
         _tenantContext = tenantContext;
         _siteContext = siteContext;
         _currentUser = currentUser;
+        _websiteService = websiteService;
         _pageValidator = pageValidator;
         _menuValidator = menuValidator;
         _seoValidator = seoValidator;
@@ -98,15 +102,21 @@ public sealed class SiteContentService : ISiteContentService
             await _repository.AddPageAsync(page, cancellationToken);
         }
 
+        page.PageType = Enum.IsDefined(dto.PageType) ? dto.PageType : PageType.Custom;
+        page.TemplateKey = dto.TemplateKey?.Trim();
         page.Title = dto.Title.Trim();
         page.Slug = slug;
         page.Excerpt = dto.Excerpt?.Trim();
         page.Content = Sanitize(dto.Content);
+        page.JsonData = dto.JsonData;
         page.FeaturedImageUrl = dto.FeaturedImageUrl?.Trim();
         page.MetaTitle = dto.MetaTitle?.Trim();
         page.MetaDescription = dto.MetaDescription?.Trim();
+        page.ShowInMenu = dto.ShowInMenu;
+        page.MenuOrder = dto.MenuOrder;
         page.IsActive = dto.IsActive;
         await _repository.SaveChangesAsync(cancellationToken);
+        await _websiteService.SyncHeaderMenuAsync(cancellationToken);
         return ToDto(page);
     }
 
@@ -117,6 +127,7 @@ public sealed class SiteContentService : ISiteContentService
             ?? throw new NotFoundException("Page was not found.");
         _repository.DeletePage(page);
         await _repository.SaveChangesAsync(cancellationToken);
+        await _websiteService.SyncHeaderMenuAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<MenuDto>> GetMenusAsync(bool includeInactive, CancellationToken cancellationToken)
@@ -244,6 +255,7 @@ public sealed class SiteContentService : ISiteContentService
         setting.MetaTitle = dto.MetaTitle?.Trim();
         setting.MetaDescription = dto.MetaDescription?.Trim();
         setting.MetaKeywords = dto.MetaKeywords?.Trim();
+        setting.AllowIndexing = dto.AllowIndexing;
         setting.OgImageUrl = dto.OgImageUrl?.Trim();
         setting.CanonicalUrl = dto.CanonicalUrl?.Trim();
         await _repository.SaveChangesAsync(cancellationToken);
@@ -367,10 +379,11 @@ public sealed class SiteContentService : ISiteContentService
 
     private static PageDto ToDto(Page x) => new()
     {
-        Id = x.Id, Title = x.Title, Slug = x.Slug, Excerpt = x.Excerpt, Content = x.Content,
-        FeaturedImageUrl = x.FeaturedImageUrl, MetaTitle = x.MetaTitle,
-        MetaDescription = x.MetaDescription, IsActive = x.IsActive,
-        CreatedDate = x.CreatedDate, UpdatedDate = x.UpdatedDate
+        Id = x.Id, PageType = x.PageType, TemplateKey = x.TemplateKey,
+        Title = x.Title, Slug = x.Slug, Excerpt = x.Excerpt, Content = x.Content,
+        JsonData = x.JsonData, FeaturedImageUrl = x.FeaturedImageUrl, MetaTitle = x.MetaTitle,
+        MetaDescription = x.MetaDescription, ShowInMenu = x.ShowInMenu, MenuOrder = x.MenuOrder,
+        IsActive = x.IsActive, CreatedDate = x.CreatedDate, UpdatedDate = x.UpdatedDate
     };
 
     private static MenuDto ToDto(Menu x, bool activeItemsOnly = false) => new()
@@ -388,7 +401,8 @@ public sealed class SiteContentService : ISiteContentService
     private static SeoSettingDto ToDto(SeoSetting x) => new()
     {
         MetaTitle = x.MetaTitle, MetaDescription = x.MetaDescription,
-        MetaKeywords = x.MetaKeywords, OgImageUrl = x.OgImageUrl, CanonicalUrl = x.CanonicalUrl
+        MetaKeywords = x.MetaKeywords, OgImageUrl = x.OgImageUrl, CanonicalUrl = x.CanonicalUrl,
+        AllowIndexing = x.AllowIndexing
     };
 
     private static ContentEntryDto ToDto(ContentEntry x) => new()

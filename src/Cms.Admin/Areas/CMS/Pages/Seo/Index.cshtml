@@ -1,25 +1,243 @@
 @page
 @model Cms.Admin.Areas.CMS.Pages.Seo.IndexModel
+@using Cms.Admin.Areas.CMS.Pages.Seo
 @{
     ViewData["Title"] = "SEO settings";
+    var previewTitle = string.IsNullOrWhiteSpace(Model.Input.MetaTitle) ? Model.SiteName : Model.Input.MetaTitle;
+    var previewDescription = string.IsNullOrWhiteSpace(Model.Input.MetaDescription)
+        ? "Add a description so search engines show your own words instead of guessing."
+        : Model.Input.MetaDescription;
 }
 
 <div class="page-header">
-    <div><div class="eyebrow">Search and sharing</div><h1>SEO settings</h1><p>Manage site-wide search metadata and social sharing defaults.</p></div>
+    <div>
+        <div class="eyebrow">Search and sharing</div>
+        <h1>SEO settings</h1>
+        <p>How this website appears in search results and when a link is shared. Individual pages can override these defaults.</p>
+    </div>
 </div>
-@if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice">@Model.StatusMessage</div> }
 
-<section class="form-card settings-narrow">
-    <div class="form-card__header"><div><span class="step-number">01</span><span><strong>Default metadata</strong><small>Individual page metadata can override these values.</small></span></div></div>
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="notice">@Model.StatusMessage</div>
+}
+
+@if (!Model.Input.AllowIndexing)
+{
+    <div class="notice notice--warning">
+        <span>Search engines are asked <strong>not</strong> to index this website. Turn indexing on below when the school is ready to go live.</span>
+    </div>
+}
+
+<div class="seo-layout">
+    <form method="post" class="seo-form">
+        <div asp-validation-summary="All" class="validation-summary"></div>
+
+        <section class="form-card">
+            <div class="form-card__header">
+                <div>
+                    <span class="step-number">01</span>
+                    <span><strong>Default metadata</strong><small>Used by any page without its own override</small></span>
+                </div>
+            </div>
+            <div class="form-card__body">
+                <div class="field-grid">
+                    <label class="field full">
+                        <span>Meta title</span>
+                        <input asp-for="Input.MetaTitle" data-seo-title maxlength="120"
+                               placeholder="@Model.SiteName — CBSE school in Noida" />
+                        <small class="field-help">
+                            <span data-counter-for="title">0</span> characters ·
+                            best between @IndexModel.TitleMin and @IndexModel.TitleMax
+                        </small>
+                    </label>
+
+                    <label class="field full">
+                        <span>Meta description</span>
+                        <textarea asp-for="Input.MetaDescription" data-seo-description rows="3" maxlength="320"
+                                  placeholder="One or two sentences a parent would recognise the school by."></textarea>
+                        <small class="field-help">
+                            <span data-counter-for="description">0</span> characters ·
+                            best between @IndexModel.DescriptionMin and @IndexModel.DescriptionMax
+                        </small>
+                    </label>
+
+                    <label class="field full">
+                        <span>Canonical URL</span>
+                        <input asp-for="Input.CanonicalUrl" placeholder="https://@Model.PreviewHost" />
+                        <small class="field-help">Set only if this website is also reachable at another address.</small>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-card">
+            <div class="form-card__header">
+                <div>
+                    <span class="step-number">02</span>
+                    <span><strong>Sharing image</strong><small>Shown on WhatsApp, Facebook and X</small></span>
+                </div>
+            </div>
+            <div class="form-card__body">
+                <div class="field-grid">
+                    <label class="field full">
+                        <span>Open Graph image</span>
+                        <span class="upload-row">
+                            <input asp-for="Input.OgImageUrl" id="seo-og-image" data-seo-image placeholder="/uploads/… or https://…" />
+                            <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#seo-og-image">Browse media</button>
+                        </span>
+                        <small class="field-help">1200 × 630 works everywhere. Without one, links share as plain text.</small>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-card">
+            <div class="form-card__header">
+                <div>
+                    <span class="step-number">03</span>
+                    <span><strong>Indexing</strong><small>Controls robots.txt and the page-level robots tag</small></span>
+                </div>
+            </div>
+            <div class="form-card__body">
+                <label class="switch-row">
+                    <input asp-for="Input.AllowIndexing" />
+                    <span>
+                        <strong>Allow search engines to index this website</strong>
+                        <small>Turn this off while a school's site is still being prepared, and on again at launch.</small>
+                    </span>
+                </label>
+
+                <div class="field-grid" style="margin-top:14px">
+                    <label class="field full">
+                        <span>Keywords <small style="font-weight:400">(optional)</small></span>
+                        <input asp-for="Input.MetaKeywords" placeholder="cbse school noida, admissions 2026" />
+                        <small class="field-help">No major search engine has used this tag for over a decade. Safe to leave empty.</small>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <div class="form-actions form-actions--sticky">
+            <button class="btn" type="submit">Save SEO settings</button>
+            <span class="hint">Applies to every page that has no override of its own.</span>
+        </div>
+    </form>
+
+    <aside class="seo-side">
+        <section class="form-card">
+            <div class="form-card__header">
+                <div><span class="step-number">P</span><span><strong>Search result preview</strong><small>Roughly how Google will show it</small></span></div>
+            </div>
+            <div class="form-card__body">
+                <div class="serp">
+                    <div class="serp__crumb">@Model.PreviewHost</div>
+                    <div class="serp__title" data-preview="title">@previewTitle</div>
+                    <div class="serp__desc" data-preview="description">@previewDescription</div>
+                </div>
+
+                <div class="social-card" data-social-card>
+                    <div class="social-card__image" data-preview="image">
+                        @if (!string.IsNullOrWhiteSpace(Model.Input.OgImageUrl))
+                        {
+                            <img src="@Model.Input.OgImageUrl" alt="" />
+                        }
+                        else
+                        {
+                            <span>No sharing image</span>
+                        }
+                    </div>
+                    <div class="social-card__text">
+                        <small>@Model.PreviewHost</small>
+                        <strong data-preview="title">@previewTitle</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-card">
+            <div class="form-card__header">
+                <div><span class="step-number">R</span><span><strong>Robots &amp; sitemap</strong><small>Served automatically</small></span></div>
+            </div>
+            <div class="form-card__body">
+                <ul class="plain-list">
+                    <li><code class="url-hint">/robots.txt</code> — points crawlers at the sitemap</li>
+                    <li><code class="url-hint">/sitemap.xml</code> — every published page, with last-modified dates</li>
+                </ul>
+                <p class="form-section-hint" style="margin:10px 0 0">
+                    Both are generated per website, so each school gets its own.
+                </p>
+            </div>
+        </section>
+    </aside>
+</div>
+
+<section class="form-card" style="margin-top:18px">
+    <div class="form-card__header">
+        <div>
+            <span class="step-number">04</span>
+            <span>
+                <strong>Page audit</strong>
+                <small>
+                    @if (Model.IssueCount == 0)
+                    {
+                        <text>All @Model.Audit.Count published page(s) look good</text>
+                    }
+                    else
+                    {
+                        <text>@Model.IssueCount of @Model.Audit.Count published page(s) need attention</text>
+                    }
+                </small>
+            </span>
+        </div>
+    </div>
     <div class="form-card__body">
-        <form method="post" class="field-grid">
-            <div asp-validation-summary="All" class="validation-summary full"></div>
-            <label class="field full"><span>Meta title</span><input asp-for="Input.MetaTitle" /><small>Recommended: 50–60 characters.</small></label>
-            <label class="field full"><span>Meta description</span><textarea asp-for="Input.MetaDescription" rows="3"></textarea></label>
-            <label class="field full"><span>Keywords</span><input asp-for="Input.MetaKeywords" /></label>
-            <label class="field full"><span>Open Graph image URL</span><input asp-for="Input.OgImageUrl" /></label>
-            <label class="field full"><span>Canonical URL</span><input asp-for="Input.CanonicalUrl" /></label>
-            <div class="full form-actions"><button class="btn" type="submit">Save SEO settings</button></div>
-        </form>
+        @if (Model.Audit.Count == 0)
+        {
+            <div class="empty-state"><strong>No published pages yet</strong><span>Publish a page and it will be checked here.</span></div>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead>
+                    <tr><th>Page</th><th>Metadata</th><th>What a searcher sees</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Audit)
+                    {
+                        <tr>
+                            <td><strong>@row.Title</strong><br /><code class="url-hint">/@row.Slug</code></td>
+                            <td>@(row.UsesOverride ? "Page override" : "Site default")</td>
+                            <td class="seo-audit__excerpt">
+                                @(string.IsNullOrWhiteSpace(row.EffectiveDescription) ? "—" : row.EffectiveDescription)
+                            </td>
+                            <td>
+                                @if (row.Severity == SeoSeverity.Ok)
+                                {
+                                    <span class="badge on">Good</span>
+                                }
+                                else if (row.Severity == SeoSeverity.Warning)
+                                {
+                                    <span class="badge off" title="@string.Join("; ", row.Problems)">Improve</span>
+                                }
+                                else
+                                {
+                                    <span class="badge off" title="@string.Join("; ", row.Problems)">Missing</span>
+                                }
+                                @if (row.Problems.Count > 0)
+                                {
+                                    <div class="seo-audit__why">@string.Join(" · ", row.Problems)</div>
+                                }
+                            </td>
+                            <td><a class="btn btn-secondary btn-sm" asp-area="CMS" asp-page="/Pages/Index" asp-route-edit="@row.PageId">Fix</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
     </div>
 </section>
+
+@section Scripts {
+    <script src="~/js/seo-preview.js" asp-append-version="true" defer></script>
+}

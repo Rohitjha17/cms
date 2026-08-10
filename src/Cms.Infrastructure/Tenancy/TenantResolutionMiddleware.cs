@@ -1,59 +1,68 @@
 using Cms.Application.Interfaces;
 using Cms.Domain.Constants;
-using Cms.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Cms.Infrastructure.Tenancy;
 
+/// <summary>
+/// Maps the incoming host to a tenant and the website being requested.
+///
+/// Two public URL shapes are supported:
+///   * a host bound to one website  — <c>school.example.edu/about</c>       (no prefix)
+///   * a host shared by several     — <c>example.edu/school/about</c>       (site-key prefix)
+///
+/// For the shared shape the site segment is stripped into <see cref="HttpRequest.PathBase"/>,
+/// so pages, static files and endpoints only ever deal with prefix-free paths and any site
+/// key works — not just a hard-coded school/college pair.
+/// </summary>
 public class TenantResolutionMiddleware
 {
     private const string SiteCookieName = "cms.site";
     private readonly RequestDelegate _next;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<TenantResolutionMiddleware> _logger;
 
     public TenantResolutionMiddleware(
         RequestDelegate next,
-        IConfiguration configuration,
         ILogger<TenantResolutionMiddleware> logger)
     {
         _next = next;
-        _configuration = configuration;
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context, ApplicationDbContext db, ITenantContext tenantContext, ISiteContext siteContext)
+    public async Task InvokeAsync(
+        HttpContext context,
+        ITenantHostResolver resolver,
+        ITenantContext tenantContext,
+        ISiteContext siteContext)
     {
-        var host = context.Request.Host.Host;
-        var domain = await db.TenantDomains
-            .IgnoreQueryFilters()
-            .Include(d => d.Tenant)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(d => d.DomainName == host && d.IsActive && d.Tenant.IsActive);
+        var host = context.Request.Host.Host.TrimEnd('.').ToLowerInvariant();
+        var resolved = await resolver.ResolveAsync(host, context.RequestAborted);
 
-        var tenant = domain?.Tenant;
-        if (tenant is null && _configuration.GetValue<bool>("DemoMode:Enabled"))
-        {
-            tenant = await db.Tenants
-                .IgnoreQueryFilters()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(item => item.Code == "demo" && item.IsActive);
-        }
-
-        if (tenant is null)
+        if (resolved is null)
         {
             _logger.LogDebug("No tenant mapped for host {Host}", host);
-            await _next(context);
+            if (context.Request.Path.StartsWithSegments("/health")
+                || context.Request.Path.StartsWithSegments("/swagger"))
+            {
+                await _next(context);
+                return;
+            }
+
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            await context.Response.WriteAsync("No active website is configured for this domain.");
             return;
         }
 
-        tenantContext.Set(tenant.Id, tenant.Code, tenant.Name);
+        tenantContext.Set(resolved.TenantId, resolved.TenantCode, resolved.TenantName);
 
-        var siteKey = ResolveSiteKey(context);
-        if (context.Request.Query.TryGetValue("site", out var selectedSite) && !string.IsNullOrWhiteSpace(selectedSite))
+        var isManagementRequest = context.Request.Path.StartsWithSegments("/api")
+            || context.Request.Path.StartsWithSegments("/CMS")
+            || context.Request.Path.StartsWithSegments("/Account");
+
+        if (isManagementRequest
+            && context.Request.Query.TryGetValue("site", out var selectedSite)
+            && !string.IsNullOrWhiteSpace(selectedSite))
         {
             context.Response.Cookies.Append(SiteCookieName, selectedSite.ToString(), new CookieOptions
             {
@@ -65,28 +74,98 @@ public class TenantResolutionMiddleware
             });
         }
 
-        var sites = await db.Sites
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Where(s => s.TenantId == tenant.Id && s.IsActive)
-            .ToListAsync();
+        ResolvedSite? site = null;
+        var basePath = string.Empty;
 
-        var site = !string.IsNullOrWhiteSpace(siteKey)
-            ? sites.FirstOrDefault(s => string.Equals(s.SiteKey, siteKey, StringComparison.OrdinalIgnoreCase))
-            : null;
-        site ??= sites.FirstOrDefault(s => s.IsDefault) ?? sites.FirstOrDefault();
+        if (isManagementRequest)
+        {
+            // Management callers may switch websites explicitly; a bound host is the fallback.
+            var requestedKey = ResolveManagementSiteKey(context);
+            if (!string.IsNullOrWhiteSpace(requestedKey))
+            {
+                site = FindByKey(resolved, requestedKey);
+            }
+
+            site ??= FindById(resolved, resolved.BoundSiteId);
+        }
+        else if (resolved.BoundSiteId is Guid boundSiteId)
+        {
+            // A bound public domain is authoritative and cannot be overridden by the client.
+            site = FindById(resolved, boundSiteId);
+        }
+        else if (TryConsumeSitePrefix(context, resolved, out var prefixed, out var consumedSegment))
+        {
+            site = prefixed;
+            basePath = consumedSegment;
+        }
+
+        site ??= resolved.Sites.FirstOrDefault(s => s.IsDefault) ?? resolved.Sites.FirstOrDefault();
 
         if (site is not null)
         {
-            siteContext.Set(site.Id, site.SiteKey, site.Name);
+            if (basePath.Length == 0 && resolved.BoundSiteId != site.Id)
+            {
+                // Shared host with no prefix in the URL — links must still carry one.
+                basePath = "/" + site.SiteKey;
+            }
+
+            siteContext.Set(site.Id, site.SiteKey, site.Name, basePath);
         }
 
         await _next(context);
     }
 
-    private static string? ResolveSiteKey(HttpContext context)
+    private static ResolvedSite? FindById(ResolvedHost resolved, Guid? siteId) =>
+        siteId is Guid id ? resolved.Sites.FirstOrDefault(s => s.Id == id) : null;
+
+    private static ResolvedSite? FindByKey(ResolvedHost resolved, string siteKey) =>
+        resolved.Sites.FirstOrDefault(s => string.Equals(s.SiteKey, siteKey, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Moves a leading <c>/{siteKey}</c> segment from the path into the path base so the rest of
+    /// the pipeline sees prefix-free paths and generated links keep the prefix automatically.
+    /// </summary>
+    private static bool TryConsumeSitePrefix(
+        HttpContext context,
+        ResolvedHost resolved,
+        out ResolvedSite? site,
+        out string consumedSegment)
     {
-        if (context.Request.Headers.TryGetValue(HttpHeaderNames.SiteKey, out var header) && !string.IsNullOrWhiteSpace(header))
+        site = null;
+        consumedSegment = string.Empty;
+
+        var path = context.Request.Path.Value;
+        if (string.IsNullOrEmpty(path) || path.Length < 2)
+        {
+            return false;
+        }
+
+        var end = path.IndexOf('/', 1);
+        var segment = end < 0 ? path[1..] : path[1..end];
+        if (segment.Length == 0)
+        {
+            return false;
+        }
+
+        var match = FindByKey(resolved, segment);
+        if (match is null)
+        {
+            return false;
+        }
+
+        var remainder = end < 0 ? string.Empty : path[end..];
+        context.Request.PathBase = context.Request.PathBase.Add("/" + segment);
+        context.Request.Path = remainder.Length == 0 ? "/" : remainder;
+
+        site = match;
+        consumedSegment = "/" + segment;
+        return true;
+    }
+
+    private static string? ResolveManagementSiteKey(HttpContext context)
+    {
+        if (context.Request.Headers.TryGetValue(HttpHeaderNames.SiteKey, out var header)
+            && !string.IsNullOrWhiteSpace(header))
         {
             return header.ToString();
         }
@@ -96,17 +175,10 @@ public class TenantResolutionMiddleware
             return query.ToString();
         }
 
-        if (context.Request.Cookies.TryGetValue(SiteCookieName, out var cookie) && !string.IsNullOrWhiteSpace(cookie))
+        if (context.Request.Cookies.TryGetValue(SiteCookieName, out var cookie)
+            && !string.IsNullOrWhiteSpace(cookie))
         {
             return cookie;
-        }
-
-        var path = context.Request.Path.Value ?? string.Empty;
-        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        if (segments.Length > 0 && (segments[0].Equals("school", StringComparison.OrdinalIgnoreCase)
-            || segments[0].Equals("college", StringComparison.OrdinalIgnoreCase)))
-        {
-            return segments[0].ToLowerInvariant();
         }
 
         return null;

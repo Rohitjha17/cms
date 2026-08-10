@@ -1,0 +1,70 @@
+@page "/faculty"
+@using Cms.Application.DTOs.SchoolContent
+@model Cms.Web.Pages.FacultyModel
+
+<article class="page-shell">
+    <header class="page-hero">
+        <div class="shell">
+            <p class="eyebrow">Our people</p>
+            <h1>Faculty and staff</h1>
+            <p class="lede">The team guiding every student at @Model.Website.Branding.Name.</p>
+        </div>
+    </header>
+
+    <div class="shell page-body">
+        @if (Model.Members.Count == 0)
+        {
+            <p class="lede">Staff profiles are being prepared and will be published shortly.</p>
+        }
+
+        @foreach (var group in Model.Groups)
+        {
+            <section class="people-block">
+                <div class="section-head"><h2>@Cms.Web.Pages.FacultyModel.GroupTitle(group.Key)</h2></div>
+                <div class="people-grid">
+                    @foreach (var member in group)
+                    {
+                        <article class="people-card">
+                            @if (!string.IsNullOrWhiteSpace(member.PhotoUrl))
+                            {
+                                <img src="@member.PhotoUrl" alt="@member.FullName" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="people-card__initial" aria-hidden="true">@member.Initials</div>
+                            }
+                            <h3>@member.FullName</h3>
+                            @if (!string.IsNullOrWhiteSpace(member.Designation))
+                            {
+                                <p class="people-card__role">@member.Designation</p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(member.Department) || !string.IsNullOrWhiteSpace(member.Qualification))
+                            {
+                                <p class="people-card__meta">
+                                    @member.Qualification
+                                    @if (!string.IsNullOrWhiteSpace(member.Department) && !string.IsNullOrWhiteSpace(member.Qualification))
+                                    {
+                                        <text> · </text>
+                                    }
+                                    @member.Department
+                                </p>
+                            }
+                            @if (member.ExperienceYears is int years and > 0)
+                            {
+                                <p class="people-card__meta">@years years of experience</p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(member.Headline))
+                            {
+                                <p>@member.Headline</p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(member.Email))
+                            {
+                                <p class="people-card__contact"><a href="mailto:@member.Email">@member.Email</a></p>
+                            }
+                        </article>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+</article>

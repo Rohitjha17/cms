@@ -1,0 +1,74 @@
+@model PublicWebsiteDto
+@using Cms.Web.Helpers
+@{
+    var brand = Model.Branding;
+    var basePath = Model.BasePath;
+    var hero = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "hero");
+    var courses = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "courses");
+    var news = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "latest_news");
+    var testimonials = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "testimonials");
+    var heroJson = SectionJson.Parse(hero?.JsonData);
+    var coursesJson = SectionJson.Parse(courses?.JsonData);
+    var newsJson = SectionJson.Parse(news?.JsonData);
+    var testimonialsJson = SectionJson.Parse(testimonials?.JsonData);
+    var banner = brand.HeaderImageUrl ?? "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1800&q=80";
+}
+<section class="hero hero-modern">
+    <div class="shell modern-grid">
+        <div>
+            <p class="eyebrow">Modern campus experience</p>
+            <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name)</h1>
+            <p>@(SectionJson.GetString(heroJson, "description") ?? hero?.Description ?? brand.Tagline)</p>
+            <div class="cta-row">
+                <a class="btn" href="@(basePath)/admission">Admissions</a>
+                <a class="btn btn-ghost" href="@(basePath)/about">Our story</a>
+            </div>
+        </div>
+        <div class="modern-media" style="background-image:url('@banner')"></div>
+    </div>
+</section>
+@if (courses is not null)
+{
+    <section class="shell section">
+        <h2>@courses.Title</h2>
+        <div class="card-grid">
+            @foreach (var item in SectionJson.GetArray(coursesJson, "items"))
+            {
+                <article>
+                    <h3>@(item.TryGetProperty("title", out var t) ? t.GetString() : "")</h3>
+                    <p>@(item.TryGetProperty("description", out var d) ? d.GetString() : "")</p>
+                </article>
+            }
+        </div>
+    </section>
+}
+@if (news is not null)
+{
+    <section class="shell section muted">
+        <h2>@news.Title</h2>
+        <div class="card-grid">
+            @foreach (var item in SectionJson.GetArray(newsJson, "items").Take(3))
+            {
+                <article>
+                    <h3>@(item.TryGetProperty("title", out var t) ? t.GetString() : "")</h3>
+                    <p>@(item.TryGetProperty("date", out var d) ? d.GetString() : "")</p>
+                </article>
+            }
+        </div>
+    </section>
+}
+@if (testimonials is not null)
+{
+    <section class="shell section">
+        <h2>@testimonials.Title</h2>
+        <div class="card-grid">
+            @foreach (var item in SectionJson.GetArray(testimonialsJson, "items"))
+            {
+                <article>
+                    <blockquote>@(item.TryGetProperty("quote", out var q) ? q.GetString() : "")</blockquote>
+                    <p class="name">@(item.TryGetProperty("name", out var n) ? n.GetString() : "") · @(item.TryGetProperty("role", out var r) ? r.GetString() : "")</p>
+                </article>
+            }
+        </div>
+    </section>
+}

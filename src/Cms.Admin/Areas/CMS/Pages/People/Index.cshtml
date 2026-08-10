@@ -1,0 +1,136 @@
+@page
+@using Cms.Application.DTOs.SchoolContent
+@model Cms.Admin.Areas.CMS.Pages.People.IndexModel
+@{
+    ViewData["Title"] = "Faculty and staff";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">People</div>
+        <h1>Faculty and staff</h1>
+        <p>Publish the leadership team, teachers and office staff shown on the website's people page.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="notice">@Model.StatusMessage</div>
+}
+
+<div class="content-manager-layout">
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">01</span>
+                <span><strong>Directory</strong><small>@Model.Members.Count person(s) across @Model.Grouped.Count() group(s)</small></span>
+            </div>
+        </div>
+        <div class="content-list">
+            @if (Model.Members.Count == 0)
+            {
+                <div class="empty-state">
+                    <strong>No staff published yet</strong>
+                    <span>Add the principal and teaching team so families know who to contact.</span>
+                </div>
+            }
+            @foreach (var group in Model.Grouped)
+            {
+                <div class="list-group-label">@Cms.Admin.Areas.CMS.Pages.People.IndexModel.CategoryLabel(group.Key)</div>
+                @foreach (var member in group)
+                {
+                    <article>
+                        <span class="person-row">
+                            @if (!string.IsNullOrWhiteSpace(member.PhotoUrl))
+                            {
+                                <img class="person-row__photo" src="@member.PhotoUrl" alt="@member.FullName" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span class="person-row__photo person-row__photo--empty">@member.Initials</span>
+                            }
+                            <span class="person-row__text">
+                                <strong>@member.FullName</strong>
+                                <small>
+                                    @(string.IsNullOrWhiteSpace(member.Designation) ? "No designation" : member.Designation)
+                                    @if (!string.IsNullOrWhiteSpace(member.Department))
+                                    {
+                                        <text> · @member.Department</text>
+                                    }
+                                    · @(member.IsPublished ? "Published" : "Hidden")
+                                </small>
+                            </span>
+                        </span>
+                        <span class="content-list__actions">
+                            <a class="btn btn-secondary btn-sm" asp-route-edit="@member.Id">Edit</a>
+                            @if (Model.CanDelete)
+                            {
+                                <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Remove @member.FullName?');">
+                                    <input type="hidden" name="id" value="@member.Id" />
+                                    <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
+                                </form>
+                            }
+                        </span>
+                    </article>
+                }
+            }
+        </div>
+    </section>
+
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">02</span>
+                <span><strong>@(Model.EditId.HasValue ? "Edit person" : "Add a person")</strong><small>Shown on the public people page in this order</small></span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <form method="post" asp-page-handler="Save" class="field-grid">
+                <input type="hidden" asp-for="EditId" />
+                <input type="hidden" asp-for="Input.Key" />
+                <div asp-validation-summary="All" class="validation-summary full"></div>
+
+                <label class="field"><span>Full name</span><input asp-for="Input.FullName" placeholder="Dr. Anita Rao" required /></label>
+                <label class="field"><span>Designation</span><input asp-for="Input.Designation" placeholder="Principal" /></label>
+
+                <label class="field">
+                    <span>Group</span>
+                    <select asp-for="Input.Category" asp-items="Html.GetEnumSelectList<FacultyCategory>()"></select>
+                </label>
+                <label class="field"><span>Department</span><input asp-for="Input.Department" placeholder="Science" /></label>
+
+                <label class="field"><span>Qualification</span><input asp-for="Input.Qualification" placeholder="M.Sc, B.Ed" /></label>
+                <label class="field"><span>Years of experience</span><input asp-for="Input.ExperienceYears" type="number" min="0" max="80" /></label>
+
+                <label class="field"><span>Email</span><input asp-for="Input.Email" type="email" /></label>
+                <label class="field"><span>Phone</span><input asp-for="Input.Phone" /></label>
+
+                <label class="field full">
+                    <span>Photo</span>
+                    <span class="upload-row">
+                        <input asp-for="Input.PhotoUrl" id="person-photo-url" placeholder="/uploads/… or https://…" />
+                        <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#person-photo-url">Browse media</button>
+                    </span>
+                </label>
+
+                <label class="field full"><span>Headline</span><input asp-for="Input.Headline" placeholder="Leading the school since 2016" /></label>
+                <label class="field full"><span>Biography</span><textarea asp-for="Input.Biography" rows="6"></textarea></label>
+
+                <label class="field"><span>Display order</span><input asp-for="Input.DisplayOrder" type="number" min="0" /></label>
+
+                <label class="switch-row full">
+                    <input asp-for="Input.IsPublished" />
+                    <span><strong>Published</strong><small>Uncheck to keep this person off the website while you prepare the profile.</small></span>
+                </label>
+
+                <div class="full form-actions">
+                    <button class="btn" type="submit">@(Model.EditId.HasValue ? "Save changes" : "Add person")</button>
+                    @if (Model.EditId.HasValue)
+                    {
+                        <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+                    }
+                </div>
+            </form>
+        </div>
+    </section>
+</div>

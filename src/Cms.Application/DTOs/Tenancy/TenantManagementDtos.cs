@@ -24,6 +24,7 @@ public sealed class SaveTenantDto
 public sealed class TenantDomainInputDto
 {
     public string DomainName { get; set; } = string.Empty;
+    public string? SiteKey { get; set; }
     public bool IsPrimary { get; set; }
     public bool IsActive { get; set; } = true;
 }
@@ -33,6 +34,7 @@ public sealed class TenantSiteInputDto
     public string Name { get; set; } = string.Empty;
     public string SiteKey { get; set; } = string.Empty;
     public string WebsiteType { get; set; } = "School";
+    public string HomeVariant { get; set; } = "Classic";
     public bool IsDefault { get; set; }
     public bool IsActive { get; set; } = true;
 }

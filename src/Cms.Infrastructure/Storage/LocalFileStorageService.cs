@@ -76,6 +76,8 @@ public class LocalFileStorageService : IFileStorageService
         "image/webp" => ".webp",
         "image/gif" => ".gif",
         "application/pdf" => ".pdf",
+        "video/mp4" => ".mp4",
+        "video/webm" => ".webm",
         _ => throw new InvalidOperationException("Unsupported media content type.")
     };
 

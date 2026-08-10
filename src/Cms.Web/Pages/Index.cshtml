@@ -1,0 +1,26 @@
+@page
+@model Cms.Web.Pages.IndexModel
+@{
+    var brand = Model.Website.Branding;
+}
+
+@if (brand.HomeVariant == HomeVariant.Modern)
+{
+    <partial name="Home/_Modern" model="Model.Website" />
+}
+else if (brand.HomeVariant == HomeVariant.Campus)
+{
+    <partial name="Home/_Campus" model="Model.Website" />
+}
+else if (brand.HomeVariant == HomeVariant.Academic)
+{
+    <partial name="Home/_Academic" model="Model.Website" />
+}
+else if (brand.HomeVariant == HomeVariant.Prestige)
+{
+    <partial name="Home/_Prestige" model="Model.Website" />
+}
+else
+{
+    <partial name="Home/_Classic" model="Model.Website" />
+}

@@ -1,0 +1,92 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.PageGallery.IndexModel
+@using Cms.Domain.Enums
+@{
+    ViewData["Title"] = "Page gallery";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Future-ready catalog</div>
+        <h1>Page gallery</h1>
+        <p>Manage reusable page templates and assign them to the currently selected school website.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice">@Model.StatusMessage</div> }
+
+<div class="content-manager-layout">
+    <section class="form-card">
+        <div class="form-card__header"><div><span class="step-number">01</span><span><strong>Templates</strong><small>@Model.Templates.Count template(s)</small></span></div></div>
+        <div class="content-list">
+            @if (Model.Templates.Count == 0)
+            {
+                <div class="empty-state"><strong>No templates yet</strong><span>Add a template below to make it available to every school.</span></div>
+            }
+            @foreach (var item in Model.Templates)
+            {
+                <article>
+                    <span>
+                        <strong>@item.Name</strong>
+                        <small>@item.TemplateKey · @item.PageType · /@item.DefaultSlug · @(item.IsActive ? "Active" : "Inactive")@(item.IsStarter ? " · Starter" : "")</small>
+                    </span>
+                    @if (Model.CanManage)
+                    {
+                        <a class="btn btn-secondary btn-sm" asp-route-edit="@item.Id">Edit</a>
+                    }
+                </article>
+            }
+        </div>
+
+        @if (Model.CanManage)
+        {
+            <div class="form-card__body">
+                <form method="post" asp-page-handler="Assign">
+                    <strong>Assign to current website</strong>
+                    <small>Creates missing pages from selected templates and refreshes the menu.</small>
+                    <div class="field-grid" style="margin-top:1rem">
+                        @foreach (var template in Model.Templates.Where(t => t.IsActive))
+                        {
+                            <label class="switch-row">
+                                <input type="checkbox" name="AssignKeys" value="@template.TemplateKey" />
+                                <span><strong>@template.Name</strong><small>@template.Description</small></span>
+                            </label>
+                        }
+                    </div>
+                    <div class="form-actions"><button class="btn" type="submit">Assign selected pages</button></div>
+                </form>
+            </div>
+        }
+    </section>
+
+    @if (Model.CanManage)
+    {
+        <section class="form-card">
+            <div class="form-card__header"><div><span class="step-number">02</span><span><strong>@(Model.EditId.HasValue ? "Edit template" : "Add template")</strong><small>New page types for future schools</small></span></div></div>
+            <div class="form-card__body">
+                <form method="post" asp-page-handler="Save" class="field-grid">
+                    <input asp-for="EditId" type="hidden" />
+                    <div asp-validation-summary="All" class="validation-summary full"></div>
+                    <label class="field"><span>Name</span><input asp-for="Input.Name" /></label>
+                    <label class="field"><span>Template key</span><input asp-for="Input.TemplateKey" placeholder="alumni" /></label>
+                    <label class="field"><span>Default slug</span><input asp-for="Input.DefaultSlug" placeholder="alumni" /></label>
+                    <label class="field"><span>Default title</span><input asp-for="Input.DefaultTitle" /></label>
+                    <label class="field">
+                        <span>Page type</span>
+                        <select asp-for="Input.PageType" asp-items="Html.GetEnumSelectList<PageType>()"></select>
+                    </label>
+                    <label class="field"><span>Display order</span><input asp-for="Input.DisplayOrder" type="number" /></label>
+                    <label class="field full"><span>Description</span><textarea asp-for="Input.Description" rows="2"></textarea></label>
+                    <label class="field full"><span>Default HTML content</span><textarea asp-for="Input.DefaultContent" rows="4"></textarea></label>
+                    <label class="field full"><span>Default structured JSON</span><textarea asp-for="Input.DefaultJsonData" rows="6" placeholder="{}"></textarea></label>
+                    <label class="switch-row"><input asp-for="Input.IsStarter" type="checkbox" /><span><strong>Starter template</strong></span></label>
+                    <label class="switch-row"><input asp-for="Input.IsActive" type="checkbox" /><span><strong>Active</strong></span></label>
+                    <div class="full form-actions">
+                        <button class="btn" type="submit">Save template</button>
+                        @if (Model.EditId.HasValue) { <a class="btn btn-secondary" asp-page="Index">Cancel</a> }
+                    </div>
+                </form>
+            </div>
+        </section>
+    }
+</div>

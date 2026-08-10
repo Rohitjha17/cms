@@ -1,0 +1,18 @@
+@page "/_status/{code}"
+@model Cms.Web.Pages.StatusModel
+@{
+    ViewData["Title"] = Model.Heading;
+}
+
+<article class="page-shell">
+    <header class="page-hero">
+        <div class="shell">
+            <p class="eyebrow">@Model.StatusLabel</p>
+            <h1>@Model.Heading</h1>
+            <p class="lede">@Model.Message</p>
+        </div>
+    </header>
+    <div class="shell page-body">
+        <p><a class="btn" href="@Model.HomeUrl">Back to the homepage</a></p>
+    </div>
+</article>

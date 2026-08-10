@@ -1,0 +1,59 @@
+@model PublicWebsiteDto
+@using Cms.Web.Helpers
+@{
+    var brand = Model.Branding;
+    var basePath = Model.BasePath;
+    var hero = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "hero");
+    var principal = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "principal");
+    var testimonials = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "testimonials");
+    var achievements = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "achievements");
+    var heroJson = SectionJson.Parse(hero?.JsonData);
+    var principalJson = SectionJson.Parse(principal?.JsonData);
+    var testimonialsJson = SectionJson.Parse(testimonials?.JsonData);
+    var achievementsJson = SectionJson.Parse(achievements?.JsonData);
+    var banner = brand.HeaderImageUrl ?? "https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?auto=format&fit=crop&w=1800&q=80";
+}
+<section class="hero hero-prestige" style="--hero:url('@banner')">
+    <div class="shell prestige-frame">
+        <p class="eyebrow">Heritage · Character · Ambition</p>
+        <h1>@brand.Name</h1>
+        <p>@(SectionJson.GetString(heroJson, "description") ?? hero?.Description ?? brand.Tagline)</p>
+        <a class="btn" href="@(basePath)/contact">Enquire today</a>
+    </div>
+</section>
+<section class="shell prestige-row">
+    <blockquote>
+        <p>@(SectionJson.GetString(principalJson, "quote") ?? principal?.Description ?? "An education grounded in values, curiosity and lasting achievement.")</p>
+        <cite>
+            @(SectionJson.GetString(principalJson, "personName") ?? principal?.Title ?? "From the Principal")
+            @if (!string.IsNullOrWhiteSpace(SectionJson.GetString(principalJson, "designation")))
+            {
+                <text> · @SectionJson.GetString(principalJson, "designation")</text>
+            }
+        </cite>
+    </blockquote>
+    <div>
+        <h2>@(testimonials?.Title ?? "Voices from our community")</h2>
+        @foreach (var item in SectionJson.GetArray(testimonialsJson, "items").Take(2))
+        {
+            <p>“@(item.TryGetProperty("quote", out var q) ? q.GetString() : "")”<br />
+            <strong>@(item.TryGetProperty("name", out var n) ? n.GetString() : "")</strong></p>
+        }
+        <a class="text-link" href="@(basePath)/messages">Read messages</a>
+    </div>
+</section>
+@if (achievements is not null)
+{
+    <section class="shell section">
+        <h2>@achievements.Title</h2>
+        <div class="card-grid">
+            @foreach (var item in SectionJson.GetArray(achievementsJson, "items"))
+            {
+                <article>
+                    <h3>@(item.TryGetProperty("title", out var t) ? t.GetString() : "")</h3>
+                    <p>@(item.TryGetProperty("year", out var y) ? y.GetString() : "") — @(item.TryGetProperty("description", out var d) ? d.GetString() : "")</p>
+                </article>
+            }
+        </div>
+    </section>
+}

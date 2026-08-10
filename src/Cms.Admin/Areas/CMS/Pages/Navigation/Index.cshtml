@@ -13,6 +13,10 @@
     <section class="form-card">
         <div class="form-card__header"><div><span class="step-number">01</span><span><strong>Menus</strong><small>@Model.Menus.Count configured location(s)</small></span></div></div>
         <div class="content-list">
+            @if (Model.Menus.Count == 0)
+            {
+                <div class="empty-state"><strong>No menus yet</strong><span>Menus are generated when pages are assigned, and can be refined here.</span></div>
+            }
             @foreach (var menu in Model.Menus)
             {
                 <article>

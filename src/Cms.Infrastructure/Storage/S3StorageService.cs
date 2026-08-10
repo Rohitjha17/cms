@@ -1,4 +1,3 @@
-using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Cms.Application.Interfaces;
@@ -17,15 +16,16 @@ public class S3StorageService : IFileStorageService
 
     public S3StorageService(
         IOptions<AwsOptions> options,
+        IAmazonS3 client,
         ITenantContext tenantContext,
         ISiteContext siteContext,
         ILogger<S3StorageService> logger)
     {
         _options = options.Value;
+        _client = client;
         _tenantContext = tenantContext;
         _siteContext = siteContext;
         _logger = logger;
-        _client = new AmazonS3Client(_options.AccessKey, _options.SecretKey, RegionEndpoint.GetBySystemName(_options.Region));
     }
 
     public async Task<StoredFileResult> UploadAsync(Stream content, string fileName, string contentType, string folder, CancellationToken cancellationToken = default)
@@ -37,17 +37,26 @@ public class S3StorageService : IFileStorageService
             "image/webp" => ".webp",
             "image/gif" => ".gif",
             "application/pdf" => ".pdf",
+            "video/mp4" => ".mp4",
+            "video/webm" => ".webm",
             _ => throw new InvalidOperationException("Unsupported media content type.")
         };
+        if (_tenantContext.TenantId is not Guid tenantId || _siteContext.SiteId is not Guid siteId)
+        {
+            // Without both, every tenant would share one folder — fail instead of leaking.
+            throw new InvalidOperationException("Cannot store media before the tenant and website are resolved.");
+        }
+
         var storedName = $"{Guid.NewGuid():N}{extension}";
-        var key = $"{_tenantContext.TenantId}/{_siteContext.SiteId}/{folder}/{storedName}";
+        var key = $"{tenantId}/{siteId}/{folder}/{storedName}";
 
         var request = new PutObjectRequest
         {
             BucketName = _options.BucketName,
             Key = key,
             InputStream = content,
-            ContentType = contentType
+            ContentType = contentType,
+            Headers = { CacheControl = "public, max-age=31536000, immutable" }
         };
 
         await _client.PutObjectAsync(request, cancellationToken);

@@ -39,9 +39,18 @@ public sealed class IndexModel : PageModel
             EditId = page.Id;
             Input = new SavePageDto
             {
-                Title = page.Title, Slug = page.Slug, Excerpt = page.Excerpt,
-                Content = page.Content, FeaturedImageUrl = page.FeaturedImageUrl,
-                MetaTitle = page.MetaTitle, MetaDescription = page.MetaDescription,
+                PageType = page.PageType,
+                TemplateKey = page.TemplateKey,
+                Title = page.Title,
+                Slug = page.Slug,
+                Excerpt = page.Excerpt,
+                Content = page.Content,
+                JsonData = page.JsonData,
+                FeaturedImageUrl = page.FeaturedImageUrl,
+                MetaTitle = page.MetaTitle,
+                MetaDescription = page.MetaDescription,
+                ShowInMenu = page.ShowInMenu,
+                MenuOrder = page.MenuOrder,
                 IsActive = page.IsActive
             };
         }
