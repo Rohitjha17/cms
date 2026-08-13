@@ -339,23 +339,56 @@ public sealed class AdminConsoleTests : IClassFixture<AdminFactory>
     /// PublicSite:BaseUrl must resolve against the request's own host. Previously a
     /// mis-set absolute value sent editors to a dead domain.
     /// </summary>
-    [Fact]
-    public async Task ViewLiveSiteLink_PointsAtThisDeployment()
+    /// <summary>
+    /// The container declares PublicSite:PathBase for its own deployment. That must beat a
+    /// stale absolute PublicSite:BaseUrl left in the hosting environment — otherwise a
+    /// placeholder host typed once keeps sending editors to a dead address forever.
+    /// </summary>
+    [Theory]
+    [InlineData("/site", null)]
+    [InlineData("/site", "https://your-app.onrender.com")]
+    public async Task ViewLiveSiteLinks_UseThisDeploymentNotAStaleConfiguredHost(
+        string pathBase, string? staleBaseUrl)
     {
         using var client = _factory.WithWebHostBuilder(builder =>
             builder.ConfigureAppConfiguration((_, config) =>
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["PublicSite:BaseUrl"] = "/site"
+                    ["PublicSite:PathBase"] = pathBase,
+                    ["PublicSite:BaseUrl"] = staleBaseUrl
                 }))).CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
-        client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, AppRoles.TenantAdmin);
+        client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, AppRoles.SuperAdmin);
 
-        using var response = await client.GetAsync("/CMS/Templates/Index?site=school");
+        foreach (var path in new[] { "/", "/CMS/Websites/Index", "/CMS/Templates/Index?site=school" })
+        {
+            using var response = await client.GetAsync(path);
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.DoesNotContain("your-app.onrender.com", html);
+            Assert.DoesNotContain("http://localhost:5301", html);
+        }
+    }
+
+    /// <summary>Each website card must open its own website, not whichever one is selected.</summary>
+    [Fact]
+    public async Task EachWebsiteCard_LinksToItsOwnSite()
+    {
+        using var client = _factory.WithWebHostBuilder(builder =>
+            builder.ConfigureAppConfiguration((_, config) =>
+                config.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["PublicSite:PathBase"] = "/site"
+                }))).CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, AppRoles.SuperAdmin);
+
+        using var response = await client.GetAsync("/CMS/Websites/Index?site=school");
         response.EnsureSuccessStatusCode();
         var html = await response.Content.ReadAsStringAsync();
 
-        Assert.DoesNotContain("your-app.onrender.com", html);
-        Assert.DoesNotContain("http://localhost:5301", html);
+        // Both demo websites are listed, so both site-key URLs must be present.
+        Assert.Contains("/site/school", html);
+        Assert.Contains("/site/college", html);
     }
 
     [Fact]

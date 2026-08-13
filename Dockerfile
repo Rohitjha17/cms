@@ -38,6 +38,9 @@ COPY --from=build /out/demo/cms.db ./demo-seed/cms.db
 COPY vercel/nginx.conf /etc/nginx/nginx.conf
 COPY --chmod=755 vercel/entrypoint.sh /app/entrypoint.sh
 
+# PublicSite__PathBase says the public website is served by this same container under /site.
+# It takes precedence over PublicSite__BaseUrl, so a stale absolute URL left in the hosting
+# environment cannot send editors to a dead address.
 ENV ASPNETCORE_ENVIRONMENT=Development \
     DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false \
     Database__Provider=Sqlite \
@@ -48,7 +51,7 @@ ENV ASPNETCORE_ENVIRONMENT=Development \
     Storage__LocalBaseUrl=/uploads \
     DemoMode__Enabled=true \
     Proxy__TrustForwardedHeaders=true \
-    PublicSite__BaseUrl=/site \
+    PublicSite__PathBase=/site \
     Seed__EnableDemoData=true \
     Seed__SkipStartup=true \
     PORT=80

@@ -5,13 +5,17 @@ namespace Cms.Admin.Services;
 /// <summary>
 /// URLs of the published websites for the workspace being edited.
 ///
-/// <c>PublicSite:BaseUrl</c> accepts either shape:
-///   * a rooted path such as <c>/site</c> — the public website is served by this same
-///     deployment, so links are built from the current request's own scheme and host;
-///   * an absolute <c>https://…</c> URL — the public website is a separate deployment.
+/// Two settings, in precedence order:
+///   1. <c>PublicSite:PathBase</c> — e.g. <c>/site</c>. Set by the deployment itself when the
+///      public website is served by this same process, so links are built from whichever host
+///      the operator is actually on. This wins, because "same host, this path" is a fact the
+///      container knows about itself and cannot be wrong about.
+///   2. <c>PublicSite:BaseUrl</c> — an absolute <c>https://…</c> URL, for when the public site
+///      is a genuinely separate deployment.
 ///
-/// Anything else is ignored and the links are hidden, because a malformed value sends
-/// editors to a dead address that looks like a broken product rather than a mis-set variable.
+/// The precedence matters: an operator who once set BaseUrl to a placeholder host would
+/// otherwise keep sending editors to a dead address, and nothing in the product could
+/// recover from it.
 /// </summary>
 public interface IPublicSiteLink
 {
@@ -35,26 +39,31 @@ public sealed class PublicSiteLink : IPublicSiteLink
         IHttpContextAccessor httpContextAccessor,
         ILogger<PublicSiteLink> logger)
     {
-        var configured = configuration["PublicSite:BaseUrl"]?.Trim();
-        if (string.IsNullOrWhiteSpace(configured))
-        {
-            return;
-        }
+        var pathBase = configuration["PublicSite:PathBase"]?.Trim().TrimEnd('/');
+        var configured = configuration["PublicSite:BaseUrl"]?.Trim().TrimEnd('/');
 
-        configured = configured.TrimEnd('/');
+        // A same-host path base always wins over a configured external URL.
+        var sameHostPath = !string.IsNullOrWhiteSpace(pathBase) && pathBase.StartsWith('/')
+            ? pathBase
+            : !string.IsNullOrWhiteSpace(configured) && configured.StartsWith('/')
+                ? configured
+                : null;
 
-        if (configured.StartsWith('/'))
+        if (sameHostPath is not null)
         {
-            // Same deployment: anchor the path to whichever host the operator is actually on,
-            // so links are correct on localhost, on a preview URL and on a custom domain
-            // without being reconfigured for each.
+            // Anchor to whichever host the operator is actually on, so links are correct on
+            // localhost, on a preview URL and on a custom domain with no reconfiguration.
             var request = httpContextAccessor.HttpContext?.Request;
             if (request is null)
             {
                 return;
             }
 
-            _origin = $"{request.Scheme}://{request.Host}{configured}";
+            _origin = $"{request.Scheme}://{request.Host}{sameHostPath}";
+        }
+        else if (string.IsNullOrWhiteSpace(configured))
+        {
+            return;
         }
         else if (Uri.TryCreate(configured, UriKind.Absolute, out var absolute)
                  && (absolute.Scheme == Uri.UriSchemeHttp || absolute.Scheme == Uri.UriSchemeHttps))
