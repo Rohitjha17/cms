@@ -1,3 +1,4 @@
+using Cms.Admin.Filters;
 using Cms.Application.DTOs.Websites;
 using Cms.Application.Interfaces;
 using Cms.Domain.Constants;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Cms.Admin.Areas.CMS.Pages.Websites;
 
-public sealed class IndexModel : PageModel
+public sealed class IndexModel : PageModel, IReloadablePage
 {
     private readonly IWebsiteService _service;
     private readonly IValidator<ProvisionWebsiteDto> _validator;
@@ -76,6 +77,9 @@ public sealed class IndexModel : PageModel
         CreatedSiteKey = created.SiteKey;
         return RedirectToPage();
     }
+
+    /// <summary>Refetches the lists when a failed save redisplays this page.</summary>
+    public Task ReloadAsync(CancellationToken cancellationToken) => LoadAsync(cancellationToken);
 
     private async Task LoadAsync(CancellationToken cancellationToken)
     {

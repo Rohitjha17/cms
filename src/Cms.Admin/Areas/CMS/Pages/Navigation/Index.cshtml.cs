@@ -1,3 +1,4 @@
+using Cms.Admin.Filters;
 using Cms.Application.DTOs.Content;
 using Cms.Application.Interfaces;
 using Cms.Domain.Constants;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Cms.Admin.Areas.CMS.Pages.Navigation;
 
-public sealed class IndexModel : PageModel
+public sealed class IndexModel : PageModel, IReloadablePage
 {
     private readonly ISiteContentService _service;
     private readonly IValidator<SaveMenuDto> _validator;
@@ -74,6 +75,9 @@ public sealed class IndexModel : PageModel
         StatusMessage = "Menu deleted.";
         return RedirectToPage();
     }
+
+    /// <summary>Refetches the lists when a failed save redisplays this page.</summary>
+    public Task ReloadAsync(CancellationToken cancellationToken) => LoadAsync(cancellationToken);
 
     private async Task LoadAsync(CancellationToken cancellationToken) =>
         Menus = await _service.GetMenusAsync(true, cancellationToken);

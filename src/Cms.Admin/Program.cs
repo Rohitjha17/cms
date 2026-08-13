@@ -17,6 +17,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHttpClient("DemoApiGateway");
 builder.Services.AddScoped<IPublicSiteLink, PublicSiteLink>();
+builder.Services.AddScoped<Cms.Admin.Filters.ValidationExceptionPageFilter>();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -55,7 +56,9 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToPage("/Account/Login");
     options.Conventions.AllowAnonymousToPage("/Account/ForgotPassword");
     options.Conventions.AllowAnonymousToPage("/Account/ResetPassword");
-});
+})
+// A failed save must surface as an error on the form, never as a stack trace.
+.AddMvcOptions(options => options.Filters.Add<Cms.Admin.Filters.ValidationExceptionPageFilter>());
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

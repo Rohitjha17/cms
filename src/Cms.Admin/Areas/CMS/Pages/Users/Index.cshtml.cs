@@ -1,3 +1,4 @@
+using Cms.Admin.Filters;
 using Cms.Application.DTOs.Tenancy;
 using Cms.Application.DTOs.Users;
 using Cms.Application.Interfaces;
@@ -12,7 +13,7 @@ namespace Cms.Admin.Areas.CMS.Pages.Users;
 /// Account administration for the current institution. Tenant scoping and role limits are
 /// enforced by <see cref="IUserManagementService"/>; this page only shapes the workspace.
 /// </summary>
-public sealed class IndexModel : PageModel
+public sealed class IndexModel : PageModel, IReloadablePage
 {
     private readonly IUserManagementService _service;
     private readonly ITenantManagementService _tenantService;
@@ -191,6 +192,9 @@ public sealed class IndexModel : PageModel
 
         return RedirectToPage();
     }
+
+    /// <summary>Refetches the lists when a failed save redisplays this page.</summary>
+    public Task ReloadAsync(CancellationToken cancellationToken) => LoadAsync(cancellationToken);
 
     private async Task LoadAsync(CancellationToken cancellationToken)
     {

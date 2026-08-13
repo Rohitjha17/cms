@@ -286,6 +286,78 @@ public sealed class AdminConsoleTests : IClassFixture<AdminFactory>
         Assert.Contains("Include sample staff", html);
     }
 
+    /// <summary>
+    /// Creating a user with a password that fails the rules used to escape as an unhandled
+    /// FluentValidation exception and render the developer error page. It must come back as
+    /// an error on the form.
+    /// </summary>
+    [Fact]
+    public async Task InvalidInput_ShowsAFormErrorNotAStackTrace()
+    {
+        using var get = await _client.GetAsync("/CMS/Users/Index");
+        get.EnsureSuccessStatusCode();
+        var page = await get.Content.ReadAsStringAsync();
+
+        var token = System.Text.RegularExpressions.Regex
+            .Match(page, @"name=""__RequestVerificationToken""[^>]*value=""([^""]+)""").Groups[1].Value;
+        Assert.False(string.IsNullOrEmpty(token), "No antiforgery token on the users page.");
+
+        var cookies = string.Join("; ", get.Headers.TryGetValues("Set-Cookie", out var set)
+            ? set.Select(c => c.Split(';')[0])
+            : []);
+
+        var form = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["Input.Email"] = "new.editor@demo.local",
+            ["Input.FullName"] = "New Editor",
+            ["Input.Role"] = "Editor",
+            ["Input.Password"] = "alllowercase1",   // no uppercase — violates the policy
+            ["Input.IsActive"] = "true"
+        });
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/CMS/Users/Index?handler=Create")
+        {
+            Content = form
+        };
+        request.Headers.Add("Cookie", cookies);
+
+        using var response = await _client.SendAsync(request);
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.DoesNotContain("An unhandled exception occurred", html);
+        Assert.DoesNotContain("ValidationException", html);
+        Assert.Contains("uppercase", html);
+
+        // The surrounding page must still be intact, not an empty shell.
+        Assert.Contains("People with access", html);
+    }
+
+    /// <summary>
+    /// The container serves the public website at /site on the same host, so a rooted
+    /// PublicSite:BaseUrl must resolve against the request's own host. Previously a
+    /// mis-set absolute value sent editors to a dead domain.
+    /// </summary>
+    [Fact]
+    public async Task ViewLiveSiteLink_PointsAtThisDeployment()
+    {
+        using var client = _factory.WithWebHostBuilder(builder =>
+            builder.ConfigureAppConfiguration((_, config) =>
+                config.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["PublicSite:BaseUrl"] = "/site"
+                }))).CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, AppRoles.TenantAdmin);
+
+        using var response = await client.GetAsync("/CMS/Templates/Index?site=school");
+        response.EnsureSuccessStatusCode();
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.DoesNotContain("your-app.onrender.com", html);
+        Assert.DoesNotContain("http://localhost:5301", html);
+    }
+
     [Fact]
     public async Task Responses_CarrySecurityHeaders()
     {

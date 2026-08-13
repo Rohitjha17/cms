@@ -1,3 +1,4 @@
+using Cms.Admin.Filters;
 using Cms.Application.DTOs.Content;
 using Cms.Application.Interfaces;
 using Cms.Domain.Constants;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Cms.Admin.Areas.CMS.Pages.Pages;
 
-public sealed class IndexModel : PageModel
+public sealed class IndexModel : PageModel, IReloadablePage
 {
     private readonly ISiteContentService _service;
     private readonly IValidator<SavePageDto> _validator;
@@ -81,6 +82,9 @@ public sealed class IndexModel : PageModel
         StatusMessage = "Page deleted.";
         return RedirectToPage();
     }
+
+    /// <summary>Refetches the lists when a failed save redisplays this page.</summary>
+    public Task ReloadAsync(CancellationToken cancellationToken) => LoadAsync(cancellationToken);
 
     private async Task LoadAsync(CancellationToken cancellationToken) =>
         Pages = await _service.GetPagesAsync(true, cancellationToken);
