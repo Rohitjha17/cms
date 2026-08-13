@@ -31,10 +31,11 @@
             <li><a asp-area="CMS" asp-page="/HomePage/Index" asp-route-site="@Model.CreatedSiteKey">Adjust the home page wording</a></li>
             <li><a asp-area="CMS" asp-page="/Domains/Index">Bind a domain</a>, or share the site-key URL as it is</li>
         </ol>
-        @if (PublicSite.Url is not null)
+        @{ var createdUrl = PublicSite.ForSite(Model.CreatedSiteKey); }
+        @if (createdUrl is not null)
         {
             <p style="margin:10px 0 0">
-                <a class="btn btn-sm" href="@PublicSite.Url" target="_blank" rel="noopener">Open the live site</a>
+                <a class="btn btn-sm" href="@createdUrl" target="_blank" rel="noopener">Open the live site</a>
             </p>
         }
     </section>

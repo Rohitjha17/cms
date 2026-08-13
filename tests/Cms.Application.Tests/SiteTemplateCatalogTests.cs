@@ -67,6 +67,34 @@ public sealed class SiteTemplateCatalogTests
         }
     }
 
+    /// <summary>
+    /// A template exists so a site can be shown to a school as-is. Placeholder copy such as
+    /// "edit this page" defeats that, so every template must supply finished text for the
+    /// pages a visitor actually reads.
+    /// </summary>
+    [Fact]
+    public void EveryTemplate_ShipsFinishedPageCopy()
+    {
+        string[] mustHave = ["about", "admission", "facilities", "messages", "committee"];
+
+        foreach (var template in SiteTemplateCatalog.All)
+        {
+            foreach (var page in mustHave)
+            {
+                Assert.True(template.PageContent.ContainsKey(page),
+                    $"{template.Key} has no copy for the {page} page");
+
+                var copy = template.PageContent[page];
+                Assert.True(copy.Length > 300, $"{template.Key}/{page} copy is too thin to show a school");
+                Assert.DoesNotContain("Edit this page", copy, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("Lorem", copy, StringComparison.OrdinalIgnoreCase);
+            }
+
+            // The school's own name must appear, so the site does not read as a generic demo.
+            Assert.Contains(template.PageContent.Values, x => x.Contains("{name}"));
+        }
+    }
+
     [Fact]
     public void Find_IsCaseInsensitiveAndReturnsNullForUnknown()
     {

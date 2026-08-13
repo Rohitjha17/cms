@@ -87,9 +87,10 @@
                     <div class="website-card__actions">
                         <a class="btn btn-sm" asp-area="CMS" asp-page="/Branding/Index" asp-route-site="@site.SiteKey">Manage this website</a>
                         <a class="btn btn-secondary btn-sm" asp-area="" asp-page="/Index" asp-route-site="@site.SiteKey">Open workspace</a>
-                        @if (PublicSite.Url is not null)
+                        @{ var liveUrl = PublicSite.ForSite(site.SiteKey, site.Domains); }
+                        @if (liveUrl is not null)
                         {
-                            <a class="btn btn-secondary btn-sm" href="@PublicSite.Url" target="_blank" rel="noopener">View live</a>
+                            <a class="btn btn-secondary btn-sm" href="@liveUrl" target="_blank" rel="noopener">View live</a>
                         }
                     </div>
                 </article>

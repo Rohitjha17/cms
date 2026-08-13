@@ -477,6 +477,7 @@ public sealed class WebsiteService : IWebsiteService
 
         var tenantId = RequireTenant();
         await ApplyHomeCopyAsync(tenantId, created.Id, template, dto.Name, cancellationToken);
+        await ApplyPageCopyAsync(tenantId, created.Id, template, dto.Name, cancellationToken);
 
         if (dto.IncludeSampleContent)
         {
@@ -532,6 +533,41 @@ public sealed class WebsiteService : IWebsiteService
         }
 
         await _repository.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Replaces the page gallery's placeholder text with the template's finished copy, so a
+    /// site can be shown to a school without anyone first having to write eight pages.
+    /// </summary>
+    private async Task ApplyPageCopyAsync(
+        Guid tenantId, Guid siteId, SiteTemplate template, string schoolName, CancellationToken cancellationToken)
+    {
+        if (template.PageContent.Count == 0)
+        {
+            return;
+        }
+
+        var pages = await _repository.GetPagesAsync(tenantId, siteId, activeOnly: false, cancellationToken);
+        var changed = false;
+
+        foreach (var page in pages)
+        {
+            if (page.TemplateKey is null
+                || !template.PageContent.TryGetValue(page.TemplateKey, out var copy))
+            {
+                continue;
+            }
+
+            page.Content = TemplateSanitizer.Sanitize(copy.Replace("{name}", schoolName));
+            page.UpdatedDate = DateTime.UtcNow;
+            page.UpdatedBy = Actor;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            await _repository.SaveChangesAsync(cancellationToken);
+        }
     }
 
     private async Task AddSampleContentAsync(
