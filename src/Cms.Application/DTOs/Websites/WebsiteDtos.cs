@@ -83,6 +83,7 @@ public sealed class ProvisionWebsiteDto
     public bool IsDefault { get; set; }
     public string? DomainName { get; set; }
     public string? LogoUrl { get; set; }
+    public string? HeaderImageUrl { get; set; }
     public string? Tagline { get; set; }
     public string? PrimaryColor { get; set; } = "#0f2d5c";
     public string? SecondaryColor { get; set; } = "#c9a227";

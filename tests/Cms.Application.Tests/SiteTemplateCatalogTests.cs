@@ -31,7 +31,19 @@ public sealed class SiteTemplateCatalogTests
 
             Assert.StartsWith("#", template.PrimaryColor);
             Assert.StartsWith("#", template.SecondaryColor);
+
+            // Two schools created from different templates must not open on the same photograph.
+            Assert.False(string.IsNullOrWhiteSpace(template.HeroImageUrl), $"{template.Key} has no hero image");
+            Assert.StartsWith("https://", template.HeroImageUrl);
         }
+    }
+
+    [Fact]
+    public void HeroImages_AreDistinctPerTemplate()
+    {
+        var images = SiteTemplateCatalog.All.Select(x => x.HeroImageUrl).ToList();
+
+        Assert.Equal(images.Count, images.Distinct().Count());
     }
 
     [Fact]

@@ -47,11 +47,12 @@
         var isSelected = Model.SelectedTemplateKey == template.Key;
         <article class="site-template @(isSelected ? "is-selected" : null)"
                  style="--tpl-primary:@template.PrimaryColor; --tpl-accent:@template.SecondaryColor">
-            <div class="site-template__preview" aria-hidden="true">
-                <span class="stp-bar"></span>
-                <span class="stp-hero design-preview--@template.HomeVariant.ToString().ToLowerInvariant()"></span>
-                <span class="stp-row"><i></i><i></i><i></i><i></i></span>
-                <span class="stp-body"><i></i><i></i></span>
+            <div class="site-template__preview tm--@template.HomeVariant.ToString().ToLowerInvariant()" aria-hidden="true">
+                <span class="tm-bar"></span>
+                <span class="tm-nav"><b></b><i></i><i></i><i></i><i></i></span>
+                <span class="tm-hero"><i class="l1"></i><i class="l2"></i><em></em></span>
+                <span class="tm-stats"><i></i><i></i><i></i><i></i></span>
+                <span class="tm-cards"><i></i><i></i><i></i></span>
             </div>
 
             <div class="site-template__body">

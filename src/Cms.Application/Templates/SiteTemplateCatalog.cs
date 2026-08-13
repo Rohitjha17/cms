@@ -36,6 +36,7 @@ public static class SiteTemplateCatalog
                 "Leadership messages and campus gallery",
                 "Mandatory disclosure table ready for CBSE documents"
             ],
+            HeroImageUrl = "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1800&q=80",
             HeroHeading = "An education that lasts a lifetime",
             HeroDescription = "Four decades of academic excellence, values and community in the heart of the city.",
             Statistics = new StatisticsSample(2400, 130, 100, 41),
@@ -117,6 +118,7 @@ public static class SiteTemplateCatalog
                 "Latest news and testimonials on the home page",
                 "Clean layout that suits heavy photography"
             ],
+            HeroImageUrl = "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1800&q=80",
             HeroHeading = "Where curiosity becomes capability",
             HeroDescription = "An inquiry-led curriculum, small classes and mentors who know every learner by name.",
             Statistics = new StatisticsSample(1100, 96, 100, 12),
@@ -195,6 +197,7 @@ public static class SiteTemplateCatalog
                 "Gallery-forward layout",
                 "Facilities page prepared for boarding details"
             ],
+            HeroImageUrl = "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=1800&q=80",
             HeroHeading = "Room to grow, in every sense",
             HeroDescription = "Sixty acres of classrooms, fields, studios and residences — a community that lives and learns together.",
             Statistics = new StatisticsSample(820, 74, 100, 38),
@@ -273,6 +276,7 @@ public static class SiteTemplateCatalog
                 "Mandatory disclosure prepared for UGC/AICTE documents",
                 "Admission page structured around eligibility and dates"
             ],
+            HeroImageUrl = "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1800&q=80",
             HeroHeading = "Graduate ready for what comes next",
             HeroDescription = "Undergraduate and postgraduate programmes across arts, science and commerce, with placement support throughout.",
             Statistics = new StatisticsSample(4200, 210, 640, 32),
@@ -352,6 +356,7 @@ public static class SiteTemplateCatalog
                 "Committee page prepared for trustees and governance",
                 "Restrained palette suited to formal institutions"
             ],
+            HeroImageUrl = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1800&q=80",
             HeroHeading = "A tradition of purposeful education",
             HeroDescription = "Serving generations of families with an education grounded in character, scholarship and service.",
             Statistics = new StatisticsSample(1600, 118, 100, 76),
@@ -408,7 +413,266 @@ public static class SiteTemplateCatalog
                 new EventSample("Founders' Commemoration", 30, "Main hall", "Our annual remembrance and prize giving."),
                 new EventSample("Governing Council Meeting", 12, "Trust office", "Quarterly meeting of the governing council.")
             ]
+        },
+
+        new SiteTemplate
+        {
+            Key = "global-international-school",
+            Name = "Global International School",
+            Summary = "An IB and Cambridge-curriculum site with programme pathways, a global-outcomes band and alumni destinations.",
+            BestFor = "International schools and IB/IGCSE curricula",
+            WebsiteType = WebsiteType.School,
+            HomeVariant = HomeVariant.Modern,
+            PrimaryColor = "#0d5c63",
+            SecondaryColor = "#f2a541",
+            SampleTagline = "An international education, rooted in who your child is",
+            Highlights =
+            [
+                "Programme pathways: Primary Years, Middle Years, Diploma",
+                "University destinations and outcomes band",
+                "Built for schools that admit mid-year and from abroad",
+                "Reads well to parents relocating from another country"
+            ],
+            HeroImageUrl = "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1800&q=80",
+            HeroHeading = "Learners without borders",
+            HeroDescription = "An inquiry-led international curriculum that travels with your family, wherever you go next.",
+            Statistics = new StatisticsSample(1150, 96, 100, 18),
+            WhyIntro = "Small classes, teachers from eleven countries, and a curriculum recognised by universities worldwide.",
+            PageContent = new Dictionary<string, string>
+            {
+                ["about"] = """
+<p>{name} is an international school teaching the Primary Years, Middle Years and Diploma programmes on one campus. Our families come from more than thirty nationalities, and many arrive mid-year — so we are built to welcome a child in October as readily as in April.</p>
+<h2>How we teach</h2><p>Inquiry comes first. Children are taught to ask a good question, gather evidence, and defend a conclusion — in class, in the laboratory and on the stage. Subject knowledge is the floor, not the ceiling.</p>
+<h2>Language</h2><p>English is the language of instruction. We additionally teach French, Spanish, Hindi and Mandarin, and run an English acquisition programme for students joining from another language.</p>
+<h2>Accreditation</h2><p>Authorised for all three IB programmes and a registered Cambridge International centre. Our Diploma results have exceeded the world average in each of the last six sessions.</p>
+""",
+                ["admission"] = """
+<p>{name} admits throughout the year wherever a place exists, because international families rarely move to the academic calendar.</p>
+<h2>How to apply</h2><p>Submit the online enquiry, then send us two years of school reports and any external assessment results. Applications from abroad are handled entirely online, including the family interview.</p>
+<h2>Assessment</h2><p>Applicants sit an age-appropriate assessment in English and mathematics — online if you are overseas. For the Diploma we also discuss subject choices and predicted grades.</p>
+<h2>Relocating families</h2><p>Our admissions team can advise on visas, transport routes and housing near the campus, and pair your child with a student buddy for the first month.</p>
+""",
+                ["facilities"] = """
+<h2>Learning</h2><p>Design-technology and robotics workshops, four science laboratories, a recording studio, a black-box theatre and a two-floor library with an independent-research commons for Diploma students.</p>
+<h2>Sport</h2><p>A FIFA-standard football pitch, a twenty-five-metre pool, four tennis courts and an indoor sports hall. We compete in the international schools league across six sports.</p>
+<h2>Wellbeing</h2><p>Two full-time counsellors, a school nurse, and a pastoral tutor for every year group. Every child is known by name by an adult responsible for them.</p>
+<h2>Boarding</h2><p>A sixty-bed residence for Grades 9 to 12, with house parents, supervised study and weekend programmes.</p>
+""",
+                ["messages"] = """
+<h2>From the Head of School</h2><p>An international school is not defined by its passports but by its habits of mind. We want students who can sit with a hard problem, listen to someone who disagrees, and change their mind when the evidence says so.</p>
+<h2>From the Diploma Coordinator</h2><p>The Diploma is demanding, and it should be. Our job is to make it survivable and worth it — through subject choice that fits the student, and an extended essay they actually care about.</p>
+""",
+                ["committee"] = """
+<p>{name} is governed by a board of trustees that meets each term. It is responsible for strategy, finance, safeguarding and the appointment of the Head of School.</p>
+<h2>Composition</h2><p>The board comprises the Chair, four trustees appointed by the founding trust, two elected parent representatives, one alumni representative and the Head of School as an ex-officio member.</p>
+<h2>Safeguarding</h2><p>A named safeguarding trustee reviews child-protection practice annually. Our safeguarding policy is published on this site and reviewed each year.</p>
+""",
+            },
+            Faculty =
+            [
+                new ContentSample("Head of School", "Dr. Anneke Visser", "Leading the school since 2019.", "Leadership", "Ed.D, M.Ed"),
+                new ContentSample("Diploma Coordinator", "Rahul Iyer", "IB Diploma and university guidance.", "Leadership", "M.Sc, PGCE"),
+                new ContentSample("PYP Coordinator", "Sofia Marquez", "Early and primary years inquiry.", "Leadership", "M.Ed"),
+                new ContentSample("Head of Sciences", "Dr. Chen Wei", "Physics, and the research programme.", "Teaching", "Ph.D (Physics)"),
+                new ContentSample("Head of Languages", "Camille Roux", "French, Spanish and English acquisition.", "Teaching", "M.A, CELTA")
+            ],
+            Departments =
+            [
+                new DepartmentSample("Primary Years Programme", "Inquiry-led learning for ages 3 to 11, built around six transdisciplinary themes.",
+                    ["Early Years", "Lower Primary", "Upper Primary", "Exhibition"]),
+                new DepartmentSample("Middle Years Programme", "Ages 11 to 16, with a personal project in the final year.",
+                    ["Sciences", "Individuals and Societies", "Design", "Arts"]),
+                new DepartmentSample("Diploma Programme", "The two-year pre-university course, with the core taught across all subjects.",
+                    ["Theory of Knowledge", "Extended Essay", "Creativity, Activity, Service"]),
+                new DepartmentSample("University Guidance", "Applications to the UK, US, Canada, Europe, Australia and India.",
+                    ["UCAS", "Common App", "Portfolio support"])
+            ],
+            News =
+            [
+                new NewsSample("Diploma results above the world average for a sixth year", "Achievement", "An average of 34 points, with four students at 42 or above.", true),
+                new NewsSample("Mid-year admissions open for Grades 1 to 9", "Notice", "Places available for families relocating this term.", false),
+                new NewsSample("Model United Nations team places second at the regional conference", "Achievement", "Delegates from eleven schools took part.", false)
+            ],
+            Events =
+            [
+                new EventSample("Virtual Open House for relocating families", 10, "Online", "A live tour and Q&A with the Head of School."),
+                new EventSample("University Fair", 26, "Sports hall", "Admissions officers from forty universities."),
+                new EventSample("International Day", -12, "Whole campus", "Food, dress and performance from every nationality on campus.")
+            ]
+        },
+
+        new SiteTemplate
+        {
+            Key = "technology-institute",
+            Name = "Institute of Technology",
+            Summary = "An engineering and technology site led by placements, laboratories and industry partnerships.",
+            BestFor = "Engineering colleges and technical institutes",
+            WebsiteType = WebsiteType.College,
+            HomeVariant = HomeVariant.Academic,
+            PrimaryColor = "#1a2b6d",
+            SecondaryColor = "#00a3a3",
+            SampleTagline = "Engineers who can build the thing, not just describe it",
+            Highlights =
+            [
+                "Placement record and recruiter list on the home page",
+                "Branch-wise departments with laboratory detail",
+                "Research, patents and industry-partnership sections",
+                "Admissions page written around entrance-exam counselling"
+            ],
+            HeroImageUrl = "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1800&q=80",
+            HeroHeading = "Build what comes next",
+            HeroDescription = "Four-year engineering degrees taught in laboratories, not just lecture halls — with a placement cell that starts working in your second year.",
+            Statistics = new StatisticsSample(3800, 240, 94, 26),
+            WhyIntro = "Accredited programmes, laboratories that match industry, and a placement record we publish in full.",
+            PageContent = new Dictionary<string, string>
+            {
+                ["about"] = """
+<p>{name} has taught engineering for twenty-six years. We are approved by AICTE, affiliated to the state technical university, and our core branches hold NBA accreditation.</p>
+<h2>How we teach</h2><p>Every core subject carries a laboratory component, and every student completes an eight-week industry internship and a two-semester capstone project. Theory that is never built is theory a student forgets.</p>
+<h2>Industry</h2><p>We run joint laboratories with three industry partners, and practising engineers teach one elective per branch each semester. Our syllabus review board includes employers who hire our graduates.</p>
+<h2>Research</h2><p>Funded research in power electronics, structural materials and applied machine learning, with undergraduates working alongside faculty from the third year.</p>
+""",
+                ["admission"] = """
+<p>Admission to the B.Tech programmes at {name} is through the state engineering entrance examination and the centralised counselling process, with a management quota governed by the same academic minimum.</p>
+<h2>Eligibility</h2><p>A pass in Class XII with Physics, Mathematics and one of Chemistry, Computer Science or Biotechnology, and a valid entrance rank.</p>
+<h2>Counselling</h2><p>Choose {name} and your branch during centralised counselling. Our admissions desk runs a helpline through the counselling window — call before you lock your choices, not after.</p>
+<h2>Lateral entry</h2><p>Diploma holders may enter the second year through the lateral-entry examination, subject to available seats.</p>
+<h2>Fees and scholarships</h2><p>The fee structure is fixed by the state fee regulatory authority and published under Mandatory Disclosure. Merit scholarships cover full tuition for the top rank holders in each branch.</p>
+""",
+                ["facilities"] = """
+<h2>Laboratories</h2><p>Thirty-two laboratories across the branches, including a high-voltage laboratory, a materials testing laboratory, a fabrication workshop with CNC and 3D printing, and a GPU cluster for machine-learning coursework.</p>
+<h2>Library and digital resources</h2><p>Ninety thousand volumes, and institutional subscriptions to IEEE Xplore, ScienceDirect and ASME, accessible from the hostels.</p>
+<h2>Hostels</h2><p>Separate residences for men and women, housing eighteen hundred students, with mess, gymnasium and twenty-four-hour internet.</p>
+<h2>Incubation centre</h2><p>Seed grants, mentoring and workspace for student ventures. Nine companies have been incorporated out of the centre since 2019.</p>
+""",
+                ["messages"] = """
+<h2>From the Principal</h2><p>An engineering degree should leave a graduate able to do something on the first day of the job. That is the standard we hold ourselves to, and it is why our laboratories matter more to us than our lecture halls.</p>
+<h2>From the Training and Placement Officer</h2><p>We start in the second year: aptitude, communication, and the specific skills recruiters ask us for. Our placement record is published in full, including the students who chose higher study instead.</p>
+""",
+                ["committee"] = """
+<p>{name} is governed by a Board of Governors constituted under AICTE norms, meeting twice a year.</p>
+<h2>Composition</h2><p>The Board comprises the Chairman, nominees of the trust, a nominee of the affiliating university, a nominee of the state government, two senior faculty members, an industry representative and the Principal as Member Secretary.</p>
+<h2>Statutory committees</h2><p>An Academic Council, a Grievance Redressal Committee, an Internal Complaints Committee and an Anti-Ragging Committee operate under the Board. Contact details for each are published on this site as required.</p>
+""",
+            },
+            Faculty =
+            [
+                new ContentSample("Principal", "Dr. S. Venkataraman", "Power systems; heading the institute since 2016.", "Leadership", "Ph.D, M.Tech"),
+                new ContentSample("Dean, Academics", "Dr. Priya Nair", "Curriculum, accreditation and examinations.", "Leadership", "Ph.D (Computer Science)"),
+                new ContentSample("Training and Placement Officer", "Vikram Desai", "Recruiter relationships and placement training.", "Leadership", "MBA"),
+                new ContentSample("Head, Computer Science", "Dr. Aisha Rahman", "Applied machine learning and systems.", "Teaching", "Ph.D, M.E"),
+                new ContentSample("Head, Mechanical Engineering", "Dr. Joseph Mathew", "Materials and manufacturing.", "Teaching", "Ph.D, M.Tech")
+            ],
+            Departments =
+            [
+                new DepartmentSample("Computer Science and Engineering", "Systems, data and applied machine learning, with a GPU cluster for coursework.",
+                    ["B.Tech CSE", "B.Tech AI and Data Science", "M.Tech CSE"]),
+                new DepartmentSample("Electronics and Communication", "Embedded systems, VLSI and communication networks.",
+                    ["B.Tech ECE", "M.Tech VLSI Design"]),
+                new DepartmentSample("Mechanical Engineering", "Design, thermal sciences and manufacturing, with a CNC and fabrication workshop.",
+                    ["B.Tech Mechanical", "M.Tech Manufacturing"]),
+                new DepartmentSample("Civil Engineering", "Structures, geotechnics and transportation, with a materials testing laboratory.",
+                    ["B.Tech Civil", "M.Tech Structural Engineering"]),
+                new DepartmentSample("Electrical and Electronics", "Power systems, drives and renewable energy integration.",
+                    ["B.Tech EEE", "M.Tech Power Electronics"])
+            ],
+            News =
+            [
+                new NewsSample("Placement season closes at 94% with 212 recruiters on campus", "Placement", "The highest offer this year was 32 lakh per annum; the median was 6.4 lakh.", true),
+                new NewsSample("Counselling helpline open for the 2026 admission cycle", "Notice", "Call the admissions desk before locking your branch choices.", false),
+                new NewsSample("Two patents granted to the power electronics group", "Research", "Both filed with undergraduate co-inventors.", false)
+            ],
+            Events =
+            [
+                new EventSample("Campus recruitment drive: core engineering", 18, "Placement centre", "Eleven manufacturing and infrastructure recruiters."),
+                new EventSample("TechFest", 40, "Whole campus", "Robotics, coding and design competitions open to all colleges."),
+                new EventSample("Industry syllabus review board", -8, "Board room", "Employers review the branch syllabi for the coming year.")
+            ]
+        },
+
+        new SiteTemplate
+        {
+            Key = "early-years-academy",
+            Name = "Early Years Academy",
+            Summary = "A warm, photograph-led site for pre-schools and primary schools, built around reassurance and safety.",
+            BestFor = "Pre-schools, kindergartens and primary schools",
+            WebsiteType = WebsiteType.School,
+            HomeVariant = HomeVariant.Campus,
+            PrimaryColor = "#2f6b4f",
+            SecondaryColor = "#f08a3c",
+            SampleTagline = "Where the first years are the best years",
+            Highlights =
+            [
+                "Large photography and a gentle, uncrowded layout",
+                "Safety, staffing ratios and a typical day up front",
+                "Written for parents choosing a first school",
+                "Short pages a parent can read on a phone"
+            ],
+            HeroImageUrl = "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=1800&q=80",
+            HeroHeading = "A happy start lasts a lifetime",
+            HeroDescription = "A small, safe pre-school where children are known by name, and parents are told how the day really went.",
+            Statistics = new StatisticsSample(320, 34, 100, 12),
+            WhyIntro = "Small groups, low ratios, and teachers who have been here long enough for the children to trust them.",
+            PageContent = new Dictionary<string, string>
+            {
+                ["about"] = """
+<p>{name} is a pre-school and primary school for children from eighteen months to eleven years. We keep the school deliberately small, so that every adult knows every child.</p>
+<h2>How children learn here</h2><p>Through play, then through structure. In the early years the day is built around exploration, story, movement and rest. Formal literacy and numeracy arrive gradually, and never at the cost of a child's confidence.</p>
+<h2>Our ratios</h2><p>One adult to six children in the toddler group, one to ten in kindergarten, and a maximum class size of twenty-two in primary. These are limits we hold to, not averages.</p>
+<h2>Talking to parents</h2><p>You will hear from us more than you expect. A daily note in the early years, a photograph when something lovely happens, and an honest conversation the moment we are worried about something.</p>
+""",
+                ["admission"] = """
+<p>{name} admits children from eighteen months. Places are limited by our ratios, so we open a waiting list for each age group in November.</p>
+<h2>Visit first</h2><p>We do not take an application from a family who has not visited. Come during a working morning, watch a session, and see whether the children look happy — that is the only test that matters.</p>
+<h2>What we need</h2><p>The completed form, the child's birth certificate, an immunisation record and two photographs. There is no assessment and no interview for the child.</p>
+<h2>Settling in</h2><p>New children start with short days, extended over a fortnight at the child's pace. A parent is welcome to stay for the first few sessions.</p>
+""",
+                ["facilities"] = """
+<h2>Classrooms</h2><p>Bright, low-shelved rooms with reading corners, water and sand play, and everything within a child's reach. Every room opens onto the garden.</p>
+<h2>Outdoors</h2><p>A shaded play garden with soft-fall surfacing, a climbing frame, a sandpit and a vegetable patch each class plants and harvests.</p>
+<h2>Safety</h2><p>Secure single-point entry with staffed reception, CCTV in every shared space, verified pick-up only, and staff trained in paediatric first aid. Our safeguarding policy is published and reviewed each year.</p>
+<h2>Food and rest</h2><p>A freshly cooked vegetarian lunch and two snacks, planned by a nutritionist, with allergy protocols for every child. A quiet nap room for the youngest groups.</p>
+""",
+                ["messages"] = """
+<h2>From the Head Teacher</h2><p>Small children do not need to be hurried. Given time, warmth and something interesting to do, they learn faster than any curriculum can push them. Our job is to protect that.</p>
+<h2>To parents</h2><p>Leaving your child somewhere for the first time is hard. Ask us anything, visit whenever you like, and tell us what worries you — we would far rather hear it early.</p>
+""",
+                ["committee"] = """
+<p>{name} is run by a management committee that meets each term, with a standing parent representative from each age group.</p>
+<h2>Composition</h2><p>The Head Teacher, two trustees, an early-childhood education adviser, and three elected parent representatives.</p>
+<h2>Safeguarding</h2><p>A named safeguarding lead is responsible for child protection, and all staff complete annual safeguarding training. Concerns may be raised with the lead or any committee member.</p>
+""",
+            },
+            Faculty =
+            [
+                new ContentSample("Head Teacher", "Nandini Rao", "With the school since it opened.", "Leadership", "M.Ed (Early Childhood)"),
+                new ContentSample("Early Years Lead", "Grace Fernandes", "Toddler and nursery groups.", "Teaching", "B.Ed, Montessori Diploma"),
+                new ContentSample("Primary Coordinator", "Sneha Kulkarni", "Classes 1 to 5.", "Teaching", "M.A, B.Ed"),
+                new ContentSample("Safeguarding Lead", "Deepa Menon", "Child protection and pastoral care.", "Leadership", "M.S.W")
+            ],
+            Departments =
+            [
+                new DepartmentSample("Toddler group", "Eighteen months to three years, at one adult to every six children.",
+                    ["Play and exploration", "Language and song", "Motor skills"]),
+                new DepartmentSample("Kindergarten", "Three to six years, where early literacy and numeracy begin through play.",
+                    ["Early literacy", "Early numeracy", "Music and movement", "Art"]),
+                new DepartmentSample("Primary", "Classes 1 to 5, in classes of no more than twenty-two.",
+                    ["English", "Mathematics", "Environmental Studies", "Art and Craft"])
+            ],
+            News =
+            [
+                new NewsSample("Waiting list opens for the 2026 toddler group", "Notice", "Visit us before applying — places are limited by our ratios.", true),
+                new NewsSample("Our vegetable patch fed the whole school lunch this week", "Story", "Class 3 planted it in June.", false),
+                new NewsSample("Paediatric first aid refresher completed by all staff", "Notice", "Certification renewed for every member of staff.", false)
+            ],
+            Events =
+            [
+                new EventSample("Come and See morning", 8, "Main gate", "Watch a working session and meet the teachers."),
+                new EventSample("Grandparents' Day", 22, "Play garden", "Songs, stories and tea."),
+                new EventSample("Annual Sports Morning", -15, "Play garden", "Races, games and a lot of laughing.")
+            ]
         }
+
     ];
 
     public static SiteTemplate? Find(string key) =>
@@ -427,6 +691,12 @@ public sealed class SiteTemplate
     public required string SecondaryColor { get; init; }
     public required string SampleTagline { get; init; }
     public required IReadOnlyList<string> Highlights { get; init; }
+
+    /// <summary>
+    /// The banner photograph the template ships with, so two schools created from different
+    /// templates do not open on the same stock image. Replaced from the media library.
+    /// </summary>
+    public string? HeroImageUrl { get; init; }
 
     public required string HeroHeading { get; init; }
     public required string HeroDescription { get; init; }

@@ -15,7 +15,7 @@
 }
 <section class="hero hero-campus" style="--hero:url('@banner')">
     <div class="shell">
-        <h1>Life at @brand.Name</h1>
+        <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? $"Life at {brand.Name}")</h1>
         <p>@(SectionJson.GetString(heroJson, "description") ?? hero?.Description ?? brand.Tagline)</p>
         <a class="btn" href="@(basePath)/facilities">Explore facilities</a>
     </div>
@@ -23,7 +23,7 @@
 <section class="shell campus-panels">
     <article>
         <h2>@(why?.Title ?? "Campus highlights")</h2>
-        <p>@(SectionJson.GetString(whyJson, "intro") ?? why?.Description)</p>
+        <p>@(SectionJson.GetString(whyJson, "intro") ?? why?.SubTitle ?? why?.Description)</p>
         <ul>
             @foreach (var item in SectionJson.GetArray(whyJson, "items").Take(4))
             {

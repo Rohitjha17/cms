@@ -38,6 +38,11 @@ COPY --from=build /out/demo/cms.db ./demo-seed/cms.db
 COPY vercel/nginx.conf /etc/nginx/nginx.conf
 COPY --chmod=755 vercel/entrypoint.sh /app/entrypoint.sh
 
+# Tenancy__ResolutionCacheSeconds is short here because the console and the public website are
+# separate processes: creating a website invalidates the cache in the process that made the
+# change, and the other one has to notice by expiry. Three seconds keeps "create a site, open
+# its link" instant without giving up the cache on every public request.
+#
 # PublicSite__PathBase says the public website is served by this same container under /site.
 # It takes precedence over PublicSite__BaseUrl, so a stale absolute URL left in the hosting
 # environment cannot send editors to a dead address.
@@ -52,6 +57,7 @@ ENV ASPNETCORE_ENVIRONMENT=Development \
     DemoMode__Enabled=true \
     Proxy__TrustForwardedHeaders=true \
     PublicSite__PathBase=/site \
+    Tenancy__ResolutionCacheSeconds=3 \
     Seed__EnableDemoData=true \
     Seed__SkipStartup=true \
     PORT=80

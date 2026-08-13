@@ -47,7 +47,7 @@
         <div class="section-head">
             <p class="eyebrow">Why families choose us</p>
             <h2>@why.Title</h2>
-            <p>@(SectionJson.GetString(whyJson, "intro") ?? why.Description)</p>
+            <p>@(SectionJson.GetString(whyJson, "intro") ?? why.SubTitle ?? why.Description)</p>
         </div>
         <div class="card-grid">
             @foreach (var item in SectionJson.GetArray(whyJson, "items"))

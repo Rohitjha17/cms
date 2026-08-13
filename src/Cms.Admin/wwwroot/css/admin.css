@@ -1870,35 +1870,142 @@ svg {
 .site-template:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: var(--shadow-md); }
 .site-template.is-selected { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
 
-/* Layout skeleton tinted with the template's own palette. */
+/* A miniature of the actual website, painted in the template's own palette, so the
+   gallery shows what a school would get rather than an abstract skeleton. */
 .site-template__preview {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 10px;
-  aspect-ratio: 16 / 9;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--tpl-primary) 8%, #fff), var(--surface-soft));
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  background: #fff;
   border-bottom: 1px solid var(--border);
 }
-.site-template__preview .stp-bar { height: 7px; background: var(--tpl-primary); border-radius: 2px; opacity: .9; }
-.site-template__preview .stp-hero { flex: 1.7; background: var(--tpl-primary); border-radius: 4px; position: relative; }
-.site-template__preview .stp-row { display: flex; gap: 4px; }
-.site-template__preview .stp-row i { flex: 1; height: 10px; background: color-mix(in srgb, var(--tpl-accent) 45%, #fff); border-radius: 2px; }
-.site-template__preview .stp-body { display: flex; flex: 1; gap: 5px; }
-.site-template__preview .stp-body i { flex: 1; background: #fff; border: 1px solid var(--border); border-radius: 4px; }
 
-/* Variant-specific silhouettes, matching the public home designs. */
-.site-template__preview .design-preview--modern { flex: 1.2; }
-.site-template__preview .design-preview--campus { flex: 2.6; }
-.site-template__preview .design-preview--academic { flex: 1.1; }
-.site-template__preview .design-preview--prestige { flex: 2.8; }
-.site-template__preview .design-preview--prestige::after {
-  position: absolute;
-  inset: 24% 20%;
-  border: 1.5px solid color-mix(in srgb, var(--tpl-accent) 80%, #fff);
+/* Announcement strip and header. */
+.site-template__preview .tm-bar {
+  height: 6px;
+  background: var(--tpl-primary);
+}
+.site-template__preview .tm-nav {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 9px;
+  background: #fff;
+  border-bottom: 1px solid color-mix(in srgb, var(--tpl-primary) 14%, #fff);
+}
+.site-template__preview .tm-nav b {
+  flex: 0 0 auto;
+  width: 30%;
+  height: 7px;
+  background: var(--tpl-primary);
+  border-radius: 2px;
+}
+.site-template__preview .tm-nav i {
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--tpl-primary) 28%, #fff);
+}
+.site-template__preview .tm-nav i:nth-child(2) { width: 13%; margin-left: auto; }
+.site-template__preview .tm-nav i:nth-child(3) { width: 11%; }
+.site-template__preview .tm-nav i:nth-child(4) { width: 15%; }
+.site-template__preview .tm-nav i:nth-child(5) { width: 10%; }
+
+/* Hero: headline lines, a supporting line and a call-to-action pill. */
+.site-template__preview .tm-hero {
+  position: relative;
+  display: flex;
+  flex: 1.9;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 11px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 78% 12%, color-mix(in srgb, var(--tpl-accent) 42%, transparent), transparent 60%),
+    linear-gradient(135deg, var(--tpl-primary), color-mix(in srgb, var(--tpl-primary) 62%, #000));
+}
+.site-template__preview .tm-hero i {
+  height: 6px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, .92);
+}
+.site-template__preview .tm-hero i.l1 { width: 62%; }
+.site-template__preview .tm-hero i.l2 { width: 44%; height: 4px; opacity: .6; }
+.site-template__preview .tm-hero em {
+  width: 26%;
+  height: 8px;
+  margin-top: 3px;
+  border-radius: 4px;
+  background: var(--tpl-accent);
+}
+
+/* Results band. */
+.site-template__preview .tm-stats {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+  padding: 5px 9px;
+  background: color-mix(in srgb, var(--tpl-accent) 16%, #fff);
+}
+.site-template__preview .tm-stats i {
+  flex: 1;
+  height: 8px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--tpl-primary) 34%, #fff);
+}
+
+/* Content cards. */
+.site-template__preview .tm-cards {
+  display: flex;
+  flex: 1.15;
+  gap: 5px;
+  padding: 7px 9px 9px;
+  background: var(--surface-soft);
+}
+.site-template__preview .tm-cards i {
+  flex: 1;
+  border: 1px solid color-mix(in srgb, var(--tpl-primary) 12%, var(--border));
   border-radius: 3px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--tpl-primary) 22%, #fff) 42%, #fff 42%);
+}
+
+/* Each home design has its own silhouette, matching the public site. */
+.site-template__preview.tm--modern .tm-hero { flex-direction: row; align-items: center; flex-wrap: wrap; }
+.site-template__preview.tm--modern .tm-hero::after {
+  position: absolute;
+  inset: 0 0 0 58%;
+  background: color-mix(in srgb, var(--tpl-accent) 55%, #fff);
+  opacity: .85;
   content: "";
 }
+.site-template__preview.tm--modern .tm-hero i.l1 { width: 46%; }
+.site-template__preview.tm--modern .tm-hero i.l2 { width: 34%; }
+.site-template__preview.tm--modern .tm-stats { display: none; }
+.site-template__preview.tm--modern .tm-cards { flex: 1.5; }
+
+.site-template__preview.tm--campus .tm-hero { flex: 3.1; }
+.site-template__preview.tm--campus .tm-stats { display: none; }
+.site-template__preview.tm--campus .tm-cards i:nth-child(3) { display: none; }
+
+.site-template__preview.tm--academic .tm-hero { flex: 1.15; }
+.site-template__preview.tm--academic .tm-hero i.l1 { width: 52%; }
+.site-template__preview.tm--academic .tm-cards { flex: 1.9; }
+
+.site-template__preview.tm--prestige .tm-hero { flex: 3.3; align-items: center; text-align: center; }
+.site-template__preview.tm--prestige .tm-hero i.l1,
+.site-template__preview.tm--prestige .tm-hero i.l2 { align-self: center; }
+.site-template__preview.tm--prestige .tm-hero em { align-self: center; }
+.site-template__preview.tm--prestige .tm-hero::after {
+  position: absolute;
+  inset: 14% 12%;
+  border: 1px solid color-mix(in srgb, var(--tpl-accent) 70%, transparent);
+  border-radius: 2px;
+  content: "";
+}
+.site-template__preview.tm--prestige .tm-cards { display: none; }
 
 .site-template__body { display: flex; flex: 1; flex-direction: column; gap: 9px; padding: 15px 17px 17px; }
 .site-template__body header { display: flex; align-items: center; gap: 9px; }

@@ -316,6 +316,7 @@ public sealed class WebsiteService : IWebsiteService
             IsDefault = dto.IsDefault,
             IsActive = true,
             LogoUrl = dto.LogoUrl?.Trim(),
+            HeaderImageUrl = dto.HeaderImageUrl?.Trim(),
             Tagline = dto.Tagline?.Trim(),
             PrimaryColor = dto.PrimaryColor?.Trim() ?? "#0f2d5c",
             SecondaryColor = dto.SecondaryColor?.Trim() ?? "#c9a227",
@@ -479,6 +480,7 @@ public sealed class WebsiteService : IWebsiteService
             PrimaryColor = template.PrimaryColor,
             SecondaryColor = template.SecondaryColor,
             Tagline = template.SampleTagline,
+            HeaderImageUrl = template.HeroImageUrl,
             TemplateKeys = template.PageTemplateKeys.ToList()
         }, cancellationToken);
 
@@ -532,6 +534,13 @@ public sealed class WebsiteService : IWebsiteService
 
                 case HomePageSectionKeys.WhyChooseUs:
                     section.SubTitle = template.WhyIntro;
+                    // The views read the intro out of the section's JSON, so write it there too
+                    // rather than leaving the template's words in a field nothing renders.
+                    var why = JsonNode.Parse(
+                        string.IsNullOrWhiteSpace(section.JsonData) ? "{}" : section.JsonData) as JsonObject
+                        ?? new JsonObject();
+                    why["intro"] = template.WhyIntro;
+                    section.JsonData = why.ToJsonString();
                     break;
             }
 

@@ -11,8 +11,9 @@
     var departmentsJson = SectionJson.Parse(departments?.JsonData);
     var achievementsJson = SectionJson.Parse(achievements?.JsonData);
     var statsJson = SectionJson.Parse(stats?.JsonData);
+    var banner = brand.HeaderImageUrl ?? "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1800&q=80";
 }
-<section class="hero hero-academic">
+<section class="hero hero-academic" style="--hero:url('@banner')">
     <div class="shell">
         <p class="eyebrow">Academic excellence</p>
         <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name)</h1>
