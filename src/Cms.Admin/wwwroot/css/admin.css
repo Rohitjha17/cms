@@ -349,15 +349,24 @@ svg {
 }
 .icon-button:hover { color: var(--primary); border-color: #cfc9ff; box-shadow: var(--shadow-xs); }
 .icon-button svg { width: 18px; }
+/* Carries the unread count, so the badge means something rather than being decoration. */
 .notification-dot {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 6px;
-  height: 6px;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  color: white;
+  font-size: .68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
   background: #f05468;
   border: 1.5px solid white;
-  border-radius: 50%;
+  border-radius: 9px;
+  place-items: center;
 }
 .mobile-menu { display: none; margin-right: 10px; }
 

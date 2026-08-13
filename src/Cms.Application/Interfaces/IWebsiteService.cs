@@ -22,6 +22,9 @@ public interface IWebsiteService
     Task<PublicWebsiteDto> GetPublicWebsiteAsync(CancellationToken cancellationToken);
     Task<PublicPageDto> GetPublicPageAsync(string slug, CancellationToken cancellationToken);
     Task<IReadOnlyList<ContactSubmissionDto>> GetContactSubmissionsAsync(CancellationToken cancellationToken);
+
+    /// <summary>Enquiries nobody has opened yet, for the console's notification badge.</summary>
+    Task<int> GetUnreadContactCountAsync(CancellationToken cancellationToken);
     Task<ContactSubmissionDto> SubmitContactAsync(SubmitContactDto dto, CancellationToken cancellationToken);
     Task MarkContactReadAsync(Guid id, bool isRead, CancellationToken cancellationToken);
 }

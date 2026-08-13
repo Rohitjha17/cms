@@ -953,6 +953,16 @@ public sealed class WebsiteService : IWebsiteService
         return items.Select(ToDto).ToList();
     }
 
+    public async Task<int> GetUnreadContactCountAsync(CancellationToken cancellationToken)
+    {
+        if (!_siteContext.IsResolved || _tenantContext.TenantId is not Guid tenantId)
+        {
+            return 0;
+        }
+
+        return await _repository.CountUnreadContactsAsync(tenantId, _siteContext.SiteId!.Value, cancellationToken);
+    }
+
     public async Task<ContactSubmissionDto> SubmitContactAsync(SubmitContactDto dto, CancellationToken cancellationToken)
     {
         await _contactValidator.ValidateAndThrowAsync(dto, cancellationToken);

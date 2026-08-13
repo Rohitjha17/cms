@@ -173,10 +173,7 @@
                             <svg viewBox="0 0 24 24"><path d="M14 3h7v7M21 3l-9 9"/><path d="M18 13v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h7"/></svg>
                         </a>
                     }
-                    <button class="icon-button" type="button" title="Notifications">
-                        <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
-                        <span class="notification-dot"></span>
-                    </button>
+                    @await Component.InvokeAsync("Notifications")
                 </div>
             </header>
             <main class="content">

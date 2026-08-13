@@ -28,6 +28,7 @@ public interface IWebsiteRepository
     Task<SeoSetting?> GetSeoAsync(Guid tenantId, Guid siteId, CancellationToken cancellationToken);
     Task<IReadOnlyList<HomePageSection>> GetHomeSectionsAsync(Guid tenantId, Guid siteId, CancellationToken cancellationToken);
     Task<IReadOnlyList<ContactSubmission>> GetContactsAsync(Guid tenantId, Guid siteId, CancellationToken cancellationToken);
+    Task<int> CountUnreadContactsAsync(Guid tenantId, Guid siteId, CancellationToken cancellationToken);
     Task<ContactSubmission?> GetContactAsync(Guid tenantId, Guid siteId, Guid id, CancellationToken cancellationToken);
     Task<int> CountPagesAsync(Guid tenantId, Guid siteId, CancellationToken cancellationToken);
     Task EnsureHomeSectionsAsync(Guid tenantId, Guid siteId, CancellationToken cancellationToken);

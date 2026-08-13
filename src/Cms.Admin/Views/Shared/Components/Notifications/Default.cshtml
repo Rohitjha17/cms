@@ -1,0 +1,16 @@
+@model int
+@{
+    var label = Model switch
+    {
+        0 => "No unread enquiries",
+        1 => "1 unread enquiry",
+        _ => $"{Model} unread enquiries"
+    };
+}
+<a class="icon-button" asp-area="CMS" asp-page="/Contacts/Index" title="@label" aria-label="@label">
+    <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+    @if (Model > 0)
+    {
+        <span class="notification-dot">@(Model > 9 ? "9+" : Model.ToString())</span>
+    }
+</a>

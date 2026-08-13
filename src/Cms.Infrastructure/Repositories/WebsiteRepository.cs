@@ -128,6 +128,11 @@ public sealed class WebsiteRepository : IWebsiteRepository
             .OrderByDescending(x => x.CreatedDate)
             .ToListAsync(cancellationToken);
 
+    public Task<int> CountUnreadContactsAsync(
+        Guid tenantId, Guid siteId, CancellationToken cancellationToken) =>
+        _db.ContactSubmissions.IgnoreQueryFilters()
+            .CountAsync(x => x.TenantId == tenantId && x.SiteId == siteId && !x.IsRead, cancellationToken);
+
     public Task<ContactSubmission?> GetContactAsync(
         Guid tenantId, Guid siteId, Guid id, CancellationToken cancellationToken) =>
         _db.ContactSubmissions.IgnoreQueryFilters()
