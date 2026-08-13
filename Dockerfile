@@ -32,8 +32,9 @@ WORKDIR /app
 COPY --from=build /out/api ./api
 COPY --from=build /out/admin ./admin
 COPY --from=build /out/web ./web
+# Data Protection keys are generated into this seed database during the build step
+# above, so there is no key folder on disk to copy any more.
 COPY --from=build /out/demo/cms.db ./demo-seed/cms.db
-COPY --from=build /out/demo/home/.aspnet/DataProtection-Keys ./demo-seed/dataprotection
 COPY vercel/nginx.conf /etc/nginx/nginx.conf
 COPY --chmod=755 vercel/entrypoint.sh /app/entrypoint.sh
 

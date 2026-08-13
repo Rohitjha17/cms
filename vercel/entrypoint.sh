@@ -3,11 +3,11 @@ set -eu
 
 # /data is a persistent disk. The seed database is copied in ONLY on a first boot;
 # on every later deploy the school's real data is left untouched.
-mkdir -p /data/uploads /data/home/.aspnet/DataProtection-Keys
+# Data Protection keys live inside that database, shared by all three apps.
+mkdir -p /data/uploads /data/home
 export HOME=/data/home
 if [ ! -f /data/cms.db ]; then
     cp /app/demo-seed/cms.db /data/cms.db
-    cp /app/demo-seed/dataprotection/*.xml /data/home/.aspnet/DataProtection-Keys/
 fi
 
 cleanup() {
