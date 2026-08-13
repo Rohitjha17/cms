@@ -88,15 +88,19 @@ public class TenantResolutionMiddleware
 
             site ??= FindById(resolved, resolved.BoundSiteId);
         }
-        else if (resolved.BoundSiteId is Guid boundSiteId)
-        {
-            // A bound public domain is authoritative and cannot be overridden by the client.
-            site = FindById(resolved, boundSiteId);
-        }
         else if (TryConsumeSitePrefix(context, resolved, out var prefixed, out var consumedSegment))
         {
+            // An explicit site key in the URL wins, including on a bound domain. Binding decides
+            // which website answers the *root* of a host; it must not make the tenant's other
+            // websites unreachable, or a platform host with a domain row against it would serve
+            // one site for every URL and turn every /{siteKey} link into a 404.
             site = prefixed;
             basePath = consumedSegment;
+        }
+        else if (resolved.BoundSiteId is Guid boundSiteId)
+        {
+            // No prefix: a bound public domain is authoritative and cannot be overridden.
+            site = FindById(resolved, boundSiteId);
         }
 
         site ??= resolved.Sites.FirstOrDefault(s => s.IsDefault) ?? resolved.Sites.FirstOrDefault();
@@ -156,6 +160,13 @@ public class TenantResolutionMiddleware
         var remainder = end < 0 ? string.Empty : path[end..];
         context.Request.PathBase = context.Request.PathBase.Add("/" + segment);
         context.Request.Path = remainder.Length == 0 ? "/" : remainder;
+
+        // Minimal hosting runs endpoint matching ahead of this middleware, so an endpoint may
+        // already have been selected against the *un-rewritten* path — "/school" matching the
+        // page-by-slug route, for example. UseRouting() further down skips matching when an
+        // endpoint is already set, so that stale choice would win and 404. Dropping it forces a
+        // fresh match against the path we just rewrote.
+        context.SetEndpoint(null);
 
         site = match;
         consumedSegment = "/" + segment;

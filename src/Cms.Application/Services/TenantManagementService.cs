@@ -12,15 +12,18 @@ public sealed class TenantManagementService : ITenantManagementService
     private readonly ITenantManagementRepository _repository;
     private readonly IValidator<SaveTenantDto> _validator;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITenantHostCache _hostCache;
 
     public TenantManagementService(
         ITenantManagementRepository repository,
         IValidator<SaveTenantDto> validator,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITenantHostCache hostCache)
     {
         _repository = repository;
         _validator = validator;
         _currentUser = currentUser;
+        _hostCache = hostCache;
     }
 
     public async Task<IReadOnlyList<TenantManagementDto>> GetAllAsync(CancellationToken cancellationToken) =>
@@ -120,6 +123,10 @@ public sealed class TenantManagementService : ITenantManagementService
         }
 
         await _repository.SaveChangesAsync(cancellationToken);
+
+        // Tenants own their domains and websites, so this can change what any host serves.
+        _hostCache.Invalidate();
+
         return ToDto(tenant);
     }
 

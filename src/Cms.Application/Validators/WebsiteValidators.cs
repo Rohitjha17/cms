@@ -6,10 +6,27 @@ namespace Cms.Application.Validators;
 
 public sealed class ProvisionWebsiteValidator : AbstractValidator<ProvisionWebsiteDto>
 {
+    /// <summary>
+    /// A website is reached at <c>/{siteKey}</c> on a shared domain, so a key that matches a
+    /// route the public site already owns would swallow that page for every website on the
+    /// domain. These are refused at creation, where the fix costs nothing.
+    /// </summary>
+    private static readonly HashSet<string> ReservedSiteKeys = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "about", "admission", "admissions", "api", "account", "cms", "committee", "contact",
+        "content", "css", "departments", "documents", "events", "facilities", "faculty",
+        "gallery", "health", "img", "images", "js", "lib", "mandatory-disclosure", "media",
+        "messages", "news", "robots.txt", "site", "sitemap.xml", "swagger", "uploads", "_status"
+    };
+
     public ProvisionWebsiteValidator()
     {
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
         RuleFor(x => x.SiteKey).NotEmpty().MaximumLength(50).Matches("^[a-z0-9_-]+$");
+        RuleFor(x => x.SiteKey)
+            .Must(key => !ReservedSiteKeys.Contains(key?.Trim() ?? string.Empty))
+            .WithMessage(x => $"'{x.SiteKey}' is reserved by the website itself. "
+                + "Pick something specific such as the school's name or campus.");
         RuleFor(x => x.WebsiteType).IsInEnum();
         RuleFor(x => x.HomeVariant).IsInEnum();
         RuleFor(x => x.DomainName).MaximumLength(255)

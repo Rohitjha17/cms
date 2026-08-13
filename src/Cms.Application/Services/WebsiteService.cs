@@ -23,6 +23,7 @@ public sealed class WebsiteService : IWebsiteService
     private readonly IValidator<SiteBrandingDto> _brandingValidator;
     private readonly IValidator<SubmitContactDto> _contactValidator;
     private readonly IValidator<SaveSiteDomainDto> _domainValidator;
+    private readonly ITenantHostCache _hostCache;
 
     public WebsiteService(
         IWebsiteRepository repository,
@@ -33,7 +34,8 @@ public sealed class WebsiteService : IWebsiteService
         IValidator<ProvisionWebsiteDto> provisionValidator,
         IValidator<SiteBrandingDto> brandingValidator,
         IValidator<SubmitContactDto> contactValidator,
-        IValidator<SaveSiteDomainDto> domainValidator)
+        IValidator<SaveSiteDomainDto> domainValidator,
+        ITenantHostCache hostCache)
     {
         _repository = repository;
         _contentRepository = contentRepository;
@@ -44,6 +46,7 @@ public sealed class WebsiteService : IWebsiteService
         _brandingValidator = brandingValidator;
         _contactValidator = contactValidator;
         _domainValidator = domainValidator;
+        _hostCache = hostCache;
     }
 
     public async Task<IReadOnlyList<PageTemplateDto>> GetPageTemplatesAsync(CancellationToken cancellationToken)
@@ -425,6 +428,10 @@ public sealed class WebsiteService : IWebsiteService
         await _repository.SaveChangesAsync(cancellationToken);
         await _repository.EnsureHomeSectionsAsync(tenantId, website.Id, cancellationToken);
 
+        // The new website must answer on its /{siteKey} URL immediately, not once the
+        // host-resolution cache happens to expire.
+        _hostCache.Invalidate();
+
         return (await GetWebsitesAsync(cancellationToken)).First(x => x.Id == website.Id);
     }
 
@@ -763,6 +770,7 @@ public sealed class WebsiteService : IWebsiteService
         }
 
         await _repository.SaveChangesAsync(cancellationToken);
+        _hostCache.Invalidate();
         return (await GetDomainsAsync(cancellationToken)).First(x => x.Id == domain.Id);
     }
 
@@ -779,6 +787,7 @@ public sealed class WebsiteService : IWebsiteService
 
         _repository.RemoveDomain(domain);
         await _repository.SaveChangesAsync(cancellationToken);
+        _hostCache.Invalidate();
     }
 
     /// <summary>

@@ -27,6 +27,8 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ISiteContext, SiteContext>();
         services.AddMemoryCache();
+        services.AddSingleton<TenantHostCache>();
+        services.AddSingleton<ITenantHostCache>(sp => sp.GetRequiredService<TenantHostCache>());
         services.AddScoped<ITenantHostResolver, TenantHostResolver>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();

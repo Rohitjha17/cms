@@ -67,10 +67,10 @@ public static class HomePageSeed
     {
         HomePageSectionKeys.Hero => """{"heading":"Welcome to Demo Academy","description":"Future Begins Here","primaryButton":"Apply Now","secondaryButton":"Contact Us","videoUrl":""}""",
         HomePageSectionKeys.Statistics => """{"students":1500,"teachers":80,"placements":500,"years":20}""",
-        HomePageSectionKeys.Courses => """{"items":[{"title":"Science & Technology","description":"Inquiry-led learning for tomorrow's innovators.","url":"/courses/science"},{"title":"Business & Leadership","description":"Real-world skills with an entrepreneurial mindset.","url":"/courses/business"},{"title":"Arts & Humanities","description":"Creative expression grounded in critical thinking.","url":"/courses/arts"}]}""",
+        HomePageSectionKeys.Courses => """{"items":[{"title":"Science & Technology","description":"Inquiry-led learning for tomorrow's innovators.","url":"/departments"},{"title":"Business & Leadership","description":"Real-world skills with an entrepreneurial mindset.","url":"/departments"},{"title":"Arts & Humanities","description":"Creative expression grounded in critical thinking.","url":"/departments"}]}""",
         HomePageSectionKeys.Departments => """{"items":[{"title":"Sciences","description":"Discover, experiment and innovate."},{"title":"Humanities","description":"Understand people, culture and society."},{"title":"Commerce","description":"Build the skills to lead with purpose."}]}""",
         HomePageSectionKeys.WhyChooseUs => """{"intro":"A learning environment designed around every student's potential.","columns":3,"items":[{"title":"Future-ready learning","description":"A modern curriculum connected to the world beyond the classroom."},{"title":"Exceptional educators","description":"Mentors who know, challenge and champion every learner."},{"title":"A caring community","description":"A safe, inclusive culture where confidence can flourish."}]}""",
-        HomePageSectionKeys.Announcements => """{"items":[{"title":"Admissions open for the 2026–27 academic year","date":"2026-08-01","url":"/admissions","summary":"Applications are now invited across all grade levels."},{"title":"Scholarship assessment registrations","date":"2026-08-15","url":"/scholarships","summary":"Merit scholarship assessment registrations are now live."}]}""",
+        HomePageSectionKeys.Announcements => """{"items":[{"title":"Admissions open for the 2026–27 academic year","date":"2026-08-01","url":"/admission","summary":"Applications are now invited across all grade levels."},{"title":"Scholarship assessment registrations","date":"2026-08-15","url":"/admission","summary":"Merit scholarship assessment registrations are now live."}]}""",
         HomePageSectionKeys.LatestNews => """{"items":[{"title":"Students shine at the National Innovation Challenge","date":"2026-07-18","url":"/news/innovation-challenge"},{"title":"A new chapter for our campus library","date":"2026-07-10","url":"/news/library"}]}""",
         HomePageSectionKeys.UpcomingEvents => """{"items":[{"title":"Open House 2026","date":"2026-08-22","url":"/events/open-house","location":"Main Campus"},{"title":"Founders Day Celebration","date":"2026-09-05","url":"/events/founders-day","location":"Central Auditorium"}]}""",
         HomePageSectionKeys.Gallery => """{"items":[{"title":"Learning beyond classrooms","imageUrl":"https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80","alt":"Students on campus"},{"title":"Spaces that inspire","imageUrl":"https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=900&q=80","alt":"University building"},{"title":"A vibrant community","imageUrl":"https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=900&q=80","alt":"Teacher working with students"}]}""",
@@ -137,13 +137,13 @@ public static class HomePageSeed
 
     private static string? DefaultButtonLink(string key) => key switch
     {
-        HomePageSectionKeys.Hero or HomePageSectionKeys.AdmissionCta => "/admissions",
+        HomePageSectionKeys.Hero or HomePageSectionKeys.AdmissionCta => "/admission",
         HomePageSectionKeys.About => "/about",
-        HomePageSectionKeys.Courses => "/courses",
+        HomePageSectionKeys.Courses => "/departments",
         HomePageSectionKeys.Gallery => "/gallery",
-        HomePageSectionKeys.DownloadBrochure => "/documents/prospectus.pdf",
+        HomePageSectionKeys.DownloadBrochure => "/admission",
         HomePageSectionKeys.Contact => "/contact",
-        HomePageSectionKeys.FooterCta => "/visit",
+        HomePageSectionKeys.FooterCta => "/contact",
         _ => null
     };
 }

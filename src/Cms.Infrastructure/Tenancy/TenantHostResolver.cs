@@ -1,9 +1,23 @@
+using Cms.Application.Interfaces;
 using Cms.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 
 namespace Cms.Infrastructure.Tenancy;
+
+/// <summary>
+/// Invalidates every cached host lookup at once by moving the generation that cache keys are
+/// built from. Superseded entries are never read again and fall out on their own expiry.
+/// </summary>
+public sealed class TenantHostCache : ITenantHostCache
+{
+    private long _generation;
+
+    public long Generation => Interlocked.Read(ref _generation);
+
+    public void Invalidate() => Interlocked.Increment(ref _generation);
+}
 
 public sealed record ResolvedSite(Guid Id, string SiteKey, string Name, bool IsDefault);
 
@@ -30,20 +44,28 @@ public sealed class TenantHostResolver : ITenantHostResolver
 {
     private readonly ApplicationDbContext _db;
     private readonly IMemoryCache _cache;
+    private readonly TenantHostCache _generation;
     private readonly TimeSpan _cacheDuration;
     private readonly bool _demoFallback;
 
-    public TenantHostResolver(ApplicationDbContext db, IMemoryCache cache, IConfiguration configuration)
+    public TenantHostResolver(
+        ApplicationDbContext db,
+        IMemoryCache cache,
+        TenantHostCache generation,
+        IConfiguration configuration)
     {
         _db = db;
         _cache = cache;
+        _generation = generation;
         _cacheDuration = TimeSpan.FromSeconds(configuration.GetValue("Tenancy:ResolutionCacheSeconds", 30));
         _demoFallback = configuration.GetValue<bool>("DemoMode:Enabled");
     }
 
     public async Task<ResolvedHost?> ResolveAsync(string host, CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"tenant-host::{host}";
+        // The generation is part of the key, so creating a website or binding a domain makes the
+        // change visible on the next request instead of after the cache window.
+        var cacheKey = $"tenant-host::{_generation.Generation}::{host}";
         if (_cacheDuration > TimeSpan.Zero && _cache.TryGetValue<ResolvedHost?>(cacheKey, out var cached))
         {
             return cached;

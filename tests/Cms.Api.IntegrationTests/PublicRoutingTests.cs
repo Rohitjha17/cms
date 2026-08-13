@@ -72,21 +72,12 @@ public sealed class PublicRoutingTests : IClassFixture<PublicWebFactory>, IAsync
             CreatedDate = DateTime.UtcNow,
             CreatedBy = "test"
         });
-        db.Pages.Add(new Page
-        {
-            Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            SiteId = siteId,
-            PageType = PageType.About,
-            Title = "About us",
-            Slug = "about",
-            Content = "<p>About the Noida campus.</p>",
-            ShowInMenu = true,
-            MenuOrder = 1,
-            IsActive = true,
-            CreatedDate = DateTime.UtcNow,
-            CreatedBy = "test"
-        });
+        // A website provisioned through the console always gets the standard page set; the
+        // fixture mirrors that so the crawl exercises a realistic site.
+        db.Pages.AddRange(
+            NewPage(tenantId, siteId, PageType.About, "About us", "about", 1),
+            NewPage(tenantId, siteId, PageType.Admission, "Admission", "admission", 2),
+            NewPage(tenantId, siteId, PageType.Contact, "Contact", "contact", 3));
 
         await db.SaveChangesAsync();
     }
@@ -204,6 +195,134 @@ public sealed class PublicRoutingTests : IClassFixture<PublicWebFactory>, IAsync
         Assert.True(response.Headers.Contains("Content-Security-Policy"));
         Assert.True(response.Headers.Contains("Referrer-Policy"));
     }
+
+    /// <summary>
+    /// The bare site-key URL — the address the console hands an operator the moment a website is
+    /// created, and the target of the site's own "home" link. It regressed once because endpoint
+    /// matching runs ahead of the tenant middleware, so "/school" was matched as a page slug and
+    /// answered 404 while every deeper URL kept working.
+    /// </summary>
+    [Theory]
+    [InlineData("/school", "Cambridge High School")]
+    [InlineData("/school/", "Cambridge High School")]
+    [InlineData("/college", "Cambridge College of Arts")]
+    [InlineData("/college/", "Cambridge College of Arts")]
+    public async Task SharedDomain_BareSiteKeyServesThatWebsitesHomePage(string path, string expectedBrand)
+    {
+        using var response = await _client.GetAsync(path);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(expectedBrand, await response.Content.ReadAsStringAsync());
+    }
+
+    /// <summary>
+    /// A domain bound to one website must not hide the tenant's other websites: the platform's
+    /// own host has a domain row against it, and binding it once made every /{siteKey} URL serve
+    /// the bound site and 404.
+    /// </summary>
+    [Theory]
+    [InlineData("/school", "Cambridge High School")]
+    [InlineData("/college/about", "Cambridge College of Arts")]
+    public async Task DedicatedDomain_StillServesOtherWebsitesByPrefix(string path, string expectedBrand)
+    {
+        using var response = await GetAsync(DedicatedHost, path);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(expectedBrand, await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task DedicatedDomain_ServesItsOwnSiteKeyPrefix()
+    {
+        using var response = await GetAsync(DedicatedHost, $"/{DedicatedSiteKey}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(DedicatedBrand, await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task UnknownSiteKey_ReturnsNotFound()
+    {
+        using var response = await _client.GetAsync("/no-such-website");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    /// <summary>
+    /// Every link every public page renders must lead somewhere. This is the check that would
+    /// have caught the 404 loop, where the header, the footer and the 404 page's own "back home"
+    /// button all pointed at a URL that answered 404 — and it catches seeded call-to-action
+    /// buttons aimed at pages that were never created.
+    /// </summary>
+    [Theory]
+    [InlineData("/school")]
+    [InlineData("/school/about")]
+    [InlineData("/school/admission")]
+    [InlineData("/school/gallery")]
+    [InlineData("/school/contact")]
+    [InlineData("/school/news")]
+    [InlineData("/school/events")]
+    [InlineData("/school/faculty")]
+    [InlineData("/school/departments")]
+    [InlineData("/college")]
+    [InlineData("/college/about")]
+    [InlineData("/no-such-website")]
+    public async Task SharedDomain_EveryLinkOnEveryPageResolves(string path)
+    {
+        await AssertNoBrokenLinksAsync(_client.BaseAddress!.Host, path);
+    }
+
+    [Theory]
+    [InlineData("/")]
+    [InlineData("/about")]
+    [InlineData("/no-such-page")]
+    public async Task DedicatedDomain_EveryLinkOnEveryPageResolves(string path)
+    {
+        await AssertNoBrokenLinksAsync(DedicatedHost, path);
+    }
+
+    private async Task AssertNoBrokenLinksAsync(string host, string path)
+    {
+        using var page = await GetAsync(host, path);
+        var html = await page.Content.ReadAsStringAsync();
+
+        var links = System.Text.RegularExpressions.Regex
+            .Matches(html, "href=\"(/[^\"#?]*)\"")
+            .Select(match => match.Groups[1].Value)
+            .Distinct()
+            .ToList();
+
+        Assert.NotEmpty(links);
+
+        var broken = new List<string>();
+        foreach (var link in links)
+        {
+            using var response = await GetAsync(host, link);
+            if (!response.IsSuccessStatusCode)
+            {
+                broken.Add($"{link} -> {(int)response.StatusCode}");
+            }
+        }
+
+        Assert.True(broken.Count == 0, $"Broken links on {host}{path}: " + string.Join(", ", broken));
+    }
+
+    private static Page NewPage(Guid tenantId, Guid siteId, PageType type, string title, string slug, int order) =>
+        new()
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SiteId = siteId,
+            PageType = type,
+            Title = title,
+            Slug = slug,
+            Content = $"<p>{title} for the Noida campus.</p>",
+            ShowInMenu = true,
+            MenuOrder = order,
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            CreatedBy = "test"
+        };
 
     private Task<HttpResponseMessage> GetAsync(string host, string path)
     {
