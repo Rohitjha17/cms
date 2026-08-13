@@ -1,12 +1,14 @@
 #!/bin/sh
 set -eu
 
-mkdir -p /tmp/cms-demo/uploads /tmp/cms-demo/home/.aspnet/DataProtection-Keys
-export HOME=/tmp/cms-demo/home
-if [ ! -f /tmp/cms-demo/cms.db ]; then
-    cp /app/demo-seed/cms.db /tmp/cms-demo/cms.db
+# /data is a persistent disk. The seed database is copied in ONLY on a first boot;
+# on every later deploy the school's real data is left untouched.
+mkdir -p /data/uploads /data/home/.aspnet/DataProtection-Keys
+export HOME=/data/home
+if [ ! -f /data/cms.db ]; then
+    cp /app/demo-seed/cms.db /data/cms.db
+    cp /app/demo-seed/dataprotection/*.xml /data/home/.aspnet/DataProtection-Keys/
 fi
-cp /app/demo-seed/dataprotection/*.xml /tmp/cms-demo/home/.aspnet/DataProtection-Keys/
 
 cleanup() {
     kill "${NGINX_PID:-}" "${API_PID:-}" "${ADMIN_PID:-}" "${WEB_PID:-}" 2>/dev/null || true

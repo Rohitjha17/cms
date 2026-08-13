@@ -1,0 +1,19 @@
+# Render Blueprint. Create the service by pointing Render at this repository:
+# New → Blueprint → select the repo. Everything below is applied automatically.
+services:
+  - type: web
+    name: school-cms
+    runtime: docker
+    dockerfilePath: ./Dockerfile.render
+    plan: starter          # required: the free plan has no persistent disk
+    healthCheckPath: /health
+    disk:
+      name: cms-data       # database and uploaded media live here
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      # Generated once by Render and kept stable across deploys.
+      - key: Jwt__Key
+        generateValue: true
+      - key: Seed__DemoAdminPassword
+        sync: false        # set this yourself in the Render dashboard

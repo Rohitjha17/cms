@@ -201,3 +201,30 @@ public sealed class SaveSiteDomainDto
     public bool IsPrimary { get; set; }
     public bool IsActive { get; set; } = true;
 }
+
+/// <summary>A complete website template as offered in the gallery.</summary>
+public sealed class SiteTemplateSummaryDto
+{
+    public string Key { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Summary { get; set; } = string.Empty;
+    public string BestFor { get; set; } = string.Empty;
+    public WebsiteType WebsiteType { get; set; }
+    public HomeVariant HomeVariant { get; set; }
+    public string PrimaryColor { get; set; } = string.Empty;
+    public string SecondaryColor { get; set; } = string.Empty;
+    public string SampleTagline { get; set; } = string.Empty;
+    public IReadOnlyList<string> Highlights { get; set; } = [];
+    public int PageCount { get; set; }
+}
+
+public sealed class ProvisionFromTemplateDto
+{
+    public string TemplateKey { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string SiteKey { get; set; } = string.Empty;
+    public string? DomainName { get; set; }
+
+    /// <summary>Keep the template's sample staff, notices, events and departments.</summary>
+    public bool IncludeSampleContent { get; set; } = true;
+}

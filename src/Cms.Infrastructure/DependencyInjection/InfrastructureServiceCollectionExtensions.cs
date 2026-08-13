@@ -7,6 +7,7 @@ using Cms.Infrastructure.Persistence;
 using Cms.Infrastructure.Repositories;
 using Cms.Infrastructure.Storage;
 using Cms.Infrastructure.Tenancy;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -51,6 +52,14 @@ public static class InfrastructureServiceCollectionExtensions
                 options.UseSqlServer(connectionString);
             }
         });
+
+        // Shared key ring across API, Admin and Web, and across every instance of each.
+        // Without this the keys live on local disk: on ephemeral or scaled hosting each
+        // container issues cookies the others cannot read, so sign-ins appear to "not work
+        // on some devices". SetApplicationName must match in all three applications.
+        services.AddDataProtection()
+            .PersistKeysToDbContext<ApplicationDbContext>()
+            .SetApplicationName("Cms");
 
         services
             .AddIdentity<ApplicationUser, ApplicationRole>(options =>

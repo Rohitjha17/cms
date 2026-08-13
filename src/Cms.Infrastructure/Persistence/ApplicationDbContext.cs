@@ -2,13 +2,14 @@ using Cms.Application.Interfaces;
 using Cms.Domain.Entities;
 using Cms.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Cms.Domain.Common;
 using System.Text.Json;
 
 namespace Cms.Infrastructure.Persistence;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>, IDataProtectionKeyContext
 {
     private readonly ITenantContext _tenantContext;
     private readonly ISiteContext _siteContext;
@@ -21,6 +22,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         _tenantContext = tenantContext;
         _siteContext = siteContext;
     }
+
+    /// <summary>
+    /// Data Protection key ring. Stored in the database so every application instance
+    /// shares it: on ephemeral or multi-instance hosting, filesystem keys mean each
+    /// container issues cookies the others cannot read, and users are logged out at random.
+    /// </summary>
+    public DbSet<Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey> DataProtectionKeys
+        => Set<Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey>();
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<TenantDomain> TenantDomains => Set<TenantDomain>();

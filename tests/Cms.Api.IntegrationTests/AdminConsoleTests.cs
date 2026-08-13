@@ -62,6 +62,7 @@ public sealed class AdminConsoleTests : IClassFixture<AdminFactory>
         "/CMS/Settings/Index",
         "/CMS/Departments/Index",
         "/CMS/Domains/Index",
+        "/CMS/Templates/Index",
         "/Account/ChangePassword"
     ];
 
@@ -258,6 +259,31 @@ public sealed class AdminConsoleTests : IClassFixture<AdminFactory>
 
         // The audit lists real pages from the site.
         Assert.Contains("Admission", html);
+    }
+
+    /// <summary>
+    /// The template gallery is what the agency shows a prospective school, so every template
+    /// must be presented with enough detail to choose from.
+    /// </summary>
+    [Fact]
+    public async Task TemplateGallery_ShowsEveryTemplateWithDetail()
+    {
+        using var response = await _client.GetAsync("/CMS/Templates/Index");
+        response.EnsureSuccessStatusCode();
+        var html = await response.Content.ReadAsStringAsync();
+
+        foreach (var name in new[]
+                 {
+                     "Heritage Day School", "Metro Modern School", "Residential Campus",
+                     "Degree College", "Prestige Institution"
+                 })
+        {
+            Assert.Contains(name, html);
+        }
+
+        Assert.Contains("Best for:", html);
+        Assert.Contains("Use this template", html);
+        Assert.Contains("Include sample staff", html);
     }
 
     [Fact]

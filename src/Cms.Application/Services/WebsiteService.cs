@@ -1,5 +1,7 @@
 using Cms.Application.DTOs.Websites;
 using Cms.Application.Interfaces;
+using Cms.Application.Templates;
+using System.Text.Json.Nodes;
 using Cms.Domain.Constants;
 using Cms.Domain.Entities;
 using Cms.Domain.Enums;
@@ -13,6 +15,7 @@ public sealed class WebsiteService : IWebsiteService
 {
     private static readonly HtmlSanitizer TemplateSanitizer = CreateTemplateSanitizer();
     private readonly IWebsiteRepository _repository;
+    private readonly ISiteContentRepository _contentRepository;
     private readonly ITenantContext _tenantContext;
     private readonly ISiteContext _siteContext;
     private readonly ICurrentUserContext _currentUser;
@@ -23,6 +26,7 @@ public sealed class WebsiteService : IWebsiteService
 
     public WebsiteService(
         IWebsiteRepository repository,
+        ISiteContentRepository contentRepository,
         ITenantContext tenantContext,
         ISiteContext siteContext,
         ICurrentUserContext currentUser,
@@ -32,6 +36,7 @@ public sealed class WebsiteService : IWebsiteService
         IValidator<SaveSiteDomainDto> domainValidator)
     {
         _repository = repository;
+        _contentRepository = contentRepository;
         _tenantContext = tenantContext;
         _siteContext = siteContext;
         _currentUser = currentUser;
@@ -421,6 +426,208 @@ public sealed class WebsiteService : IWebsiteService
         await _repository.EnsureHomeSectionsAsync(tenantId, website.Id, cancellationToken);
 
         return (await GetWebsitesAsync(cancellationToken)).First(x => x.Id == website.Id);
+    }
+
+    // -----------------------------------------------------------------------
+    // Website templates
+    // -----------------------------------------------------------------------
+
+    public Task<IReadOnlyList<SiteTemplateSummaryDto>> GetSiteTemplatesAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<SiteTemplateSummaryDto>>(SiteTemplateCatalog.All
+            .Select(x => new SiteTemplateSummaryDto
+            {
+                Key = x.Key,
+                Name = x.Name,
+                Summary = x.Summary,
+                BestFor = x.BestFor,
+                WebsiteType = x.WebsiteType,
+                HomeVariant = x.HomeVariant,
+                PrimaryColor = x.PrimaryColor,
+                SecondaryColor = x.SecondaryColor,
+                SampleTagline = x.SampleTagline,
+                Highlights = x.Highlights,
+                PageCount = x.PageTemplateKeys.Count
+            })
+            .ToList());
+
+    /// <summary>
+    /// Creates a website that already looks finished: the standard provisioning run, then the
+    /// template's palette, hero copy, statistics and sample staff, notices, events and
+    /// departments layered on top. Everything written here is sample copy for the school to
+    /// replace, so it is only ever applied to a website being created.
+    /// </summary>
+    public async Task<WebsiteSummaryDto> ProvisionFromTemplateAsync(
+        ProvisionFromTemplateDto dto, CancellationToken cancellationToken)
+    {
+        var template = SiteTemplateCatalog.Find(dto.TemplateKey)
+            ?? throw new ValidationAppException($"Unknown website template '{dto.TemplateKey}'.");
+
+        var created = await ProvisionAsync(new ProvisionWebsiteDto
+        {
+            Name = dto.Name,
+            SiteKey = dto.SiteKey,
+            DomainName = dto.DomainName,
+            WebsiteType = template.WebsiteType,
+            HomeVariant = template.HomeVariant,
+            PrimaryColor = template.PrimaryColor,
+            SecondaryColor = template.SecondaryColor,
+            Tagline = template.SampleTagline,
+            TemplateKeys = template.PageTemplateKeys.ToList()
+        }, cancellationToken);
+
+        var tenantId = RequireTenant();
+        await ApplyHomeCopyAsync(tenantId, created.Id, template, dto.Name, cancellationToken);
+
+        if (dto.IncludeSampleContent)
+        {
+            await AddSampleContentAsync(tenantId, created.Id, template, cancellationToken);
+        }
+
+        return (await GetWebsitesAsync(cancellationToken)).First(x => x.Id == created.Id);
+    }
+
+    private async Task ApplyHomeCopyAsync(
+        Guid tenantId, Guid siteId, SiteTemplate template, string schoolName, CancellationToken cancellationToken)
+    {
+        var sections = await _repository.GetHomeSectionsAsync(tenantId, siteId, cancellationToken);
+
+        foreach (var section in sections)
+        {
+            switch (section.SectionKey)
+            {
+                case HomePageSectionKeys.Hero:
+                    section.Title = template.HeroHeading;
+                    section.SubTitle = template.HeroDescription;
+                    section.JsonData = new JsonObject
+                    {
+                        ["heading"] = template.HeroHeading,
+                        ["description"] = template.HeroDescription,
+                        ["primaryButton"] = "Apply now",
+                        ["secondaryButton"] = "Visit us"
+                    }.ToJsonString();
+                    break;
+
+                case HomePageSectionKeys.Statistics:
+                    section.JsonData = new JsonObject
+                    {
+                        ["students"] = template.Statistics.Students,
+                        ["teachers"] = template.Statistics.Teachers,
+                        ["placements"] = template.Statistics.Placements,
+                        ["years"] = template.Statistics.Years
+                    }.ToJsonString();
+                    break;
+
+                case HomePageSectionKeys.Welcome:
+                    section.Title = $"Welcome to {schoolName}";
+                    section.Description = template.HeroDescription;
+                    break;
+
+                case HomePageSectionKeys.WhyChooseUs:
+                    section.SubTitle = template.WhyIntro;
+                    break;
+            }
+
+            section.UpdatedDate = DateTime.UtcNow;
+            section.UpdatedBy = Actor;
+        }
+
+        await _repository.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task AddSampleContentAsync(
+        Guid tenantId, Guid siteId, SiteTemplate template, CancellationToken cancellationToken)
+    {
+        var order = 0;
+        foreach (var person in template.Faculty)
+        {
+            await _contentRepository.AddEntryAsync(ContentEntry(tenantId, siteId, "person",
+                Slug(person.FullName), person.FullName, person.Headline, null,
+                new JsonObject
+                {
+                    ["designation"] = person.Designation,
+                    ["category"] = person.Category,
+                    ["qualification"] = person.Qualification
+                }.ToJsonString(), null, order++), cancellationToken);
+        }
+
+        order = 0;
+        foreach (var department in template.Departments)
+        {
+            await _contentRepository.AddEntryAsync(ContentEntry(tenantId, siteId, "department",
+                Slug(department.Name), department.Name, department.Summary, null,
+                new JsonObject
+                {
+                    ["programmes"] = new JsonArray(
+                        department.Programmes.Select(x => (JsonNode)JsonValue.Create(x)!).ToArray())
+                }.ToJsonString(), null, order++), cancellationToken);
+        }
+
+        order = 0;
+        var publishedOn = DateTime.UtcNow;
+        foreach (var item in template.News)
+        {
+            await _contentRepository.AddEntryAsync(ContentEntry(tenantId, siteId, "news",
+                Slug(item.Headline), item.Headline, item.Summary, null,
+                new JsonObject
+                {
+                    ["category"] = item.Category,
+                    ["isFeatured"] = item.IsFeatured
+                }.ToJsonString(), publishedOn.AddDays(-order * 9), order++), cancellationToken);
+        }
+
+        order = 0;
+        foreach (var item in template.Events)
+        {
+            await _contentRepository.AddEntryAsync(ContentEntry(tenantId, siteId, "event",
+                Slug(item.Title), item.Title, item.Summary, null,
+                new JsonObject
+                {
+                    ["venue"] = item.Venue,
+                    ["endsOn"] = DateTime.UtcNow.AddDays(item.DaysFromNow).AddHours(3).ToString("O")
+                }.ToJsonString(), DateTime.UtcNow.AddDays(item.DaysFromNow), order++), cancellationToken);
+        }
+
+        await _contentRepository.SaveChangesAsync(cancellationToken);
+    }
+
+    private ContentEntry ContentEntry(
+        Guid tenantId, Guid siteId, string type, string key, string title,
+        string? summary, string? body, string? json, DateTime? publishDate, int order) => new()
+        {
+            TenantId = tenantId,
+            SiteId = siteId,
+            ContentType = type,
+            Key = key,
+            Title = title,
+            Summary = summary,
+            Body = body,
+            JsonData = json,
+            PublishDate = publishDate,
+            DisplayOrder = order,
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            CreatedBy = Actor
+        };
+
+    private static string Slug(string value)
+    {
+        var builder = new System.Text.StringBuilder(value.Length);
+        var lastSeparator = false;
+        foreach (var character in value.Trim().ToLowerInvariant())
+        {
+            if (char.IsLetterOrDigit(character) && character < 128)
+            {
+                builder.Append(character);
+                lastSeparator = false;
+            }
+            else if (!lastSeparator && builder.Length > 0)
+            {
+                builder.Append('-');
+                lastSeparator = true;
+            }
+        }
+
+        return builder.ToString().Trim('-');
     }
 
     // -----------------------------------------------------------------------

@@ -1,3 +1,9 @@
+# Render deployment: API, Admin CMS and the public websites in one long-running container.
+#
+# Everything that must survive a restart lives on the persistent disk mounted at /data —
+# the SQLite database and uploaded media. That is the whole difference from the serverless
+# profile, where /tmp was wiped on every container replacement and each instance had its
+# own copy of the data.
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
@@ -6,7 +12,10 @@ RUN dotnet restore Cms.sln
 RUN dotnet publish src/Cms.Api/Cms.Api.csproj -c Release -o /out/api --no-restore
 RUN dotnet publish src/Cms.Admin/Cms.Admin.csproj -c Release -o /out/admin --no-restore
 RUN dotnet publish src/Cms.Web/Cms.Web.csproj -c Release -o /out/web --no-restore
-RUN mkdir -p /out/demo/home /tmp/cms-demo-build/uploads \
+
+# Build a seeded database from this build's schema, so first boot is instant and the
+# entrypoint can detect when a redeploy has changed the schema.
+RUN mkdir -p /out/demo/home /tmp/build-uploads \
     && cd /out/api \
     && env HOME=/out/demo/home \
        ASPNETCORE_ENVIRONMENT=Development \
@@ -14,18 +23,22 @@ RUN mkdir -p /out/demo/home /tmp/cms-demo-build/uploads \
        Database__ApplyMigrationsOnStartup=false \
        'ConnectionStrings__Sqlite=Data Source=/out/demo/cms.db' \
        Storage__Provider=Local \
-       Storage__LocalRootPath=/tmp/cms-demo-build/uploads \
+       Storage__LocalRootPath=/tmp/build-uploads \
        Storage__LocalBaseUrl=/uploads \
        DemoMode__Enabled=true \
        DemoMode__SeedOnly=true \
        Seed__EnableDemoData=true \
        Seed__DemoAdminPassword=Admin@12345 \
-       Jwt__Key=CmsVercelImageBuildOnlyKey_AtLeast_32_Bytes \
+       Jwt__Key=CmsImageBuildOnlyKey_AtLeast_32_Bytes_Long \
        dotnet Cms.Api.dll
+
+# Fingerprint the schema so the entrypoint can tell a schema change from a normal restart.
+RUN cat src/Cms.Infrastructure/Persistence/Migrations/ApplicationDbContextModelSnapshot.cs \
+    | sha256sum | cut -c1-16 > /out/demo/schema-version
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends nginx \
+    && apt-get install -y --no-install-recommends nginx gettext-base \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -33,24 +46,24 @@ COPY --from=build /out/api ./api
 COPY --from=build /out/admin ./admin
 COPY --from=build /out/web ./web
 COPY --from=build /out/demo/cms.db ./demo-seed/cms.db
-COPY --from=build /out/demo/home/.aspnet/DataProtection-Keys ./demo-seed/dataprotection
-COPY vercel/nginx.conf /etc/nginx/nginx.conf
-COPY --chmod=755 vercel/entrypoint.sh /app/entrypoint.sh
+COPY --from=build /out/demo/schema-version ./demo-seed/schema-version
+COPY render/nginx.conf.template /app/nginx.conf.template
+COPY --chmod=755 render/entrypoint.sh /app/entrypoint.sh
 
 ENV ASPNETCORE_ENVIRONMENT=Development \
     DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false \
+    DATA_DIR=/data \
     Database__Provider=Sqlite \
     Database__ApplyMigrationsOnStartup=false \
-    ConnectionStrings__Sqlite="Data Source=/tmp/cms-demo/cms.db;Cache=Shared;Default Timeout=30" \
+    ConnectionStrings__Sqlite="Data Source=/data/cms.db;Cache=Shared;Default Timeout=30" \
     Storage__Provider=Local \
-    Storage__LocalRootPath=/tmp/cms-demo/uploads \
+    Storage__LocalRootPath=/data/uploads \
     Storage__LocalBaseUrl=/uploads \
     DemoMode__Enabled=true \
     Proxy__TrustForwardedHeaders=true \
     PublicSite__BaseUrl=/site \
+    PublicCache__Seconds=30 \
     Seed__EnableDemoData=true \
-    Seed__SkipStartup=true \
-    PORT=80
+    Seed__SkipStartup=true
 
-EXPOSE 80
 ENTRYPOINT ["/app/entrypoint.sh"]

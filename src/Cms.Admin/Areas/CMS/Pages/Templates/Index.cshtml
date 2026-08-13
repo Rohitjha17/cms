@@ -1,0 +1,158 @@
+@page
+@model Cms.Admin.Areas.CMS.Pages.Templates.IndexModel
+@inject Cms.Admin.Services.IPublicSiteLink PublicSite
+@{
+    ViewData["Title"] = "Website templates";
+}
+
+<div class="page-header">
+    <div>
+        <div class="eyebrow">Website factory</div>
+        <h1>Website templates</h1>
+        <p>
+            Complete, ready-to-show websites. Pick one, give it the school's name, and you get a
+            finished site with pages, staff, notices and events already filled in — something you
+            can share with a school the same day.
+        </p>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="notice">@Model.StatusMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.CreatedSiteKey))
+{
+    <section class="next-steps">
+        <h2>Your demo site is ready</h2>
+        <ol>
+            <li><a asp-area="CMS" asp-page="/Branding/Index" asp-route-site="@Model.CreatedSiteKey">Swap in the school's logo and colours</a></li>
+            <li><a asp-area="CMS" asp-page="/HomePage/Index" asp-route-site="@Model.CreatedSiteKey">Adjust the home page wording</a></li>
+            <li><a asp-area="CMS" asp-page="/Domains/Index">Bind a domain</a>, or share the site-key URL as it is</li>
+        </ol>
+        @if (PublicSite.Url is not null)
+        {
+            <p style="margin:10px 0 0">
+                <a class="btn btn-sm" href="@PublicSite.Url" target="_blank" rel="noopener">Open the live site</a>
+            </p>
+        }
+    </section>
+}
+
+<div class="template-gallery">
+    @foreach (var template in Model.Templates)
+    {
+        var isSelected = Model.SelectedTemplateKey == template.Key;
+        <article class="site-template @(isSelected ? "is-selected" : null)"
+                 style="--tpl-primary:@template.PrimaryColor; --tpl-accent:@template.SecondaryColor">
+            <div class="site-template__preview" aria-hidden="true">
+                <span class="stp-bar"></span>
+                <span class="stp-hero design-preview--@template.HomeVariant.ToString().ToLowerInvariant()"></span>
+                <span class="stp-row"><i></i><i></i><i></i><i></i></span>
+                <span class="stp-body"><i></i><i></i></span>
+            </div>
+
+            <div class="site-template__body">
+                <header>
+                    <strong>@template.Name</strong>
+                    <span class="chip">@template.WebsiteType</span>
+                </header>
+                <p class="site-template__summary">@template.Summary</p>
+                <p class="site-template__best">Best for: @template.BestFor</p>
+
+                <ul class="site-template__highlights">
+                    @foreach (var highlight in template.Highlights)
+                    {
+                        <li>@highlight</li>
+                    }
+                </ul>
+
+                <div class="site-template__meta">
+                    <span><em>Home design</em>@template.HomeVariant</span>
+                    <span><em>Pages</em>@template.PageCount</span>
+                    <span class="site-template__swatch">
+                        <em>Palette</em>
+                        <i style="background:@template.PrimaryColor"></i>
+                        <i style="background:@template.SecondaryColor"></i>
+                    </span>
+                </div>
+
+                @if (Model.CanProvision)
+                {
+                    <a class="btn btn-sm" asp-route-use="@template.Key" asp-fragment="create">Use this template</a>
+                }
+            </div>
+        </article>
+    }
+</div>
+
+@if (Model.CanProvision)
+{
+    <section class="form-card" id="create" style="margin-top:20px">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">→</span>
+                <span>
+                    <strong>Create a website from a template</strong>
+                    <small>
+                        @if (Model.SelectedTemplateKey is null)
+                        {
+                            <text>Choose a template above, or pick one here</text>
+                        }
+                        else
+                        {
+                            <text>Using: @Model.Templates.First(x => x.Key == Model.SelectedTemplateKey).Name</text>
+                        }
+                    </small>
+                </span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <form method="post" class="field-grid">
+                <div asp-validation-summary="All" class="validation-summary full"></div>
+
+                <label class="field">
+                    <span>Template</span>
+                    <select asp-for="Input.TemplateKey" required>
+                        <option value="">Select a template…</option>
+                        @foreach (var template in Model.Templates)
+                        {
+                            <option value="@template.Key" selected="@(Model.SelectedTemplateKey == template.Key)">@template.Name</option>
+                        }
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>School or college name</span>
+                    <input asp-for="Input.Name" placeholder="Cambridge High School, Noida" required />
+                </label>
+
+                <label class="field">
+                    <span>Site key</span>
+                    <input asp-for="Input.SiteKey" placeholder="cambridge-noida" required />
+                    <small class="field-help">Used in the URL when one domain hosts several websites.</small>
+                </label>
+
+                <label class="field">
+                    <span>Domain (optional)</span>
+                    <input asp-for="Input.DomainName" placeholder="noida.cambridgeschool.edu.in" />
+                    <small class="field-help">Leave blank to share the site-key URL for now.</small>
+                </label>
+
+                <label class="switch-row full">
+                    <input asp-for="Input.IncludeSampleContent" />
+                    <span>
+                        <strong>Include sample staff, notices, events and departments</strong>
+                        <small>Recommended when showing the site to a school — it looks finished rather than empty. All of it is editable.</small>
+                    </span>
+                </label>
+
+                <div class="full form-actions">
+                    <button class="btn" type="submit">Create website from template</button>
+                    <span class="hint">Everything the template adds is sample copy, ready to be replaced.</span>
+                </div>
+            </form>
+        </div>
+    </section>
+}

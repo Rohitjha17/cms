@@ -9,6 +9,9 @@ public interface IWebsiteService
     Task<IReadOnlyList<WebsiteSummaryDto>> GetWebsitesAsync(CancellationToken cancellationToken);
     Task<WebsiteSummaryDto> ProvisionAsync(ProvisionWebsiteDto dto, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<SiteTemplateSummaryDto>> GetSiteTemplatesAsync(CancellationToken cancellationToken);
+    Task<WebsiteSummaryDto> ProvisionFromTemplateAsync(ProvisionFromTemplateDto dto, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<SiteDomainDto>> GetDomainsAsync(CancellationToken cancellationToken);
     Task<SiteDomainDto> SaveDomainAsync(Guid? id, SaveSiteDomainDto dto, CancellationToken cancellationToken);
     Task DeleteDomainAsync(Guid id, CancellationToken cancellationToken);
