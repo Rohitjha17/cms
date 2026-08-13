@@ -107,10 +107,25 @@ public class TenantResolutionMiddleware
 
         if (site is not null)
         {
-            if (basePath.Length == 0 && resolved.BoundSiteId != site.Id)
+            // BasePath is the prefix every link on this website must start with, so it has to
+            // include whatever the application itself is mounted under. A deployment that serves
+            // the public site at /site needs "/site/college", not "/college" — the latter leaves
+            // the application entirely and lands on whatever else the host is serving.
+            var appBase = context.Request.PathBase.Value ?? string.Empty;
+
+            if (basePath.Length > 0)
+            {
+                // The site key was taken out of the path, so it is already part of the path base.
+                basePath = appBase;
+            }
+            else if (resolved.BoundSiteId == site.Id)
+            {
+                basePath = appBase;
+            }
+            else
             {
                 // Shared host with no prefix in the URL — links must still carry one.
-                basePath = "/" + site.SiteKey;
+                basePath = appBase + "/" + site.SiteKey;
             }
 
             siteContext.Set(site.Id, site.SiteKey, site.Name, basePath);

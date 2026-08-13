@@ -331,6 +331,94 @@ public sealed class PublicRoutingTests : IClassFixture<PublicWebFactory>, IAsync
     }
 }
 
+/// <summary>
+/// The deployed shape: the public website is mounted under a path base (<c>/site</c>) while the
+/// console sits at the root of the same host. Links that omit the path base leave the
+/// application altogether and hit whatever else the host serves — which is how the site came to
+/// render correctly and then break the moment a visitor clicked anything in the header.
+/// </summary>
+public sealed class PathBasedRoutingTests : IClassFixture<PathBasedWebFactory>
+{
+    private readonly HttpClient _client;
+
+    public PathBasedRoutingTests(PathBasedWebFactory factory) => _client = factory.CreateClient();
+
+    [Theory]
+    [InlineData("/site/school", "Cambridge High School")]
+    [InlineData("/site/college", "Cambridge College of Arts")]
+    [InlineData("/site/school/about", "Cambridge High School")]
+    public async Task SiteIsServedUnderThePathBase(string path, string expectedBrand)
+    {
+        using var response = await _client.GetAsync(path);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(expectedBrand, await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData("/site/school")]
+    [InlineData("/site/college")]
+    [InlineData("/site/school/about")]
+    [InlineData("/site/school/contact")]
+    public async Task EveryLinkKeepsThePathBaseAndResolves(string path)
+    {
+        using var page = await _client.GetAsync(path);
+        page.EnsureSuccessStatusCode();
+        var html = await page.Content.ReadAsStringAsync();
+
+        var links = System.Text.RegularExpressions.Regex
+            .Matches(html, "href=\"(/[^\"#?]*)\"")
+            .Select(match => match.Groups[1].Value)
+            .Distinct()
+            .ToList();
+
+        Assert.NotEmpty(links);
+
+        var escaped = links.Where(link => !link.StartsWith("/site/", StringComparison.Ordinal)).ToList();
+        Assert.True(escaped.Count == 0, "Links that drop the path base: " + string.Join(", ", escaped));
+
+        var broken = new List<string>();
+        foreach (var link in links)
+        {
+            using var response = await _client.GetAsync(link);
+            if (!response.IsSuccessStatusCode)
+            {
+                broken.Add($"{link} -> {(int)response.StatusCode}");
+            }
+        }
+
+        Assert.True(broken.Count == 0, $"Broken links on {path}: " + string.Join(", ", broken));
+    }
+}
+
+public sealed class PathBasedWebFactory : WebApplicationFactory<WebProgram>
+{
+    private readonly string _databaseName = $"cms-web-pathbase-{Guid.NewGuid():N}";
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseEnvironment("Development");
+        builder.ConfigureAppConfiguration((_, configuration) =>
+            configuration.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["PathBase"] = "/site",
+                ["Seed:EnableDemoData"] = "true",
+                ["Seed:DemoAdminPassword"] = "Admin@12345",
+                ["Database:ApplyMigrationsOnStartup"] = "false",
+                ["ConnectionStrings:DefaultConnection"] = "Server=test-only",
+                ["Storage:Provider"] = "Local",
+                ["Storage:LocalRootPath"] = Path.Combine(Path.GetTempPath(), _databaseName, "uploads"),
+                ["Tenancy:ResolutionCacheSeconds"] = "0"
+            }));
+        builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
+            services.RemoveAll<ApplicationDbContext>();
+            services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase(_databaseName));
+        });
+    }
+}
+
 public sealed class PublicWebFactory : WebApplicationFactory<WebProgram>
 {
     private readonly string _databaseName = $"cms-web-tests-{Guid.NewGuid():N}";
