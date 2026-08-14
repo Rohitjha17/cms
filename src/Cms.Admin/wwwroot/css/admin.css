@@ -747,6 +747,40 @@ svg {
   transition: .15s;
 }
 .field textarea { resize: vertical; }
+
+/* Colour field: the swatch that opens the picker, and the hex, as one control. */
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+/* Both rules outrank ".field input { width: 100% }", which would otherwise stretch the swatch
+   across the row and push the hex box out of the card. */
+.color-field input[type="text"] {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+.color-field .color-field__swatch {
+  flex: 0 0 42px;
+  width: 42px;
+  min-height: 42px;
+  height: 42px;
+  padding: 4px;
+  background: white;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: .15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.color-field .color-field__swatch:hover { border-color: #9b91f0; }
+.color-field__swatch::-webkit-color-swatch-wrapper { padding: 0; }
+.color-field__swatch::-webkit-color-swatch { border: 0; border-radius: 5px; }
+.color-field__swatch::-moz-color-swatch { border: 0; border-radius: 5px; }
 .field input:focus, .field textarea:focus, .form-grid input:focus, .form-grid textarea:focus {
   border-color: #9b91f0;
   box-shadow: 0 0 0 3px var(--primary-soft);
