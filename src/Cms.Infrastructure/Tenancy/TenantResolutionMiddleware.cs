@@ -37,7 +37,7 @@ public class TenantResolutionMiddleware
         ISiteContext siteContext)
     {
         var host = context.Request.Host.Host.TrimEnd('.').ToLowerInvariant();
-        var resolved = await resolver.ResolveAsync(host, context.RequestAborted);
+        var resolved = await resolver.ResolveAsync(host, cancellationToken: context.RequestAborted);
 
         if (resolved is null)
         {
@@ -84,6 +84,17 @@ public class TenantResolutionMiddleware
             if (!string.IsNullOrWhiteSpace(requestedKey))
             {
                 site = FindByKey(resolved, requestedKey);
+
+                if (site is null)
+                {
+                    // Editing the wrong website is worse than a slow request: re-read before
+                    // falling back, so a website created moments ago is edited as itself rather
+                    // than silently becoming whichever site the host answers with by default.
+                    resolved = await resolver.ResolveAsync(host, refresh: true, context.RequestAborted)
+                        ?? resolved;
+                    tenantContext.Set(resolved.TenantId, resolved.TenantCode, resolved.TenantName);
+                    site = FindByKey(resolved, requestedKey);
+                }
             }
 
             site ??= FindById(resolved, resolved.BoundSiteId);

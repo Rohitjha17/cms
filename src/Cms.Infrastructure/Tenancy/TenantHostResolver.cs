@@ -30,7 +30,14 @@ public sealed record ResolvedHost(
 
 public interface ITenantHostResolver
 {
-    Task<ResolvedHost?> ResolveAsync(string host, CancellationToken cancellationToken = default);
+    /// <param name="refresh">
+    /// Skips the cache and re-reads from the database. Used when a caller names a website the
+    /// cached answer does not contain — a site created seconds ago, or created by the other
+    /// process sharing this database — so that it is found rather than quietly swapped for
+    /// whichever website the host serves by default.
+    /// </param>
+    Task<ResolvedHost?> ResolveAsync(
+        string host, bool refresh = false, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -61,12 +68,15 @@ public sealed class TenantHostResolver : ITenantHostResolver
         _demoFallback = configuration.GetValue<bool>("DemoMode:Enabled");
     }
 
-    public async Task<ResolvedHost?> ResolveAsync(string host, CancellationToken cancellationToken = default)
+    public async Task<ResolvedHost?> ResolveAsync(
+        string host, bool refresh = false, CancellationToken cancellationToken = default)
     {
         // The generation is part of the key, so creating a website or binding a domain makes the
         // change visible on the next request instead of after the cache window.
         var cacheKey = $"tenant-host::{_generation.Generation}::{host}";
-        if (_cacheDuration > TimeSpan.Zero && _cache.TryGetValue<ResolvedHost?>(cacheKey, out var cached))
+        if (!refresh
+            && _cacheDuration > TimeSpan.Zero
+            && _cache.TryGetValue<ResolvedHost?>(cacheKey, out var cached))
         {
             return cached;
         }

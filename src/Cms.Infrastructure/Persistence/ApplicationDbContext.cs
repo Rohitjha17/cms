@@ -50,6 +50,24 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
+        // Every entity carries its own identity from construction (BaseEntity assigns a Guid), so
+        // keys are never store-generated. This has to be declared, because otherwise EF assumes a
+        // Guid key it did not generate belongs to a row that already exists: a new child reached
+        // through a loaded parent's collection — a menu item under an existing menu, a domain
+        // under an existing tenant — would be marked Modified and saved as an UPDATE against a
+        // row that was never inserted, failing with "expected to affect 1 row(s), but actually
+        // affected 0". It only ever worked while the parent was new too, which is why creating a
+        // website succeeded and every later edit did not.
+        foreach (var entity in builder.Model.GetEntityTypes())
+        {
+            if (!typeof(BaseEntity).IsAssignableFrom(entity.ClrType))
+            {
+                continue;
+            }
+
+            builder.Entity(entity.ClrType).Property(nameof(BaseEntity.Id)).ValueGeneratedNever();
+        }
+
         // Tenant isolation — evaluates current scoped tenant at query time.
         builder.Entity<HomePageSection>().HasQueryFilter(e =>
             _tenantContext.TenantId.HasValue && e.TenantId == _tenantContext.TenantId

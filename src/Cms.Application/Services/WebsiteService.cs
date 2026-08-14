@@ -174,11 +174,22 @@ public sealed class WebsiteService : IWebsiteService
         return created;
     }
 
+    /// <summary>
+    /// Keeps the header menu in step with the pages, without taking the menu over.
+    ///
+    /// It adds a link for a page that has none and drops the link for a page that has been
+    /// hidden or deactivated. It deliberately leaves everything else alone: renamed labels,
+    /// hand-set order, link targets and links to addresses that are not pages at all (/news,
+    /// /events, an external site). Rebuilding the whole menu from the page list — which is what
+    /// this did — silently discarded every edit made on the Navigation screen the next time
+    /// anyone saved any page, which made that screen pointless.
+    /// </summary>
     public async Task SyncHeaderMenuAsync(CancellationToken cancellationToken)
     {
         var (tenantId, siteId) = RequireContext();
-        var pages = (await _repository.GetPagesAsync(tenantId, siteId, activeOnly: true, cancellationToken))
-            .Where(p => p.ShowInMenu)
+        var allPages = await _repository.GetPagesAsync(tenantId, siteId, activeOnly: false, cancellationToken);
+        var linkable = allPages
+            .Where(p => p.IsActive && p.ShowInMenu)
             .OrderBy(p => p.MenuOrder)
             .ThenBy(p => p.Title)
             .ToList();
@@ -198,48 +209,61 @@ public sealed class WebsiteService : IWebsiteService
             };
             await _repository.AddMenuAsync(menu, cancellationToken);
         }
-        else
+
+        var wanted = linkable.Select(p => "/" + p.Slug).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // A link is only withdrawn when it points at a page that exists and is no longer meant to
+        // be in the menu. A link to something that is not a page is somebody's own addition.
+        var hiddenPageUrls = allPages
+            .Where(p => !p.IsActive || !p.ShowInMenu)
+            .Select(p => "/" + p.Slug)
+            .Where(url => !wanted.Contains(url))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var stale = menu.Items.Where(item => hiddenPageUrls.Contains(item.Url)).ToList();
+        if (stale.Count > 0)
         {
-            if (menu.Items.Count > 0)
+            _repository.RemoveMenuItems(stale);
+            foreach (var item in stale)
             {
-                _repository.RemoveMenuItems(menu.Items.ToList());
-                menu.Items.Clear();
+                menu.Items.Remove(item);
             }
-
-            menu.UpdatedDate = DateTime.UtcNow;
-            menu.UpdatedBy = Actor;
         }
 
-        menu.Items.Add(new MenuItem
-        {
-            TenantId = tenantId,
-            SiteId = siteId,
-            Label = "Home",
-            Url = "/",
-            DisplayOrder = 0,
-            IsActive = true,
-            CreatedDate = DateTime.UtcNow,
-            CreatedBy = Actor
-        });
+        var linked = menu.Items.Select(item => item.Url).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var nextOrder = menu.Items.Count == 0 ? 0 : menu.Items.Max(item => item.DisplayOrder) + 1;
 
-        var index = 1;
-        foreach (var page in pages)
+        if (!linked.Contains("/"))
         {
-            menu.Items.Add(new MenuItem
-            {
-                TenantId = tenantId,
-                SiteId = siteId,
-                Label = page.Title,
-                Url = $"/{page.Slug}",
-                DisplayOrder = index++,
-                IsActive = true,
-                CreatedDate = DateTime.UtcNow,
-                CreatedBy = Actor
-            });
+            menu.Items.Add(NewMenuItem(tenantId, siteId, menu.Id, "Home", "/", nextOrder++));
+            linked.Add("/");
         }
+
+        foreach (var page in linkable.Where(p => !linked.Contains("/" + p.Slug)))
+        {
+            menu.Items.Add(NewMenuItem(tenantId, siteId, menu.Id, page.Title, "/" + page.Slug, nextOrder++));
+        }
+
+        menu.UpdatedDate = DateTime.UtcNow;
+        menu.UpdatedBy = Actor;
 
         await _repository.SaveChangesAsync(cancellationToken);
     }
+
+    private MenuItem NewMenuItem(
+        Guid tenantId, Guid siteId, Guid menuId, string label, string url, int order) =>
+        new()
+        {
+            TenantId = tenantId,
+            SiteId = siteId,
+            MenuId = menuId,
+            Label = label,
+            Url = url,
+            DisplayOrder = order,
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            CreatedBy = Actor
+        };
 
     public async Task<IReadOnlyList<WebsiteSummaryDto>> GetWebsitesAsync(CancellationToken cancellationToken)
     {
