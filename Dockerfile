@@ -35,7 +35,8 @@ COPY --from=build /out/web ./web
 # Data Protection keys are generated into this seed database during the build step
 # above, so there is no key folder on disk to copy any more.
 COPY --from=build /out/demo/cms.db ./demo-seed/cms.db
-COPY vercel/nginx.conf /etc/nginx/nginx.conf
+COPY vercel/nginx.single-host.conf /app/nginx.single-host.conf
+COPY vercel/nginx.multi-host.conf.template /app/nginx.multi-host.conf.template
 COPY --chmod=755 vercel/entrypoint.sh /app/entrypoint.sh
 
 # Production, not Development. Development served the raw exception page to visitors — a school

@@ -391,6 +391,192 @@ public sealed class PathBasedRoutingTests : IClassFixture<PathBasedWebFactory>
     }
 }
 
+/// <summary>
+/// One deployment serves the console host under a prefix and a school's own domain at its root,
+/// so the prefix arrives per request from the proxy rather than being fixed for the process.
+/// Without this, a school pointing its domain here would get links prefixed with /site — paths
+/// that do not exist on their domain.
+/// </summary>
+public sealed class ForwardedPrefixTests : IClassFixture<ProxiedWebFactory>, IAsyncLifetime
+{
+    private const string SchoolHost = "noida.cambridge.test";
+    private const string SchoolBrand = "Cambridge School Noida";
+
+    private readonly HttpClient _client;
+    private readonly ProxiedWebFactory _factory;
+
+    public ForwardedPrefixTests(ProxiedWebFactory factory)
+    {
+        _factory = factory;
+        _client = factory.CreateClient();
+    }
+
+    public async Task InitializeAsync()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        if (await db.TenantDomains.IgnoreQueryFilters().AnyAsync(x => x.DomainName == SchoolHost))
+        {
+            return;
+        }
+
+        var tenantId = await db.Tenants.IgnoreQueryFilters()
+            .Where(x => x.Code == "demo").Select(x => x.Id).FirstAsync();
+        var siteId = Guid.NewGuid();
+
+        db.Sites.Add(new Site
+        {
+            Id = siteId,
+            TenantId = tenantId,
+            Name = SchoolBrand,
+            SiteKey = "noida-campus",
+            WebsiteType = WebsiteType.School,
+            HomeVariant = HomeVariant.Modern,
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            CreatedBy = "test"
+        });
+        db.TenantDomains.Add(new TenantDomain
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SiteId = siteId,
+            DomainName = SchoolHost,
+            IsPrimary = true,
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            CreatedBy = "test"
+        });
+        db.Pages.AddRange(
+            NewSchoolPage(tenantId, siteId, PageType.About, "About us", "about", 1),
+            NewSchoolPage(tenantId, siteId, PageType.Admission, "Admission", "admission", 2),
+            NewSchoolPage(tenantId, siteId, PageType.Contact, "Contact", "contact", 3));
+
+        await db.SaveChangesAsync();
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    private static Page NewSchoolPage(
+        Guid tenantId, Guid siteId, PageType type, string title, string slug, int order) =>
+        new()
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SiteId = siteId,
+            PageType = type,
+            Title = title,
+            Slug = slug,
+            Content = $"<p>{title}.</p>",
+            ShowInMenu = true,
+            MenuOrder = order,
+            IsActive = true,
+            CreatedDate = DateTime.UtcNow,
+            CreatedBy = "test"
+        };
+
+    [Fact]
+    public async Task PlatformHost_ServesTheSiteUnderTheForwardedPrefix()
+    {
+        using var response = await SendAsync("/site/school", prefix: "/site");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Cambridge High School", html);
+        Assert.Contains("href=\"/site/school/", html);
+    }
+
+    [Fact]
+    public async Task SchoolsOwnDomain_ServesTheSiteAtTheRootWithNoPrefix()
+    {
+        using var response = await SendAsync("/about", host: SchoolHost);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Contains(SchoolBrand, html);
+        Assert.DoesNotContain("href=\"/site/", html);
+    }
+
+    [Fact]
+    public async Task SchoolsOwnDomain_LinksAllResolve()
+    {
+        using var page = await SendAsync("/", host: SchoolHost);
+        page.EnsureSuccessStatusCode();
+        var html = await page.Content.ReadAsStringAsync();
+
+        var links = System.Text.RegularExpressions.Regex
+            .Matches(html, "href=\"(/[^\"#?]*)\"")
+            .Select(match => match.Groups[1].Value)
+            .Distinct()
+            .ToList();
+
+        Assert.NotEmpty(links);
+
+        var broken = new List<string>();
+        foreach (var link in links)
+        {
+            using var response = await SendAsync(link, host: SchoolHost);
+            if (!response.IsSuccessStatusCode)
+            {
+                broken.Add($"{link} -> {(int)response.StatusCode}");
+            }
+        }
+
+        Assert.True(broken.Count == 0, "Broken links: " + string.Join(", ", broken));
+    }
+
+    /// <summary>A prefix nobody trustworthy sent must not end up in the site's links.</summary>
+    [Fact]
+    public async Task NonsensePrefix_IsIgnored()
+    {
+        using var response = await SendAsync("/about", host: SchoolHost, prefix: "../../evil");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.DoesNotContain("evil", await response.Content.ReadAsStringAsync());
+    }
+
+    private Task<HttpResponseMessage> SendAsync(string path, string? host = null, string? prefix = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"http://{host ?? "localhost"}{path}");
+        if (prefix is not null)
+        {
+            request.Headers.Add("X-Forwarded-Prefix", prefix);
+        }
+
+        return _client.SendAsync(request);
+    }
+}
+
+/// <summary>The deployment shape: behind a proxy, with no process-wide path base.</summary>
+public sealed class ProxiedWebFactory : WebApplicationFactory<WebProgram>
+{
+    private readonly string _databaseName = $"cms-web-proxied-{Guid.NewGuid():N}";
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseEnvironment("Development");
+        builder.ConfigureAppConfiguration((_, configuration) =>
+            configuration.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Proxy:TrustForwardedHeaders"] = "true",
+                ["Seed:EnableDemoData"] = "true",
+                ["Seed:DemoAdminPassword"] = "Admin@12345",
+                ["Database:ApplyMigrationsOnStartup"] = "false",
+                ["ConnectionStrings:DefaultConnection"] = "Server=test-only",
+                ["Storage:Provider"] = "Local",
+                ["Storage:LocalRootPath"] = Path.Combine(Path.GetTempPath(), _databaseName, "uploads"),
+                ["Tenancy:ResolutionCacheSeconds"] = "0"
+            }));
+        builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
+            services.RemoveAll<ApplicationDbContext>();
+            services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase(_databaseName));
+        });
+    }
+}
+
 public sealed class PathBasedWebFactory : WebApplicationFactory<WebProgram>
 {
     private readonly string _databaseName = $"cms-web-pathbase-{Guid.NewGuid():N}";
@@ -402,6 +588,7 @@ public sealed class PathBasedWebFactory : WebApplicationFactory<WebProgram>
             configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["PathBase"] = "/site",
+                ["Proxy:TrustForwardedHeaders"] = "true",
                 ["Seed:EnableDemoData"] = "true",
                 ["Seed:DemoAdminPassword"] = "Admin@12345",
                 ["Database:ApplyMigrationsOnStartup"] = "false",

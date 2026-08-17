@@ -1,0 +1,79 @@
+# Rendered by entrypoint.sh when Platform__Domain is set: __PLATFORM_DOMAIN__ is replaced
+# with that host. Without it the single-host config is used instead.
+pid /tmp/nginx.pid;
+worker_processes 1;
+error_log /dev/stderr warn;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    access_log /dev/stdout;
+    client_body_temp_path /tmp/nginx-client-body;
+    proxy_temp_path /tmp/nginx-proxy;
+    client_max_body_size 20m;
+
+    # The platform's own host: the console at the root, and every website under /site.
+    server {
+        listen 80;
+        server_name __PLATFORM_DOMAIN__;
+
+        location /site/ {
+            proxy_pass http://127.0.0.1:5301;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Prefix /site;
+            proxy_intercept_errors on;
+            error_page 502 503 504 = @warming;
+        }
+
+        location = /site {
+            return 302 /site/;
+        }
+
+        location / {
+            proxy_pass http://127.0.0.1:5201;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_intercept_errors on;
+            error_page 502 503 504 = @warming;
+        }
+
+        location @warming {
+            internal;
+            default_type text/html;
+            add_header Cache-Control "no-store, max-age=0" always;
+            add_header Refresh "1" always;
+            return 200 '<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="1"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Starting CMS</title><style>body{margin:0;background:#08111f;color:#e7eef8;font:16px system-ui;display:grid;min-height:100vh;place-items:center}.card{text-align:center;padding:40px}.dot{width:42px;height:42px;border:4px solid #28415f;border-top-color:#69d4c5;border-radius:50%;margin:0 auto 20px;animation:s 1s linear infinite}@keyframes s{to{transform:rotate(360deg)}}</style></head><body><main class="card"><div class="dot"></div><h1>Preparing your CMS</h1><p>The secure demo workspace is starting. This page will refresh automatically.</p></main></body></html>';
+        }
+    }
+
+    # Any other host is a school's own domain: their website at the root, and no console on it.
+    # No X-Forwarded-Prefix is sent, so the site builds its links from the root.
+    server {
+        listen 80 default_server;
+        server_name _;
+
+        location / {
+            proxy_pass http://127.0.0.1:5301;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_intercept_errors on;
+            error_page 502 503 504 = @warming;
+        }
+
+        location @warming {
+            internal;
+            default_type text/html;
+            add_header Cache-Control "no-store, max-age=0" always;
+            add_header Refresh "1" always;
+            return 200 '<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="1"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Starting</title><style>body{margin:0;background:#08111f;color:#e7eef8;font:16px system-ui;display:grid;min-height:100vh;place-items:center}.card{text-align:center;padding:40px}.dot{width:42px;height:42px;border:4px solid #28415f;border-top-color:#69d4c5;border-radius:50%;margin:0 auto 20px;animation:s 1s linear infinite}@keyframes s{to{transform:rotate(360deg)}}</style></head><body><main class="card"><div class="dot"></div><h1>One moment</h1><p>This site is starting up and will refresh automatically.</p></main></body></html>';
+        }
+    }
+}

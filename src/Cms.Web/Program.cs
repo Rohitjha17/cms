@@ -71,15 +71,18 @@ if (!builder.Configuration.GetValue<bool>("Seed:SkipStartup"))
     await DatabaseSeeder.SeedAsync(app.Services);
 }
 
-// Vercel (and similar) mounts the public site under a prefix such as /site while Admin
-// stays at /. Must run before tenant resolution so /{siteKey} prefixes still work.
-var pathBase = builder.Configuration["PathBase"]?.Trim().TrimEnd('/');
-if (!string.IsNullOrWhiteSpace(pathBase))
-{
-    app.UsePathBase(pathBase.StartsWith('/') ? pathBase : "/" + pathBase);
-}
+// A deployment can mount the public site under a prefix such as /site on the platform's own
+// host while serving a school's own domain at the root, so the prefix is per request, not per
+// process. Must run before tenant resolution so /{siteKey} prefixes still work.
+// Read from the built application: configuration sources added by the host — a test host, or a
+// provider that supplies settings late — are merged at Build(), so anything captured before it
+// can be stale.
+var trustProxy = app.Configuration.GetValue<bool>("Proxy:TrustForwardedHeaders");
+app.UseMiddleware<ForwardedPrefixMiddleware>(
+    trustProxy,
+    app.Configuration["PathBase"] ?? string.Empty);
 
-if (trustForwardedHeaders)
+if (trustProxy)
 {
     app.UseForwardedHeaders();
 }
