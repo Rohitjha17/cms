@@ -65,7 +65,7 @@ public static class HomePageSeed
 
     private static string? DefaultJson(string key) => key switch
     {
-        HomePageSectionKeys.Hero => """{"heading":"Welcome to Demo Academy","description":"Future Begins Here","primaryButton":"Apply Now","secondaryButton":"Contact Us","videoUrl":""}""",
+        HomePageSectionKeys.Hero => """{"heading":"Welcome to Demo Academy","primaryButton":"Apply Now","secondaryButton":"Contact Us","videoUrl":""}""",
         HomePageSectionKeys.Statistics => """{"students":1500,"teachers":80,"placements":500,"years":20}""",
         HomePageSectionKeys.Courses => """{"items":[{"title":"Science & Technology","description":"Inquiry-led learning for tomorrow's innovators.","url":"/departments"},{"title":"Business & Leadership","description":"Real-world skills with an entrepreneurial mindset.","url":"/departments"},{"title":"Arts & Humanities","description":"Creative expression grounded in critical thinking.","url":"/departments"}]}""",
         HomePageSectionKeys.Departments => """{"items":[{"title":"Sciences","description":"Discover, experiment and innovate."},{"title":"Humanities","description":"Understand people, culture and society."},{"title":"Commerce","description":"Build the skills to lead with purpose."}]}""",

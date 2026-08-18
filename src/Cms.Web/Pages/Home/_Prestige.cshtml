@@ -17,7 +17,7 @@
     <div class="shell prestige-frame">
         <p class="eyebrow">Heritage · Character · Ambition</p>
         <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name)</h1>
-        <p>@(SectionJson.GetString(heroJson, "description") ?? hero?.Description ?? brand.Tagline)</p>
+        <p>@(SectionJson.GetString(heroJson, "description") ?? RichText.ToPlainText(hero?.Description) ?? brand.Tagline)</p>
         <a class="btn" href="@(basePath)/contact">Enquire today</a>
     </div>
 </section>
