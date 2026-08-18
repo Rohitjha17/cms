@@ -19,10 +19,19 @@ trap cleanup EXIT INT TERM
 # host keeps the console at / and the websites under /site, and every OTHER host — a school's own
 # domain — serves that school's website at its root. Without it, there is no way to tell a school
 # domain from the platform's own, so the console stays at the root of every host, as before.
-if [ -n "${Platform__Domain:-}" ]; then
-    sed "s/__PLATFORM_DOMAIN__/${Platform__Domain}/g" \
+# Whatever is configured is normalised to a bare host: a value pasted with a scheme, a port, a
+# path or a trailing slash would silently match nothing, send every request to the default server
+# and put a school's website where the console should be.
+PLATFORM_HOST=$(printf '%s' "${Platform__Domain:-}" \
+    | tr -d '[:space:]' \
+    | sed -e 's#^[a-zA-Z][a-zA-Z0-9+.-]*://##' -e 's#[/?].*$##' -e 's#:[0-9]*$##' \
+    | tr '[:upper:]' '[:lower:]')
+
+if [ -n "$PLATFORM_HOST" ]; then
+    sed "s/__PLATFORM_DOMAIN__/${PLATFORM_HOST}/g" \
         /app/nginx.multi-host.conf.template > /tmp/nginx.conf
-    echo "nginx: console on ${Platform__Domain}, other hosts serve their own website at /"
+    echo "nginx: console on ${PLATFORM_HOST} (from Platform__Domain='${Platform__Domain:-}')"
+    echo "nginx: other hosts serve their own website at /, console still at /CMS and /Account"
 else
     cp /app/nginx.single-host.conf /tmp/nginx.conf
     echo "nginx: Platform__Domain is not set — console at / on every host, websites under /site"
