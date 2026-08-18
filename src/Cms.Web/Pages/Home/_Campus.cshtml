@@ -16,7 +16,7 @@
 <section class="hero hero-campus" style="--hero:url('@banner')">
     <div class="shell">
         <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? $"Life at {brand.Name}")</h1>
-        <p>@(SectionJson.GetString(heroJson, "description") ?? hero?.Description ?? brand.Tagline)</p>
+        <p>@(SectionJson.GetString(heroJson, "description") ?? RichText.ToPlainText(hero?.Description) ?? brand.Tagline)</p>
         <a class="btn" href="@(basePath)/facilities">Explore facilities</a>
     </div>
 </section>

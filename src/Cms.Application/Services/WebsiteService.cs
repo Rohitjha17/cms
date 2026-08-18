@@ -532,10 +532,11 @@ public sealed class WebsiteService : IWebsiteService
                 case HomePageSectionKeys.Hero:
                     section.Title = template.HeroHeading;
                     section.SubTitle = template.HeroDescription;
+                    // "description" is the section's own field, not configuration: holding it in
+                    // both places gave the website two answers and the editor an error on save.
                     section.JsonData = new JsonObject
                     {
                         ["heading"] = template.HeroHeading,
-                        ["description"] = template.HeroDescription,
                         ["primaryButton"] = "Apply now",
                         ["secondaryButton"] = "Visit us"
                     }.ToJsonString();

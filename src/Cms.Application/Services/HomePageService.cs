@@ -90,20 +90,21 @@ public class HomePageService : IHomePageService
             throw new ValidationAppException($"SectionKey '{key}' already exists for this site.");
         }
 
-        ValidateConfiguration(key, dto.JsonData);
+        var json = HomePageSectionConfigValidator.StripReservedFields(dto.JsonData, out var adopted);
+        ValidateConfiguration(key, json);
         var entity = new HomePageSection
         {
             TenantId = tenantId,
             SiteId = siteId,
             SectionKey = key,
-            Title = dto.Title,
-            SubTitle = dto.SubTitle,
-            Description = SanitizeDescription(dto.Description),
-            ButtonText = dto.ButtonText,
-            ButtonLink = dto.ButtonLink,
-            ImageUrl = dto.ImageUrl,
-            BackgroundImageUrl = dto.BackgroundImageUrl,
-            JsonData = dto.JsonData,
+            Title = Adopt(dto.Title, adopted, "title"),
+            SubTitle = Adopt(dto.SubTitle, adopted, "subtitle"),
+            Description = SanitizeDescription(Adopt(dto.Description, adopted, "description")),
+            ButtonText = Adopt(dto.ButtonText, adopted, "buttonText"),
+            ButtonLink = Adopt(dto.ButtonLink, adopted, "buttonLink"),
+            ImageUrl = Adopt(dto.ImageUrl, adopted, "imageUrl"),
+            BackgroundImageUrl = Adopt(dto.BackgroundImageUrl, adopted, "backgroundImageUrl"),
+            JsonData = json,
             DisplayOrder = dto.DisplayOrder,
             IsActive = dto.IsActive,
             CreatedDate = DateTime.UtcNow,
@@ -125,15 +126,16 @@ public class HomePageService : IHomePageService
         var entity = await _repository.GetByKeyAsync(tenantId, siteId, key, cancellationToken)
             ?? throw new NotFoundException($"Homepage section '{key}' was not found.");
 
-        ValidateConfiguration(key, dto.JsonData);
-        entity.Title = dto.Title;
-        entity.SubTitle = dto.SubTitle;
-        entity.Description = SanitizeDescription(dto.Description);
-        entity.ButtonText = dto.ButtonText;
-        entity.ButtonLink = dto.ButtonLink;
-        entity.ImageUrl = dto.ImageUrl;
-        entity.BackgroundImageUrl = dto.BackgroundImageUrl;
-        entity.JsonData = dto.JsonData;
+        var json = HomePageSectionConfigValidator.StripReservedFields(dto.JsonData, out var adopted);
+        ValidateConfiguration(key, json);
+        entity.Title = Adopt(dto.Title, adopted, "title");
+        entity.SubTitle = Adopt(dto.SubTitle, adopted, "subtitle");
+        entity.Description = SanitizeDescription(Adopt(dto.Description, adopted, "description"));
+        entity.ButtonText = Adopt(dto.ButtonText, adopted, "buttonText");
+        entity.ButtonLink = Adopt(dto.ButtonLink, adopted, "buttonLink");
+        entity.ImageUrl = Adopt(dto.ImageUrl, adopted, "imageUrl");
+        entity.BackgroundImageUrl = Adopt(dto.BackgroundImageUrl, adopted, "backgroundImageUrl");
+        entity.JsonData = json;
 
         if (dto.DisplayOrder.HasValue)
         {
@@ -267,7 +269,7 @@ public class HomePageService : IHomePageService
 
     private static string? GetDefaultJson(string key) => key switch
     {
-        HomePageSectionKeys.Hero => """{"heading":"Welcome","description":"Future Begins Here","primaryButton":"Apply Now","secondaryButton":"Contact Us","videoUrl":""}""",
+        HomePageSectionKeys.Hero => """{"heading":"Welcome","primaryButton":"Apply Now","secondaryButton":"Contact Us","videoUrl":""}""",
         HomePageSectionKeys.Statistics => """{"students":0,"teachers":0,"placements":0,"years":0}""",
         HomePageSectionKeys.Gallery => """{"items":[]}""",
         HomePageSectionKeys.UpcomingEvents => """{"items":[]}""",
@@ -276,6 +278,15 @@ public class HomePageService : IHomePageService
         HomePageSectionKeys.Contact => """{"email":"","phone":"","address":"","mapEmbedUrl":""}""",
         _ => null
     };
+
+    /// <summary>
+    /// The field the editor shows always wins; a value rescued from the configuration only fills
+    /// a field that was left empty, so nothing anybody typed is overwritten by old duplicate data.
+    /// </summary>
+    private static string? Adopt(string? value, IReadOnlyDictionary<string, string> adopted, string key) =>
+        !string.IsNullOrWhiteSpace(value) ? value
+            : adopted.TryGetValue(key, out var rescued) ? rescued
+            : value;
 
     private static void ValidateConfiguration(string sectionKey, string? jsonData)
     {
