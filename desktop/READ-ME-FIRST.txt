@@ -2,21 +2,33 @@ School & College CMS - running it on this computer
 ==================================================
 
 WHAT THIS IS
-This folder contains the complete system. Nothing needs to be installed:
-no database, no web server, no .NET. It runs entirely from this folder and
+The complete system, in one folder. Nothing needs to be installed: no
+database, no web server, no .NET. It runs entirely from this folder and
 works without an internet connection.
 
-WHERE TO PUT THIS FOLDER
-Put it somewhere plain on the C: drive, for example C:\SchoolCMS.
+STEP 1 - UNBLOCK THE ZIP BEFORE YOU UNZIP IT
+Windows marks files that arrived from the internet as blocked, and then
+refuses to run them. Right-click the ZIP file, choose Properties, tick
+"Unblock" at the bottom if it is there, click OK - and unzip only after that.
+
+STEP 2 - PUT THE FOLDER IN A PLAIN PLACE
+Somewhere simple on the C: drive, for example C:\SchoolCMS.
 
 Do NOT put it inside OneDrive, Google Drive or Dropbox. Those services copy
 files while they are being written, which can damage the database.
 
-TO START
-  1. Double-click  Start.bat
-  2. Wait about a minute the first time. A black window stays open - that is
-     the system running. Leave it open.
-  3. Your browser opens the console automatically.
+STEP 3 - START IT
+Double-click  Start.bat
+
+A black window opens and stays open - that is the system running. Leave it
+open. The first start takes a minute or so while the database is prepared;
+the window tells you when it is ready, and then opens your browser.
+
+The first time, Windows may show a blue "Windows protected your PC" box.
+Click "More info", then "Run anyway". That appears because the program is not
+signed by a certificate, not because anything is wrong with it. If Windows
+asks about the firewall, choose Allow - the system only talks to this
+computer, never to the internet.
 
 WHERE THINGS ARE
   Console (where you edit)   http://localhost:5201
@@ -30,18 +42,18 @@ SIGNING IN
   Change this password from "User accounts" once you are signed in.
 
 TO STOP
-  Double-click Stop.bat, or close the black window.
+Double-click Stop.bat, or close the black window.
 
 YOUR DATA
-Everything you enter - pages, photos, staff, notices - is stored in the
-"data" folder next to this file. To back it up, copy that folder somewhere
-safe. To move the system to another computer, copy this whole folder.
-
-Deleting the "data" folder erases everything and starts fresh.
+Everything you enter - pages, photos, staff, notices - is kept in the "data"
+folder next to this file. To back it up, copy that folder somewhere safe. To
+move to another computer, copy the whole folder. Deleting "data" erases
+everything and starts fresh.
 
 IF SOMETHING WILL NOT OPEN
-  - Wait a little longer: the first start is the slow one.
-  - Make sure Start.bat's window is still open.
-  - If Windows asks about the firewall, choose Allow. The system only talks
-    to this computer, never to the internet.
-  - Run Stop.bat, then Start.bat again.
+  - Wait longer: the first start is the slow one, and the window says when
+    it is ready.
+  - If it says a port is already in use, run Stop.bat, then Start.bat again.
+  - If it says it did not finish starting, Windows has most likely blocked
+    it - see Step 1 above.
+  - Make sure the black window is still open.
