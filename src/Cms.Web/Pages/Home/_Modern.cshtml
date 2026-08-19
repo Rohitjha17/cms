@@ -18,7 +18,7 @@
         <div>
             <p class="eyebrow">Modern campus experience</p>
             <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name)</h1>
-            <p>@(SectionJson.GetString(heroJson, "description") ?? RichText.ToPlainText(hero?.Description) ?? brand.Tagline)</p>
+            <p>@(SectionJson.GetString(heroJson, "description") ?? hero?.Description ?? brand.Tagline)</p>
             <div class="cta-row">
                 <a class="btn" href="@(basePath)/admission">Admissions</a>
                 <a class="btn btn-ghost" href="@(basePath)/about">Our story</a>

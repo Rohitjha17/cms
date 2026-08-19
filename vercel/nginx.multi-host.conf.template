@@ -19,7 +19,7 @@ http {
     # The platform's own host: the console at the root, and every website under /site.
     server {
         listen 80;
-        server_name __PLATFORM_DOMAIN__ www.__PLATFORM_DOMAIN__;
+        server_name __PLATFORM_DOMAIN__;
 
         location /site/ {
             proxy_pass http://127.0.0.1:5301;
@@ -53,43 +53,11 @@ http {
         }
     }
 
-    # Any other host is a school's own domain: their website at the root.
+    # Any other host is a school's own domain: their website at the root, and no console on it.
     # No X-Forwarded-Prefix is sent, so the site builds its links from the root.
     server {
         listen 80 default_server;
         server_name _;
-
-        # The console stays reachable by its own paths on every host. Without this, a
-        # Platform__Domain that does not match the host being used locks the operator out of
-        # their own CMS with no way back in — which is exactly what happened. Being signed in is
-        # still required; only the sign-in page is reachable here.
-        location /CMS {
-            proxy_pass http://127.0.0.1:5201;
-            proxy_set_header Host $host;
-            proxy_set_header X-Forwarded-Proto https;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_intercept_errors on;
-            error_page 502 503 504 = @warming;
-        }
-
-        location /Account {
-            proxy_pass http://127.0.0.1:5201;
-            proxy_set_header Host $host;
-            proxy_set_header X-Forwarded-Proto https;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_intercept_errors on;
-            error_page 502 503 504 = @warming;
-        }
-
-        location /site/ {
-            proxy_pass http://127.0.0.1:5301;
-            proxy_set_header Host $host;
-            proxy_set_header X-Forwarded-Proto https;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Prefix /site;
-            proxy_intercept_errors on;
-            error_page 502 503 504 = @warming;
-        }
 
         location / {
             proxy_pass http://127.0.0.1:5301;
