@@ -10,7 +10,7 @@ if not exist "%DATA%\uploads" mkdir "%DATA%\uploads"
 rem Everything lives in the data folder next to this file. Back it up by copying that folder.
 set "ASPNETCORE_ENVIRONMENT=Production"
 set "Database__Provider=Sqlite"
-set "ConnectionStrings__Sqlite=Data Source=%DATA%\cms.db"
+set "ConnectionStrings__Sqlite=Data Source=%DATA%\cms.db;Default Timeout=30"
 set "Storage__Provider=Local"
 set "Storage__LocalRootPath=%DATA%\uploads"
 set "Storage__LocalBaseUrl=/uploads"

@@ -6,6 +6,12 @@ This folder contains the complete system. Nothing needs to be installed:
 no database, no web server, no .NET. It runs entirely from this folder and
 works without an internet connection.
 
+WHERE TO PUT THIS FOLDER
+Put it somewhere plain on the C: drive, for example C:\SchoolCMS.
+
+Do NOT put it inside OneDrive, Google Drive or Dropbox. Those services copy
+files while they are being written, which can damage the database.
+
 TO START
   1. Double-click  Start.bat
   2. Wait about a minute the first time. A black window stays open - that is
