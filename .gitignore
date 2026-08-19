@@ -33,3 +33,6 @@ requirements.pdf
 /shared/uploads/
 .claude/
 _to_delete/
+
+# Windows desktop package build output (large, rebuilt by scripts/build-desktop-package.sh)
+SchoolCMS-Desktop/

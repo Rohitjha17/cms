@@ -1,0 +1,41 @@
+School & College CMS - running it on this computer
+==================================================
+
+WHAT THIS IS
+This folder contains the complete system. Nothing needs to be installed:
+no database, no web server, no .NET. It runs entirely from this folder and
+works without an internet connection.
+
+TO START
+  1. Double-click  Start.bat
+  2. Wait about a minute the first time. A black window stays open - that is
+     the system running. Leave it open.
+  3. Your browser opens the console automatically.
+
+WHERE THINGS ARE
+  Console (where you edit)   http://localhost:5201
+  School website             http://localhost:5301/school
+  College website            http://localhost:5301/college
+
+SIGNING IN
+  Email     admin@demo.local
+  Password  Admin@12345
+
+  Change this password from "User accounts" once you are signed in.
+
+TO STOP
+  Double-click Stop.bat, or close the black window.
+
+YOUR DATA
+Everything you enter - pages, photos, staff, notices - is stored in the
+"data" folder next to this file. To back it up, copy that folder somewhere
+safe. To move the system to another computer, copy this whole folder.
+
+Deleting the "data" folder erases everything and starts fresh.
+
+IF SOMETHING WILL NOT OPEN
+  - Wait a little longer: the first start is the slow one.
+  - Make sure Start.bat's window is still open.
+  - If Windows asks about the firewall, choose Allow. The system only talks
+    to this computer, never to the internet.
+  - Run Stop.bat, then Start.bat again.
