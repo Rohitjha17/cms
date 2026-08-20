@@ -33,7 +33,7 @@
     <meta name="theme-color" content="#101b35" />
     <title>@ViewData["Title"] · EduSphere CMS</title>
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+    <link href="~/lib/quill/quill.snow.css" rel="stylesheet" asp-append-version="true" />
 </head>
 <body class="@(User.Identity?.IsAuthenticated == true ? "cms-body" : "auth-body")">
 @if (User.Identity?.IsAuthenticated == true)
@@ -189,7 +189,9 @@ else
         @RenderBody()
     </main>
 }
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+@* Served from this application, never a CDN: the desktop build has to work with no internet at
+   all, and without the editor the description box is an empty area nobody can type into. *@
+<script src="~/lib/quill/quill.js" asp-append-version="true"></script>
 <script src="~/js/homepage.js" asp-append-version="true"></script>
 <script src="~/js/cms-media-picker.js" asp-append-version="true"></script>
 <script src="~/js/color-field.js" asp-append-version="true"></script>

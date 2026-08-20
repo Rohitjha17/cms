@@ -267,6 +267,20 @@
         }
       });
       if (initialHtml) quill.root.innerHTML = initialHtml;
+    } else if (editorHost && descriptionField) {
+      // The rich-text editor could not be loaded. Without this the description is an empty box
+      // above a hidden field: nothing to type into, and no way to tell why. A plain text area
+      // keeps the section editable — formatting is the only thing lost.
+      const fallback = document.createElement("textarea");
+      fallback.className = "editor-fallback";
+      fallback.rows = 10;
+      fallback.value = initialHtml;
+      fallback.placeholder = "Write clear, engaging copy for this section…";
+      fallback.addEventListener("input", function () {
+        descriptionField.value = fallback.value;
+      });
+      editorHost.replaceChildren(fallback);
+      descriptionField.value = initialHtml;
     }
 
     const jsonField = $("#json-config");

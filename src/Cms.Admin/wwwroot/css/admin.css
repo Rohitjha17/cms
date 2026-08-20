@@ -748,6 +748,22 @@ svg {
 }
 .field textarea { resize: vertical; }
 
+/* Shown in place of the rich-text editor when it could not be loaded, so the description is
+   always typeable. */
+.editor-fallback {
+  width: 100%;
+  min-height: 180px;
+  padding: 11px 13px;
+  font: inherit;
+  color: var(--text);
+  background: white;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  outline: none;
+  resize: vertical;
+}
+.editor-fallback:focus { border-color: #9b91f0; box-shadow: 0 0 0 3px var(--primary-soft); }
+
 /* Colour field: the swatch that opens the picker, and the hex, as one control. */
 .color-field {
   display: flex;
