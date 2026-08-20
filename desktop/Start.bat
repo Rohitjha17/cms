@@ -40,8 +40,11 @@ echo   Starting School CMS. The first start takes about a minute while the
 echo   database is prepared. Leave this window open while you use it.
 echo.
 
+rem Each application is started in its own folder. Without that, it looks for its
+rem stylesheets, images and settings next to Start.bat instead of next to itself, and
+rem every page arrives with no styling at all.
 rem The console starts first: it is what creates and fills the database.
-start "School CMS - console" /min "%ROOT%app\admin\Cms.Admin.exe" --urls http://localhost:5201
+start "School CMS - console" /min /D "%ROOT%app\admin" "%ROOT%app\admin\Cms.Admin.exe" --urls http://localhost:5201 --contentroot "%ROOT%app\admin"
 
 rem Wait until it genuinely answers, rather than guessing at a number of seconds.
 rem A slow machine on its first run can take well over a minute.
@@ -61,8 +64,8 @@ if errorlevel 1 (
 
 rem These two share the same database and must not try to create it again.
 set "Seed__SkipStartup=true"
-start "School CMS - websites" /min "%ROOT%app\web\Cms.Web.exe" --urls http://localhost:5301
-start "School CMS - api" /min "%ROOT%app\api\Cms.Api.exe" --urls http://localhost:5101
+start "School CMS - websites" /min /D "%ROOT%app\web" "%ROOT%app\web\Cms.Web.exe" --urls http://localhost:5301 --contentroot "%ROOT%app\web"
+start "School CMS - api" /min /D "%ROOT%app\api" "%ROOT%app\api\Cms.Api.exe" --urls http://localhost:5101 --contentroot "%ROOT%app\api"
 timeout /t 8 /nobreak >nul
 
 start http://localhost:5201
