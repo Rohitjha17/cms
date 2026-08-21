@@ -24,8 +24,13 @@
           <button type="button" class="btn btn-secondary btn-sm" data-picker-filter="Image">Images</button>
           <button type="button" class="btn btn-secondary btn-sm" data-picker-filter="Document">Documents</button>
         </div>
+        <label class="media-picker__upload">
+          <input type="file" data-picker-upload accept="image/*,application/pdf" hidden />
+          <span class="btn btn-sm">Upload a file</span>
+          <small data-picker-status>Choose a picture from this computer, or pick one below.</small>
+        </label>
         <div class="media-picker__grid" data-picker-grid></div>
-        <p class="muted" data-picker-empty hidden>No media found. Upload files in Media library first.</p>
+        <p class="muted" data-picker-empty hidden>Nothing here yet — use "Upload a file" above to add your first picture.</p>
       </div>`;
     document.body.appendChild(modal);
 
@@ -46,6 +51,50 @@
         closePicker();
       }
     });
+    // Uploading from inside the picker, because the library is empty on a new installation:
+    // without this the button opens an empty box telling the operator to go and upload
+    // somewhere else, which reads as "adding pictures does not work".
+    modal.addEventListener("change", async (event) => {
+      const chooser = event.target.closest("[data-picker-upload]");
+      if (!chooser || !chooser.files || !chooser.files.length) return;
+
+      const file = chooser.files[0];
+      const status = modal.querySelector("[data-picker-status]");
+      status.textContent = `Uploading ${file.name}…`;
+
+      const body = new FormData();
+      body.append("Upload", file);
+      body.append("UploadKind", file.type === "application/pdf" ? "document" : "image");
+      const token = document.querySelector("input[name=__RequestVerificationToken]");
+      if (token) body.append("__RequestVerificationToken", token.value);
+
+      try {
+        const response = await fetch("/CMS/Media?handler=Upload", {
+          method: "POST",
+          body: body,
+          headers: { "X-Requested-With": "XMLHttpRequest" }
+        });
+        if (!response.ok) throw new Error(`Upload failed (${response.status})`);
+
+        await loadFiles(modal);
+        // Select what was just uploaded, so one action finishes the job.
+        const newest = state.files.find((item) => item.fileName === file.name);
+        if (newest && state.target) {
+          state.target.value = newest.url;
+          state.target.dispatchEvent(new Event("input", { bubbles: true }));
+          state.target.dispatchEvent(new Event("change", { bubbles: true }));
+          status.textContent = `${file.name} added.`;
+          closePicker();
+          return;
+        }
+        status.textContent = `${file.name} uploaded — choose it below.`;
+      } catch (error) {
+        status.textContent = error.message + ". The file may be too large or of an unsupported type.";
+      } finally {
+        chooser.value = "";
+      }
+    });
+
     return modal;
   }
 
@@ -71,12 +120,8 @@
     empty.hidden = files.length > 0;
   }
 
-  async function openPicker(input) {
-    state.target = input;
-    const modal = ensureModal();
-    modal.hidden = false;
+  async function loadFiles(modal) {
     const grid = modal.querySelector("[data-picker-grid]");
-    grid.innerHTML = "<p class='muted'>Loading media…</p>";
     try {
       const response = await fetch("/CMS/Media?handler=List", {
         headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }
@@ -87,6 +132,14 @@
     } catch (error) {
       grid.innerHTML = `<p class="muted">${error.message}</p>`;
     }
+  }
+
+  async function openPicker(input) {
+    state.target = input;
+    const modal = ensureModal();
+    modal.hidden = false;
+    modal.querySelector("[data-picker-grid]").innerHTML = "<p class='muted'>Loading media…</p>";
+    await loadFiles(modal);
   }
 
   document.addEventListener("click", (event) => {

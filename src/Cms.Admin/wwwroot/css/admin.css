@@ -748,6 +748,16 @@ svg {
 }
 .field textarea { resize: vertical; }
 
+/* Upload straight from the picker, so an empty library is never a dead end. */
+.media-picker__upload {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 2px;
+  cursor: pointer;
+}
+.media-picker__upload small { color: var(--text-soft); font-size: .8rem; }
+
 /* Shown in place of the rich-text editor when it could not be loaded, so the description is
    always typeable. */
 .editor-fallback {
