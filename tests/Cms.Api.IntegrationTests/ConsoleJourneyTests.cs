@@ -91,6 +91,46 @@ public sealed class ConsoleJourneyTests : IClassFixture<AdminFactory>
     }
 
     /// <summary>
+    /// The principal's page in full: the message that is typed into the rich-text box, and the
+    /// photograph attached to the section. Saving the details and saving the picture are two
+    /// different paths through the same form, and only one of them had ever been checked.
+    /// </summary>
+    [Fact]
+    public async Task ThePrincipalsMessageAndPhotograph_AreBothKept()
+    {
+        const string message = "Every child here is known by name, and expected to do their best.";
+
+        var before = ImageOn(await GetAsync("/CMS/HomePage/Edit/principal"));
+
+        var saved = await PostSectionWithImageAsync("/CMS/HomePage/Edit/principal", new Dictionary<string, string>
+        {
+            ["Input.Title"] = "Principal Message",
+            ["Input.SubTitle"] = "From our Principal",
+            ["Input.Description"] = $"<p>{message}</p>",
+            ["Input.JsonData"] =
+                """{"personName":"Mrs. Sunita Sharma","designation":"Principal","quote":"Known by name."}""",
+            ["Input.DisplayOrder"] = "4",
+            ["IsActiveChecked"] = "true"
+        }, "principal.png");
+
+        Assert.DoesNotContain("An unhandled exception", saved);
+
+        var reopened = await GetAsync("/CMS/HomePage/Edit/principal");
+        Assert.Contains(message, reopened);
+        Assert.Contains("Mrs. Sunita Sharma", reopened);
+
+        // The photograph must be stored against the section and actually reachable. Comparing
+        // against what was there before, so a value the section already carried cannot make this
+        // pass while the upload silently does nothing.
+        var image = ImageOn(reopened);
+        Assert.False(string.IsNullOrWhiteSpace(image), "The photograph was not kept on the section.");
+        Assert.NotEqual(before, image);
+
+        using var served = await _client.GetAsync(image);
+        Assert.Equal(HttpStatusCode.OK, served.StatusCode);
+    }
+
+    /// <summary>
     /// Adding a picture on a new installation, where the library is empty. This is the path that
     /// dead-ended: the picker offered nothing to choose and no way to add anything.
     /// </summary>
@@ -171,6 +211,34 @@ public sealed class ConsoleJourneyTests : IClassFixture<AdminFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains(mustContain, await response.Content.ReadAsStringAsync());
     }
+
+    /// <summary>Submits a section form the way the browser does — as a file upload.</summary>
+    private async Task<string> PostSectionWithImageAsync(
+        string path, Dictionary<string, string> changes, string fileName)
+    {
+        var page = await GetAsync(path);
+        var values = FieldsFrom(page);
+        foreach (var change in changes) values[change.Key] = change.Value;
+        values["__RequestVerificationToken"] = TokenFrom(page);
+
+        var form = new MultipartFormDataContent();
+        foreach (var value in values)
+        {
+            form.Add(new StringContent(value.Value), value.Key);
+        }
+
+        var png = Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+        var file = new ByteArrayContent(png);
+        file.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        form.Add(file, "imageFile", fileName);
+
+        using var response = await _client.PostAsync(path, form);
+        return await response.Content.ReadAsStringAsync();
+    }
+
+    private static string ImageOn(string html) =>
+        Regex.Match(html, @"name=""Input\.ImageUrl""[^>]*value=""([^""]*)""").Groups[1].Value;
 
     private static string CurrentWebsite(string html) =>
         Regex.Match(html, @"site-switcher__trigger.*?<strong>(.*?)</strong>", RegexOptions.Singleline).Value;
