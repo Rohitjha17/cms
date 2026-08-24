@@ -1,0 +1,49 @@
+@model PublicWebsiteDto
+@using Cms.Web.Helpers
+@{
+    // The hero's own images, managed from the console. With none, nothing is rendered and the
+    // hero keeps the single banner picture it always had.
+    var hero = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "hero");
+    var heroJson = SectionJson.Parse(hero?.JsonData);
+    var slides = SectionJson.GetArray(heroJson, "items")
+        .Select(item => new
+        {
+            Url = SectionJson.Item(item, "imageUrl"),
+            Alt = SectionJson.Item(item, "alt")
+        })
+        .Where(x => !string.IsNullOrWhiteSpace(x.Url))
+        .ToList();
+
+    var seconds = SectionJson.GetString(heroJson, "autoplaySeconds");
+    var autoplay = double.TryParse(seconds, out var parsed) && parsed > 0 ? parsed : 6;
+}
+
+@if (slides.Count > 0)
+{
+    <div class="hero-slides" data-hero-carousel data-autoplay="@autoplay.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+        @for (var index = 0; index < slides.Count; index++)
+        {
+            <div class="hero-slides__item @(index == 0 ? "is-active" : null)"
+                 role="img"
+                 aria-label="@slides[index].Alt"
+                 style="background-image:url('@slides[index].Url')"></div>
+        }
+
+        @if (slides.Count > 1)
+        {
+            <button class="hero-slides__nav hero-slides__nav--prev" type="button" data-hero-prev aria-label="Previous image">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+            </button>
+            <button class="hero-slides__nav hero-slides__nav--next" type="button" data-hero-next aria-label="Next image">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+            </button>
+            <div class="hero-slides__dots" role="tablist" aria-label="Choose image">
+                @for (var index = 0; index < slides.Count; index++)
+                {
+                    <button class="@(index == 0 ? "is-active" : null)" type="button"
+                            data-hero-dot="@index" aria-label="Image @(index + 1)"></button>
+                }
+            </div>
+        }
+    </div>
+}

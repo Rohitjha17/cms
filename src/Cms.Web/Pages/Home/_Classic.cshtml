@@ -20,6 +20,7 @@
     var description = SectionJson.GetString(heroJson, "description") ?? RichText.ToPlainText(hero?.Description) ?? brand.Tagline;
 }
 <section data-section="hero" class="hero hero-classic" style="--hero:url('@banner')">
+    <partial name="Home/_HeroCarousel" model="Model" />
     <div class="shell hero-copy">
         <p class="eyebrow">@brand.WebsiteType</p>
         <h1>@heading</h1>

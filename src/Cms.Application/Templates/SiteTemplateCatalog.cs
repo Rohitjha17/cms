@@ -417,6 +417,98 @@ public static class SiteTemplateCatalog
 
         new SiteTemplate
         {
+            Key = "showcase-modern",
+            Name = "Showcase Modern",
+            Summary = "A moving hero of campus photographs, a results band and cards throughout — the most contemporary of the set.",
+            BestFor = "Schools with strong photography that want a website that feels current",
+            WebsiteType = WebsiteType.School,
+            HomeVariant = HomeVariant.Modern,
+            PrimaryColor = "#132a4c",
+            SecondaryColor = "#ff7a45",
+            SampleTagline = "A school that moves with the world your children will inherit",
+            Highlights =
+            [
+                "Hero slideshow: several photographs, moving on their own, with arrows",
+                "Every section animates gently into view as the page is read",
+                "Cards for programmes, notices and events, all fed from the console",
+                "Built for schools whose photographs are their strongest asset"
+            ],
+            HeroImageUrl = "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=80",
+            HeroImages =
+            [
+                "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1800&q=80",
+                "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1800&q=80",
+                "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1800&q=80",
+                "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=80"
+            ],
+            HeroAutoplaySeconds = 5,
+            HeroHeading = "Where every day looks like this",
+            HeroDescription = "Classrooms, fields and studios that a child wants to walk into on a Monday morning.",
+            Statistics = new StatisticsSample(1650, 110, 100, 22),
+            WhyIntro = "Small enough to know every child, ambitious enough to stretch every one of them.",
+            PageContent = new Dictionary<string, string>
+            {
+                ["about"] = """
+<p>{name} was built around a simple observation: children learn most in places they enjoy being. Everything here follows from that — the light in the classrooms, the size of the classes, the space to run at lunchtime.</p>
+<h2>How we teach</h2><p>Small classes, specialist teachers from the middle years, and a timetable that protects sport, music and art rather than treating them as what happens once the real work is done.</p>
+<h2>Our campus</h2><p>Purpose-built science and design studios, a library that stays open after school, a full-size field and an auditorium the whole school fits into.</p>
+""",
+                ["admission"] = """
+<p>Admissions to {name} open in November. We admit at every year group where a place exists, with the main intakes at Nursery, Class I and Class VI.</p>
+<h2>How to apply</h2><p>Complete the form on this site or collect one from the office. We ask for the child's birth certificate, the last two school reports and two photographs.</p>
+<h2>Come and see us first</h2><p>We would rather you visited before you applied. Come on a working morning, walk through the classrooms, and see whether the children look happy.</p>
+<h2>Fees</h2><p>The current fee schedule is published under Mandatory Disclosure. Sibling concessions and merit scholarships are available.</p>
+""",
+                ["facilities"] = """
+<h2>Learning</h2><p>Science laboratories for physics, chemistry and biology, a design and robotics studio, a computer laboratory and a two-storey library.</p>
+<h2>Sport</h2><p>A full-size field, a covered basketball court, an athletics track and a twenty-five-metre pool, with coaching in six sports.</p>
+<h2>Arts</h2><p>Music practice rooms, an art studio with a kiln, and an auditorium that seats the whole school.</p>
+<h2>Safety</h2><p>Single-point entry with staffed reception, CCTV across shared spaces, GPS-tracked buses and a full-time nurse.</p>
+""",
+                ["messages"] = """
+<h2>From the Principal</h2><p>Ask a child what they did today and you learn more about a school than any brochure can tell you. We want that answer to be worth hearing.</p>
+<h2>From the Management</h2><p>We have invested in the things that are hard to photograph: teachers who stay, class sizes that hold, and time in the day for children to be children.</p>
+""",
+                ["committee"] = """
+<p>{name} is governed by a managing committee constituted under the affiliating board's bye-laws, meeting each quarter.</p>
+<h2>Composition</h2><p>The Chairman, the Manager, the Principal as ex-officio member, two teachers elected by the staff, two parent representatives and the board's nominees.</p>
+<h2>Meetings</h2><p>Minutes of the last four meetings may be inspected at the school office during working hours.</p>
+""",
+            },
+            Faculty =
+            [
+                new ContentSample("Principal", "Dr. Kavita Menon", "Leading the school since 2018.", "Leadership", "Ph.D (Education)"),
+                new ContentSample("Vice Principal", "Arjun Bedi", "Academics and timetable.", "Leadership", "M.A, B.Ed"),
+                new ContentSample("Head of Design", "Neha Kulkarni", "Design, robotics and the maker studio.", "Teaching", "M.Des"),
+                new ContentSample("Director of Sport", "Vikas Rathore", "Athletics, swimming and team sport.", "Teaching", "M.P.Ed")
+            ],
+            Departments =
+            [
+                new DepartmentSample("Sciences", "Physics, chemistry and biology, taught in dedicated laboratories from Class VI.",
+                    ["Physics", "Chemistry", "Biology", "Computer Science"]),
+                new DepartmentSample("Design and Technology", "A maker studio with 3D printing, electronics and robotics.",
+                    ["Design", "Robotics", "Electronics"]),
+                new DepartmentSample("Arts", "Music, visual art and theatre, timetabled for every year group.",
+                    ["Music", "Visual Art", "Theatre"]),
+                new DepartmentSample("Humanities", "History, geography and economics.",
+                    ["History", "Geography", "Economics"])
+            ],
+            News =
+            [
+                new NewsSample("Admissions open for 2026–27", "Notice", "Applications invited from Nursery to Class IX.", true),
+                new NewsSample("Our robotics team places first at the state championship", "Achievement", "Twenty-two schools competed.", false),
+                new NewsSample("New library hours from July", "Circular", "The library now stays open until six on weekdays.", false)
+            ],
+            Events =
+            [
+                new EventSample("Open Morning", 12, "Main reception", "Walk through a working school day."),
+                new EventSample("Annual Concert", 38, "Auditorium", "Every year group performs."),
+                new EventSample("Inter-house Athletics", -14, "School field", "Track and field finals across four houses.")
+            ]
+        },
+
+        new SiteTemplate
+        {
             Key = "global-international-school",
             Name = "Global International School",
             Summary = "An IB and Cambridge-curriculum site with programme pathways, a global-outcomes band and alumni destinations.",
@@ -697,6 +789,15 @@ public sealed class SiteTemplate
     /// templates do not open on the same stock image. Replaced from the media library.
     /// </summary>
     public string? HeroImageUrl { get; init; }
+
+    /// <summary>
+    /// Pictures for the hero slideshow. With more than one the hero moves between them on its
+    /// own and offers arrows; the school replaces them from the console like any other image.
+    /// </summary>
+    public IReadOnlyList<string> HeroImages { get; init; } = [];
+
+    /// <summary>Seconds between slides. Zero leaves the hero still.</summary>
+    public int HeroAutoplaySeconds { get; init; } = 6;
 
     public required string HeroHeading { get; init; }
     public required string HeroDescription { get; init; }

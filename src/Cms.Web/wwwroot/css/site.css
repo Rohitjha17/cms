@@ -1021,3 +1021,92 @@ body.nav-locked { overflow: hidden; }
   }
   .gallery-grid figure:hover img { transform: none; }
 }
+
+/* Hero slideshow -----------------------------------------------------------
+   The school's own pictures, filling the hero. The scrim is repeated over the
+   images so headings stay legible whatever photograph is showing. */
+.hero-slides { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.hero-slides__item {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity .9s ease, transform 7s ease;
+}
+.hero-slides__item.is-active { opacity: 1; transform: scale(1); }
+.hero-slides::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background:
+    linear-gradient(to top, rgba(7, 16, 33, .88) 0%, rgba(7, 16, 33, .5) 32%, rgba(7, 16, 33, .12) 62%),
+    linear-gradient(100deg, rgba(7, 16, 33, .72) 0%, rgba(7, 16, 33, .3) 46%, rgba(7, 16, 33, .05) 78%);
+}
+/* Direct children only: with a space this also matched the arrows and dots inside the
+   slideshow, turning them relative and dropping them into the top-left corner. */
+.hero > *:not(.hero-slides) { position: relative; z-index: 2; }
+.hero-slides__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  margin-top: -23px;
+  padding: 0;
+  color: #fff;
+  background: rgba(9, 18, 36, .42);
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 50%;
+  cursor: pointer;
+  place-items: center;
+  transition: background .18s ease, transform .18s ease;
+}
+.hero-slides__nav:hover { background: rgba(9, 18, 36, .72); transform: scale(1.06); }
+.hero-slides__nav svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
+.hero-slides__nav--prev { left: clamp(10px, 3vw, 28px); }
+.hero-slides__nav--next { right: clamp(10px, 3vw, 28px); }
+.hero-slides__dots {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+.hero-slides__dots button {
+  width: 26px;
+  height: 4px;
+  padding: 0;
+  background: rgba(255, 255, 255, .45);
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background .2s ease, width .2s ease;
+}
+.hero-slides__dots button.is-active { width: 40px; background: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-slides__item { transition: opacity .01ms; transform: none; }
+}
+
+/* The header settles into a compact bar once the page is scrolled, so the school's name stays
+   present without taking a fifth of the screen. Motion is skipped for anyone who asks for less. */
+.site-header {
+  transition: box-shadow .28s ease, background-color .28s ease;
+}
+.site-header .shell { transition: min-height .28s ease; }
+.site-header.is-condensed {
+  background: color-mix(in srgb, var(--surface) 97%, transparent);
+  box-shadow: 0 10px 30px -22px rgba(9, 18, 36, .7);
+}
+.site-header.is-condensed .shell { min-height: 60px; }
+.site-header.is-condensed .brand small { opacity: 0; }
+.brand small { transition: opacity .22s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header, .site-header .shell, .brand small { transition: none; }
+}

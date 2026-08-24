@@ -566,7 +566,9 @@ public sealed class ProxiedWebFactory : WebApplicationFactory<WebProgram>
                 ["ConnectionStrings:DefaultConnection"] = "Server=test-only",
                 ["Storage:Provider"] = "Local",
                 ["Storage:LocalRootPath"] = Path.Combine(Path.GetTempPath(), _databaseName, "uploads"),
-                ["Tenancy:ResolutionCacheSeconds"] = "0"
+                ["Tenancy:ResolutionCacheSeconds"] = "0",
+                // Saves show at once in the deployment; caching here would hide a change mid-test.
+                ["PublicCache:Seconds"] = "0"
             }));
         builder.ConfigureServices(services =>
         {
@@ -595,7 +597,9 @@ public sealed class PathBasedWebFactory : WebApplicationFactory<WebProgram>
                 ["ConnectionStrings:DefaultConnection"] = "Server=test-only",
                 ["Storage:Provider"] = "Local",
                 ["Storage:LocalRootPath"] = Path.Combine(Path.GetTempPath(), _databaseName, "uploads"),
-                ["Tenancy:ResolutionCacheSeconds"] = "0"
+                ["Tenancy:ResolutionCacheSeconds"] = "0",
+                // Saves show at once in the deployment; caching here would hide a change mid-test.
+                ["PublicCache:Seconds"] = "0"
             }));
         builder.ConfigureServices(services =>
         {
@@ -623,7 +627,9 @@ public sealed class PublicWebFactory : WebApplicationFactory<WebProgram>
                 ["Storage:Provider"] = "Local",
                 ["Storage:LocalRootPath"] = Path.Combine(Path.GetTempPath(), _databaseName, "uploads"),
                 // Hosts added mid-test must resolve immediately.
-                ["Tenancy:ResolutionCacheSeconds"] = "0"
+                ["Tenancy:ResolutionCacheSeconds"] = "0",
+                // Saves show at once in the deployment; caching here would hide a change mid-test.
+                ["PublicCache:Seconds"] = "0"
             }));
         builder.ConfigureServices(services =>
         {

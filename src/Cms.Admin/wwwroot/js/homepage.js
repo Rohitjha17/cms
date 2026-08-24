@@ -174,6 +174,7 @@
       ["description", "Supporting line", "text", "Short value proposition"],
       ["primaryButton", "Primary button", "text", "e.g. Apply now"],
       ["secondaryButton", "Secondary button", "text", "e.g. Explore campus"],
+      ["autoplaySeconds", "Slide change (seconds)", "number", "Add images below. 0 stops the slideshow"],
       ["videoUrl", "Background video URL", "url", "YouTube, Vimeo or hosted video"]
     ],
     statistics: [
@@ -233,6 +234,7 @@
   };
 
   const collectionSchemas = {
+    hero: [["imageUrl", "Image"], ["alt", "Image description"]],
     courses: [["title", "Course title"], ["description", "Description"], ["url", "Page URL"], ["imageUrl", "Image URL"]],
     departments: [["title", "Department"], ["description", "Description"], ["url", "Page URL"], ["imageUrl", "Image URL"]],
     why_choose_us: [["title", "Reason"], ["description", "Description"], ["icon", "Icon name"]],
@@ -338,7 +340,24 @@
                 input.value = item[key] ?? "";
                 input.dataset.itemIndex = String(itemIndex);
                 input.dataset.itemKey = key;
-                field.append(caption, input);
+                field.append(caption);
+
+                if (/url$/i.test(key)) {
+                  // The picker fills the field beside it, so a picture is chosen from the media
+                  // library — or uploaded there and then — instead of an address being typed.
+                  const row = document.createElement("div");
+                  row.className = "media-url-row";
+                  const browse = document.createElement("button");
+                  browse.type = "button";
+                  browse.className = "btn btn-secondary btn-sm";
+                  browse.textContent = "Browse";
+                  browse.setAttribute("data-media-picker", "");
+                  row.append(input, browse);
+                  field.append(row);
+                } else {
+                  field.append(input);
+                }
+
                 fields.append(field);
               });
               card.append(fields);
@@ -346,6 +365,12 @@
             });
           };
 
+          collection.addEventListener("change", (event) => {
+            const picked = event.target.closest("[data-item-key]");
+            if (!picked) return;
+            config.items[Number(picked.dataset.itemIndex)][picked.dataset.itemKey] = picked.value;
+            if (jsonField) jsonField.value = JSON.stringify(config, null, 2);
+          });
           collection.addEventListener("input", (event) => {
             const input = event.target.closest("[data-item-key]");
             if (!input) return;

@@ -14,6 +14,7 @@
     var banner = brand.HeaderImageUrl ?? "https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?auto=format&fit=crop&w=1800&q=80";
 }
 <section data-section="hero" class="hero hero-prestige" style="--hero:url('@banner')">
+    <partial name="Home/_HeroCarousel" model="Model" />
     <div class="shell prestige-frame">
         <p class="eyebrow">Heritage · Character · Ambition</p>
         <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name)</h1>

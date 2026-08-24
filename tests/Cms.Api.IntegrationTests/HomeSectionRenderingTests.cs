@@ -81,6 +81,42 @@ public sealed class HomeSectionRenderingTests : IClassFixture<PublicWebFactory>,
     }
 
     /// <summary>
+    /// The hero slideshow: the school's own pictures, moving on their own, with arrows and dots
+    /// to move between them. With no pictures the hero keeps its single banner and shows no
+    /// controls, so a school that never adds any is not given empty arrows to click.
+    /// </summary>
+    [Fact]
+    public async Task TheHeroShowsTheSchoolsOwnPictures_WithControlsToMoveBetweenThem()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
+        var hero = await db.HomePageSections.IgnoreQueryFilters()
+            .FirstAsync(x => x.SiteId == site.Id && x.SectionKey == "hero");
+
+        var withoutPictures = await _client.GetStringAsync("/school");
+        Assert.DoesNotContain("data-hero-carousel", withoutPictures);
+
+        hero.IsActive = true;
+        hero.JsonData = """
+        {"heading":"Welcome","autoplaySeconds":4,"items":[
+          {"imageUrl":"/uploads/one.jpg","alt":"Assembly"},
+          {"imageUrl":"/uploads/two.jpg","alt":"Classroom"}]}
+        """;
+        await db.SaveChangesAsync();
+
+        var withPictures = await _client.GetStringAsync("/school");
+
+        Assert.Contains("data-hero-carousel", withPictures);
+        Assert.Contains("data-autoplay=\"4\"", withPictures);
+        Assert.Contains("/uploads/one.jpg", withPictures);
+        Assert.Contains("/uploads/two.jpg", withPictures);
+        Assert.Contains("data-hero-prev", withPictures);
+        Assert.Contains("data-hero-next", withPictures);
+        Assert.Contains("Assembly", withPictures);
+    }
+
+    /// <summary>
     /// The leadership names typed into the console belong on the Messages page. That page used to
     /// carry its own list of people, seeded from the template, so filling in the principal or the
     /// chairman changed the home page and left Messages showing the template's names for ever.

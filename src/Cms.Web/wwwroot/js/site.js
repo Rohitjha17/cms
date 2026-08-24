@@ -144,3 +144,76 @@
     }
   });
 })();
+
+/* Hero slideshow: moves on its own, and by the arrows or the dots. It pauses while the
+   pointer is over it and while the tab is hidden, and it does not move at all for a visitor
+   who has asked for reduced motion. */
+(function () {
+  var carousels = document.querySelectorAll("[data-hero-carousel]");
+  if (!carousels.length) return;
+
+  var stillness = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  carousels.forEach(function (carousel) {
+    var slides = Array.prototype.slice.call(carousel.querySelectorAll(".hero-slides__item"));
+    var dots = Array.prototype.slice.call(carousel.querySelectorAll("[data-hero-dot]"));
+    if (slides.length < 2) return;
+
+    var current = 0;
+    var timer = null;
+    var seconds = parseFloat(carousel.getAttribute("data-autoplay")) || 6;
+
+    function show(next) {
+      current = (next + slides.length) % slides.length;
+      slides.forEach(function (slide, index) {
+        slide.classList.toggle("is-active", index === current);
+      });
+      dots.forEach(function (dot, index) {
+        dot.classList.toggle("is-active", index === current);
+      });
+    }
+
+    function start() {
+      stop();
+      if (stillness.matches || seconds <= 0) return;
+      timer = window.setInterval(function () { show(current + 1); }, seconds * 1000);
+    }
+
+    function stop() {
+      if (timer) { window.clearInterval(timer); timer = null; }
+    }
+
+    carousel.querySelector("[data-hero-next]")?.addEventListener("click", function () { show(current + 1); start(); });
+    carousel.querySelector("[data-hero-prev]")?.addEventListener("click", function () { show(current - 1); start(); });
+    dots.forEach(function (dot, index) {
+      dot.addEventListener("click", function () { show(index); start(); });
+    });
+
+    carousel.addEventListener("mouseenter", stop);
+    carousel.addEventListener("mouseleave", start);
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) { stop(); } else { start(); }
+    });
+    stillness.addEventListener?.("change", start);
+
+    start();
+  });
+})();
+
+/* Condenses the header once the page is scrolled. Purely cosmetic: if this never runs the
+   header simply stays at its full height. */
+(function () {
+  var header = document.querySelector(".site-header");
+  if (!header) return;
+
+  var condensed = false;
+  function update() {
+    var shouldCondense = window.scrollY > 40;
+    if (shouldCondense === condensed) return;
+    condensed = shouldCondense;
+    header.classList.toggle("is-condensed", condensed);
+  }
+
+  window.addEventListener("scroll", update, { passive: true });
+  update();
+})();

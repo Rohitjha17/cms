@@ -46,6 +46,30 @@ public sealed class SiteTemplateCatalogTests
         Assert.Equal(images.Count, images.Distinct().Count());
     }
 
+    /// <summary>
+    /// A template that promises a moving hero has to ship the pictures for it, or the school
+    /// gets a still hero and a promise the gallery made on its behalf.
+    /// </summary>
+    [Fact]
+    public void ATemplatePromisingASlideshow_ShipsTheePictures()
+    {
+        foreach (var template in SiteTemplateCatalog.All)
+        {
+            var promisesSlideshow = template.Highlights
+                .Any(h => h.Contains("slideshow", StringComparison.OrdinalIgnoreCase));
+
+            if (!promisesSlideshow)
+            {
+                continue;
+            }
+
+            Assert.True(
+                template.HeroImages.Count > 1,
+                $"{template.Key} advertises a slideshow but ships {template.HeroImages.Count} picture(s).");
+            Assert.All(template.HeroImages, image => Assert.StartsWith("https://", image));
+        }
+    }
+
     [Fact]
     public void TemplateKeys_AreUnique()
     {

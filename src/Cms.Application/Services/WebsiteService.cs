@@ -534,12 +534,30 @@ public sealed class WebsiteService : IWebsiteService
                     section.SubTitle = template.HeroDescription;
                     // "description" is the section's own field, not configuration: holding it in
                     // both places gave the website two answers and the editor an error on save.
-                    section.JsonData = new JsonObject
+                    var heroConfig = new JsonObject
                     {
                         ["heading"] = template.HeroHeading,
                         ["primaryButton"] = "Apply now",
                         ["secondaryButton"] = "Visit us"
-                    }.ToJsonString();
+                    };
+
+                    if (template.HeroImages.Count > 0)
+                    {
+                        var slides = new JsonArray();
+                        foreach (var image in template.HeroImages)
+                        {
+                            slides.Add(new JsonObject
+                            {
+                                ["imageUrl"] = image,
+                                ["alt"] = $"{schoolName} campus"
+                            });
+                        }
+
+                        heroConfig["autoplaySeconds"] = template.HeroAutoplaySeconds;
+                        heroConfig["items"] = slides;
+                    }
+
+                    section.JsonData = heroConfig.ToJsonString();
                     break;
 
                 case HomePageSectionKeys.Statistics:

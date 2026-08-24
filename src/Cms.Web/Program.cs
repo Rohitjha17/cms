@@ -106,7 +106,10 @@ app.UseLocalMediaFiles();
 app.UseRouting();
 app.UseRateLimiter();
 
-if (publicCacheSeconds > 0)
+// Re-read from the built application: configuration added by the host — a test host, or a
+// provider that supplies settings late — is merged at Build(), so the value captured before it
+// can be stale. Reading it here is what makes "PublicCache:Seconds=0" actually stop caching.
+if (app.Configuration.GetValue("PublicCache:Seconds", publicCacheSeconds) > 0)
 {
     app.UseOutputCache();
 }
