@@ -84,6 +84,8 @@ public static class HomePageSeed
         HomePageSectionKeys.FooterCta => """{"heading":"Ready to discover your potential?","supportingText":"Visit our campus and meet the people who make Demo Academy exceptional.","secondaryButton":"Download prospectus"}""",
         HomePageSectionKeys.Principal => """{"personName":"Dr. Ananya Rao","designation":"Principal","quote":"Education should help every learner find their voice, purpose and courage."}""",
         HomePageSectionKeys.Chairman => """{"personName":"Rajiv Mehra","designation":"Chairman","quote":"We prepare young people not only for examinations, but for a life of contribution."}""",
+        HomePageSectionKeys.Director => """{"personName":"","designation":"Director","quote":""}""",
+        HomePageSectionKeys.Manager => """{"personName":"","designation":"Manager","quote":""}""",
         _ => """{}"""
     };
 
@@ -94,6 +96,8 @@ public static class HomePageSeed
         HomePageSectionKeys.About => "Rooted in values. Ready for the future.",
         HomePageSectionKeys.Principal => "A message from our Principal",
         HomePageSectionKeys.Chairman => "A message from our Chairman",
+        HomePageSectionKeys.Director => "A message from our Director",
+        HomePageSectionKeys.Manager => "A message from our Manager",
         HomePageSectionKeys.Courses => "Pathways designed for ambition, curiosity and impact.",
         HomePageSectionKeys.Departments => "Deep expertise. Connected learning.",
         HomePageSectionKeys.WhyChooseUs => "An education that goes beyond achievement.",

@@ -81,6 +81,45 @@ public sealed class HomeSectionRenderingTests : IClassFixture<PublicWebFactory>,
     }
 
     /// <summary>
+    /// The leadership names typed into the console belong on the Messages page. That page used to
+    /// carry its own list of people, seeded from the template, so filling in the principal or the
+    /// chairman changed the home page and left Messages showing the template's names for ever.
+    /// </summary>
+    [Fact]
+    public async Task TheLeadershipNamesFromTheConsole_AreOnTheMessagesPage()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
+
+        var named = new Dictionary<string, string>
+        {
+            ["principal"] = "ZZPRINCIPAL Sunita Verma",
+            ["chairman"] = "ZZCHAIRMAN Garvit Mehta"
+        };
+
+        foreach (var entry in named)
+        {
+            var section = await db.HomePageSections.IgnoreQueryFilters()
+                .FirstAsync(x => x.SiteId == site.Id && x.SectionKey == entry.Key);
+            section.IsActive = true;
+            section.JsonData = $$"""{"personName":"{{entry.Value}}","designation":"Leader","quote":"A quote."}""";
+        }
+
+        await db.SaveChangesAsync();
+
+        var messages = await _client.GetStringAsync("/school/messages");
+
+        foreach (var entry in named)
+        {
+            Assert.Contains(entry.Value, messages);
+        }
+
+        // And the template's own people must no longer be shown alongside them.
+        Assert.DoesNotContain("Dr. A. Sharma", messages);
+    }
+
+    /// <summary>
     /// A notice added under News and notices belongs on the home page too, not only on /news.
     /// The home page used to show a list typed into the section's own configuration instead.
     /// </summary>

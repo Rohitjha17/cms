@@ -1,5 +1,6 @@
 @page "/{slug}"
 @model Cms.Web.Pages.ContentModel
+@using Cms.Web.Helpers
 @{
     var content = Model.ContentPage;
     JsonElement data = default;
@@ -104,18 +105,61 @@
                 }
             </section>
         }
-        else if (content.PageType == PageType.Messages && hasJson && data.TryGetProperty("messages", out var messages))
+        else if (content.PageType == PageType.Messages)
         {
-            <section class="message-list">
-                @foreach (var item in messages.EnumerateArray())
-                {
-                    <article>
-                        <h2>@(item.TryGetProperty("role", out var role) ? role.GetString() : "Message")</h2>
-                        <p class="name">@(item.TryGetProperty("name", out var name) ? name.GetString() : "")</p>
-                        <blockquote>@(item.TryGetProperty("message", out var msg) ? msg.GetString() : "")</blockquote>
-                    </article>
-                }
-            </section>
+            @* The leadership messages the console maintains, not a second copy kept on this page.
+               The page used to carry its own list of names, so filling in the principal or the
+               chairman changed the home page and left this page showing the template's people. *@
+            var leadership = Model.Website.HomeSections
+                .Where(x => x.SectionKey is "principal" or "chairman" or "director" or "manager")
+                .ToList();
+
+            if (leadership.Count > 0)
+            {
+                <section class="message-list">
+                    @foreach (var message in leadership)
+                    {
+                        var messageJson = SectionJson.Parse(message.JsonData);
+                        var person = SectionJson.GetString(messageJson, "personName");
+                        var role = SectionJson.GetString(messageJson, "designation") ?? message.Title;
+                        var quote = SectionJson.GetString(messageJson, "quote");
+
+                        <article data-message="@message.SectionKey">
+                            <h2>@(message.Title ?? role)</h2>
+                            @if (!string.IsNullOrWhiteSpace(message.ImageUrl))
+                            {
+                                <img class="message-portrait" src="@message.ImageUrl" alt="@person" loading="lazy" />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(person))
+                            {
+                                <p class="name">@person@(string.IsNullOrWhiteSpace(role) ? null : $" · {role}")</p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(quote))
+                            {
+                                <blockquote>@quote</blockquote>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(message.Description))
+                            {
+                                <div class="rich-text">@Html.Raw(message.Description)</div>
+                            }
+                        </article>
+                    }
+                </section>
+            }
+            else if (hasJson && data.TryGetProperty("messages", out var messages))
+            {
+                @* Only for a website whose messages were never set up in the console. *@
+                <section class="message-list">
+                    @foreach (var item in messages.EnumerateArray())
+                    {
+                        <article>
+                            <h2>@(item.TryGetProperty("role", out var role) ? role.GetString() : "Message")</h2>
+                            <p class="name">@(item.TryGetProperty("name", out var name) ? name.GetString() : "")</p>
+                            <blockquote>@(item.TryGetProperty("message", out var msg) ? msg.GetString() : "")</blockquote>
+                        </article>
+                    }
+                </section>
+            }
         }
         else if (content.PageType == PageType.Gallery && hasJson)
         {

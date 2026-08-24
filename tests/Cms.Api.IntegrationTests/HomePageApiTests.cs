@@ -23,7 +23,11 @@ public sealed class HomePageApiTests : IClassFixture<CmsApiFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.True(json.RootElement.GetProperty("success").GetBoolean());
-        Assert.Equal(21, json.RootElement.GetProperty("data").EnumerateObject().Count());
+        // Counted from the catalogue rather than written down, so adding a section — a director's
+        // message, say — does not fail a test that is not about the number.
+        Assert.Equal(
+            Cms.Domain.Constants.HomePageSectionKeys.All.Count,
+            json.RootElement.GetProperty("data").EnumerateObject().Count());
     }
 
     [Fact]

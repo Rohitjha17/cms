@@ -10,6 +10,8 @@ public static class HomePageSectionKeys
     public const string About = "about";
     public const string Principal = "principal";
     public const string Chairman = "chairman";
+    public const string Director = "director";
+    public const string Manager = "manager";
     public const string Statistics = "statistics";
     public const string Courses = "courses";
     public const string Departments = "departments";
@@ -34,22 +36,24 @@ public static class HomePageSectionKeys
         (About, "About School", 3),
         (Principal, "Principal Message", 4),
         (Chairman, "Chairman Message", 5),
-        (Statistics, "Statistics", 6),
-        (Courses, "Courses", 7),
-        (Departments, "Departments", 8),
-        (WhyChooseUs, "Why Choose Us", 9),
-        (Announcements, "Announcements", 10),
-        (LatestNews, "Latest News", 11),
-        (UpcomingEvents, "Upcoming Events", 12),
-        (Gallery, "Gallery", 13),
-        (Video, "Video Section", 14),
-        (Testimonials, "Testimonials", 15),
-        (Achievements, "Achievements", 16),
-        (AdmissionCta, "Admission CTA", 17),
-        (DownloadBrochure, "Download Brochure", 18),
-        (Contact, "Contact Section", 19),
-        (Partners, "Partners", 20),
-        (FooterCta, "Footer CTA", 21)
+        (Director, "Director Message", 6),
+        (Manager, "Manager Message", 7),
+        (Statistics, "Statistics", 8),
+        (Courses, "Courses", 9),
+        (Departments, "Departments", 10),
+        (WhyChooseUs, "Why Choose Us", 11),
+        (Announcements, "Announcements", 12),
+        (LatestNews, "Latest News", 13),
+        (UpcomingEvents, "Upcoming Events", 14),
+        (Gallery, "Gallery", 15),
+        (Video, "Video Section", 16),
+        (Testimonials, "Testimonials", 17),
+        (Achievements, "Achievements", 18),
+        (AdmissionCta, "Admission CTA", 19),
+        (DownloadBrochure, "Download Brochure", 20),
+        (Contact, "Contact Section", 21),
+        (Partners, "Partners", 22),
+        (FooterCta, "Footer CTA", 23)
     ];
 
     public static bool IsKnown(string sectionKey) =>
