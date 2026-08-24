@@ -13,7 +13,7 @@
     var testimonialsJson = SectionJson.Parse(testimonials?.JsonData);
     var banner = brand.HeaderImageUrl ?? "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1800&q=80";
 }
-<section class="hero hero-modern">
+<section data-section="hero" class="hero hero-modern">
     <div class="shell modern-grid">
         <div>
             <p class="eyebrow">Modern campus experience</p>
@@ -29,7 +29,7 @@
 </section>
 @if (courses is not null)
 {
-    <section class="shell section">
+    <section data-section="courses" class="shell section">
         <h2>@courses.Title</h2>
         <div class="card-grid">
             @foreach (var item in SectionJson.GetArray(coursesJson, "items"))
@@ -44,7 +44,7 @@
 }
 @if (news is not null)
 {
-    <section class="shell section muted">
+    <section data-section="latest_news" class="shell section muted">
         <h2>@news.Title</h2>
         <div class="card-grid">
             @foreach (var item in SectionJson.GetArray(newsJson, "items").Take(3))
@@ -59,7 +59,7 @@
 }
 @if (testimonials is not null)
 {
-    <section class="shell section">
+    <section data-section="testimonials" class="shell section">
         <h2>@testimonials.Title</h2>
         <div class="card-grid">
             @foreach (var item in SectionJson.GetArray(testimonialsJson, "items"))
@@ -72,3 +72,10 @@
         </div>
     </section>
 }
+
+@{
+    // Anything the console can edit that this design does not lay out itself is still shown,
+    // in the console's own order, so no edit is invisible on the website.
+    ViewData["renderedSections"] = new[] { "hero", "courses", "latest_news", "testimonials" };
+}
+<partial name="Home/_RemainingSections" model="Model" />

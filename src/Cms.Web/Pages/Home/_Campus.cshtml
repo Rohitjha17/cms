@@ -13,17 +13,17 @@
     var galleryJson = SectionJson.Parse(gallery?.JsonData);
     var banner = brand.HeaderImageUrl ?? "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1800&q=80";
 }
-<section class="hero hero-campus" style="--hero:url('@banner')">
+<section data-section="hero" class="hero hero-campus" style="--hero:url('@banner')">
     <div class="shell">
         <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? $"Life at {brand.Name}")</h1>
         <p>@(SectionJson.GetString(heroJson, "description") ?? RichText.ToPlainText(hero?.Description) ?? brand.Tagline)</p>
         <a class="btn" href="@(basePath)/facilities">Explore facilities</a>
     </div>
 </section>
-<section class="shell campus-panels">
+<section data-section="why_choose_us" class="shell campus-panels">
     <article>
         <h2>@(why?.Title ?? "Campus highlights")</h2>
-        <p>@(SectionJson.GetString(whyJson, "intro") ?? why?.SubTitle ?? why?.Description)</p>
+        <p>@(why?.SubTitle ?? SectionJson.GetString(whyJson, "intro") ?? why?.Description)</p>
         <ul>
             @foreach (var item in SectionJson.GetArray(whyJson, "items").Take(4))
             {
@@ -44,7 +44,7 @@
 </section>
 @if (gallery is not null)
 {
-    <section class="shell section">
+    <section data-section="gallery" class="shell section">
         <div class="gallery-grid">
             @foreach (var item in SectionJson.GetArray(galleryJson, "items").Take(4))
             {
@@ -57,3 +57,10 @@
         </div>
     </section>
 }
+
+@{
+    // Anything the console can edit that this design does not lay out itself is still shown,
+    // in the console's own order, so no edit is invisible on the website.
+    ViewData["renderedSections"] = new[] { "hero", "why_choose_us", "upcoming_events", "gallery" };
+}
+<partial name="Home/_RemainingSections" model="Model" />

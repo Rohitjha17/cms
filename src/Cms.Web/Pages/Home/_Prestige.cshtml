@@ -13,7 +13,7 @@
     var achievementsJson = SectionJson.Parse(achievements?.JsonData);
     var banner = brand.HeaderImageUrl ?? "https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?auto=format&fit=crop&w=1800&q=80";
 }
-<section class="hero hero-prestige" style="--hero:url('@banner')">
+<section data-section="hero" class="hero hero-prestige" style="--hero:url('@banner')">
     <div class="shell prestige-frame">
         <p class="eyebrow">Heritage · Character · Ambition</p>
         <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name)</h1>
@@ -21,7 +21,7 @@
         <a class="btn" href="@(basePath)/contact">Enquire today</a>
     </div>
 </section>
-<section class="shell prestige-row">
+<section data-section="principal" class="shell prestige-row">
     <blockquote>
         <p>@(SectionJson.GetString(principalJson, "quote") ?? principal?.Description ?? "An education grounded in values, curiosity and lasting achievement.")</p>
         <cite>
@@ -44,7 +44,7 @@
 </section>
 @if (achievements is not null)
 {
-    <section class="shell section">
+    <section data-section="testimonials" class="shell section">
         <h2>@achievements.Title</h2>
         <div class="card-grid">
             @foreach (var item in SectionJson.GetArray(achievementsJson, "items"))
@@ -57,3 +57,10 @@
         </div>
     </section>
 }
+
+@{
+    // Anything the console can edit that this design does not lay out itself is still shown,
+    // in the console's own order, so no edit is invisible on the website.
+    ViewData["renderedSections"] = new[] { "hero", "principal", "testimonials", "achievements" };
+}
+<partial name="Home/_RemainingSections" model="Model" />

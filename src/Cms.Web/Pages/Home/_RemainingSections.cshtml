@@ -1,0 +1,193 @@
+@model PublicWebsiteDto
+@using Cms.Application.DTOs.SchoolContent
+@using Cms.Web.Helpers
+@{
+    // Every design renders a handful of sections in its own bespoke way and used to ignore the
+    // rest, so most of what the console offers to edit never appeared on the website at all —
+    // the principal's message, the chairman's message, announcements, and a dozen more. The
+    // design still owns its own blocks; everything else is rendered here, in the order the
+    // console shows, so nothing an editor fills in is silently invisible.
+    var handled = (ViewData["renderedSections"] as string[] ?? []).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    var basePath = Model.BasePath;
+    var news = ViewData["News"] as IReadOnlyList<NewsArticleDto> ?? [];
+    var events = ViewData["Events"] as IReadOnlyList<SchoolEventDto> ?? [];
+
+    var remaining = Model.HomeSections
+        .Where(s => !handled.Contains(s.SectionKey))
+        .ToList();
+}
+
+@foreach (var block in remaining)
+{
+    var json = SectionJson.Parse(block.JsonData);
+    var items = SectionJson.GetArray(json, "items").ToList();
+    var body = RichText.ToPlainText(block.Description);
+    var intro = SectionJson.GetString(json, "intro") ?? block.SubTitle;
+
+    switch (block.SectionKey)
+    {
+        case "announcements":
+        case "latest_news":
+            @if (news.Count > 0 || items.Count > 0)
+            {
+                <section data-section="@block.SectionKey" class="shell section">
+                    <div class="section-head">
+                        <p class="eyebrow">Announcements</p>
+                        <h2>@(block.Title ?? "News and notices")</h2>
+                        @if (!string.IsNullOrWhiteSpace(intro)) { <p>@intro</p> }
+                    </div>
+                    <div class="card-grid">
+                        @if (news.Count > 0)
+                        {
+                            @foreach (var item in news.Take(3))
+                            {
+                                <article>
+                                    <p class="eyebrow">@item.Category</p>
+                                    <h3><a href="@(basePath)/news/@item.Key">@item.Headline</a></h3>
+                                    @if (!string.IsNullOrWhiteSpace(item.Summary)) { <p>@item.Summary</p> }
+                                </article>
+                            }
+                        }
+                        else
+                        {
+                            @foreach (var item in items.Take(3))
+                            {
+                                <article>
+                                    <h3>@SectionJson.Item(item, "title")</h3>
+                                    <p>@SectionJson.Item(item, "summary")</p>
+                                </article>
+                            }
+                        }
+                    </div>
+                    <p class="section-more"><a class="btn btn-ghost" href="@(basePath)/news">All news and notices</a></p>
+                </section>
+            }
+            break;
+
+        case "upcoming_events":
+            @if (events.Count > 0 || items.Count > 0)
+            {
+                <section data-section="@block.SectionKey" class="shell section">
+                    <div class="section-head">
+                        <p class="eyebrow">What's on</p>
+                        <h2>@(block.Title ?? "Upcoming events")</h2>
+                        @if (!string.IsNullOrWhiteSpace(intro)) { <p>@intro</p> }
+                    </div>
+                    <div class="card-grid">
+                        @if (events.Count > 0)
+                        {
+                            @foreach (var item in events.Take(3))
+                            {
+                                <article>
+                                    <p class="eyebrow">@(item.StartsOn?.ToString("dd MMM yyyy"))</p>
+                                    <h3><a href="@(basePath)/events/@item.Key">@item.Title</a></h3>
+                                    @if (!string.IsNullOrWhiteSpace(item.Venue)) { <p>@item.Venue</p> }
+                                </article>
+                            }
+                        }
+                        else
+                        {
+                            @foreach (var item in items.Take(3))
+                            {
+                                <article>
+                                    <h3>@SectionJson.Item(item, "title")</h3>
+                                    <p>@SectionJson.Item(item, "location")</p>
+                                </article>
+                            }
+                        }
+                    </div>
+                    <p class="section-more"><a class="btn btn-ghost" href="@(basePath)/events">All events</a></p>
+                </section>
+            }
+            break;
+
+        case "principal":
+        case "chairman":
+        case "director":
+            {
+                var person = SectionJson.GetString(json, "personName");
+                var role = SectionJson.GetString(json, "designation");
+                var quote = SectionJson.GetString(json, "quote");
+                <section data-section="@block.SectionKey" class="shell section message-section">
+                    <div class="section-head">
+                        <p class="eyebrow">@(role ?? block.Title)</p>
+                        <h2>@(block.Title ?? role)</h2>
+                    </div>
+                    <div class="message-block">
+                        @if (!string.IsNullOrWhiteSpace(block.ImageUrl))
+                        {
+                            <img class="message-portrait" src="@block.ImageUrl" alt="@person" loading="lazy" />
+                        }
+                        <div>
+                            @if (!string.IsNullOrWhiteSpace(quote)) { <blockquote>@quote</blockquote> }
+                            @if (!string.IsNullOrWhiteSpace(block.Description)) { @Html.Raw(block.Description) }
+                            @if (!string.IsNullOrWhiteSpace(person))
+                            {
+                                <p class="message-signature"><strong>@person</strong>@(role is null ? null : $" · {role}")</p>
+                            }
+                        </div>
+                    </div>
+                </section>
+            }
+            break;
+
+        case "gallery":
+            @if (items.Count > 0)
+            {
+                <section data-section="@block.SectionKey" class="shell section">
+                    <div class="section-head"><p class="eyebrow">Campus life</p><h2>@block.Title</h2></div>
+                    <div class="gallery-grid">
+                        @foreach (var item in items.Take(8))
+                        {
+                            <figure><img src="@SectionJson.Item(item, "imageUrl")" alt="@SectionJson.Item(item, "alt")" loading="lazy" /></figure>
+                        }
+                    </div>
+                </section>
+            }
+            break;
+
+        case "statistics":
+            <section data-section="@block.SectionKey" class="shell stats-grid">
+                <div class="stat"><strong>@(SectionJson.GetString(json, "students") ?? "—")</strong><span>Students</span></div>
+                <div class="stat"><strong>@(SectionJson.GetString(json, "teachers") ?? "—")</strong><span>Teachers</span></div>
+                <div class="stat"><strong>@(SectionJson.GetString(json, "placements") ?? "—")</strong><span>Placements</span></div>
+                <div class="stat"><strong>@(SectionJson.GetString(json, "years") ?? "—")</strong><span>Years</span></div>
+            </section>
+            break;
+
+        default:
+            <section data-section="@block.SectionKey" class="shell section">
+                <div class="section-head">
+                    @if (!string.IsNullOrWhiteSpace(block.Title)) { <h2>@block.Title</h2> }
+                    @if (!string.IsNullOrWhiteSpace(intro)) { <p>@intro</p> }
+                </div>
+                @if (!string.IsNullOrWhiteSpace(block.ImageUrl))
+                {
+                    <img class="section-image" src="@block.ImageUrl" alt="@block.Title" loading="lazy" />
+                }
+                @if (!string.IsNullOrWhiteSpace(block.Description))
+                {
+                    <div class="section-body">@Html.Raw(block.Description)</div>
+                }
+                @if (items.Count > 0)
+                {
+                    <div class="card-grid">
+                        @foreach (var item in items.Take(8))
+                        {
+                            <article>
+                                <h3>@SectionJson.Item(item, "title")</h3>
+                                <p>@(SectionJson.Item(item, "description") ?? SectionJson.Item(item, "quote") ?? SectionJson.Item(item, "summary"))</p>
+                            </article>
+                        }
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(block.ButtonText))
+                {
+                    <p class="section-more">
+                        <a class="btn" href="@(block.ButtonLink ?? basePath + "/contact")">@block.ButtonText</a>
+                    </p>
+                }
+            </section>
+            break;
+    }
+}

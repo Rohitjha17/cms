@@ -19,7 +19,7 @@
     var heading = SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name;
     var description = SectionJson.GetString(heroJson, "description") ?? RichText.ToPlainText(hero?.Description) ?? brand.Tagline;
 }
-<section class="hero hero-classic" style="--hero:url('@banner')">
+<section data-section="hero" class="hero hero-classic" style="--hero:url('@banner')">
     <div class="shell hero-copy">
         <p class="eyebrow">@brand.WebsiteType</p>
         <h1>@heading</h1>
@@ -33,7 +33,7 @@
 
 @if (stats is not null)
 {
-    <section class="shell stats-grid">
+    <section data-section="statistics" class="shell stats-grid">
         <div class="stat"><strong>@(SectionJson.GetString(statsJson, "students") ?? "1500")+ </strong><span>Students</span></div>
         <div class="stat"><strong>@(SectionJson.GetString(statsJson, "teachers") ?? "80")+ </strong><span>Teachers</span></div>
         <div class="stat"><strong>@(SectionJson.GetString(statsJson, "placements") ?? "500")+ </strong><span>Placements</span></div>
@@ -43,11 +43,11 @@
 
 @if (why is not null)
 {
-    <section class="shell section">
+    <section data-section="why_choose_us" class="shell section">
         <div class="section-head">
             <p class="eyebrow">Why families choose us</p>
             <h2>@why.Title</h2>
-            <p>@(SectionJson.GetString(whyJson, "intro") ?? why.SubTitle ?? why.Description)</p>
+            <p>@(why.SubTitle ?? SectionJson.GetString(whyJson, "intro") ?? why.Description)</p>
         </div>
         <div class="card-grid">
             @foreach (var item in SectionJson.GetArray(whyJson, "items"))
@@ -63,7 +63,7 @@
 
 @if (gallery is not null)
 {
-    <section class="shell section">
+    <section data-section="gallery" class="shell section">
         <div class="section-head">
             <p class="eyebrow">Campus life</p>
             <h2>@gallery.Title</h2>
@@ -85,7 +85,7 @@
 
 @if (news is not null)
 {
-    <section class="shell section muted">
+    <section data-section="latest_news" class="shell section muted">
         <h2>@news.Title</h2>
         <div class="card-grid">
             @foreach (var item in SectionJson.GetArray(newsJson, "items").Take(3))
@@ -101,11 +101,18 @@
 
 @if (cta is not null)
 {
-    <section class="cta-band">
+    <section data-section="admission_cta" class="cta-band">
         <div class="shell">
-            <h2>@(SectionJson.GetString(ctaJson, "heading") ?? cta.Title)</h2>
-            <p>@(SectionJson.GetString(ctaJson, "supportingText") ?? cta.Description)</p>
+            <h2>@(cta.Title ?? SectionJson.GetString(ctaJson, "heading"))</h2>
+            <p>@(cta.SubTitle ?? SectionJson.GetString(ctaJson, "supportingText") ?? RichText.ToPlainText(cta.Description))</p>
             <a class="btn" href="@(cta.ButtonLink ?? "/admission")">@(cta.ButtonText ?? "Start application")</a>
         </div>
     </section>
 }
+
+@{
+    // Anything the console can edit that this design does not lay out itself is still shown,
+    // in the console's own order, so no edit is invisible on the website.
+    ViewData["renderedSections"] = new[] { "hero", "statistics", "why_choose_us", "gallery", "latest_news", "admission_cta" };
+}
+<partial name="Home/_RemainingSections" model="Model" />

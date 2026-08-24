@@ -49,6 +49,10 @@ COPY --chmod=755 vercel/entrypoint.sh /app/entrypoint.sh
 # exhausting it made every page fail with "the configured user limit (128) on the number of
 # inotify instances has been reached".
 #
+# PublicCache__Seconds is 0 because an editor expects the website to change the moment they
+# save. Caching pages for half a minute makes a correct save look like a broken one. Raise it
+# only once traffic makes it necessary, and accept the delay that comes with it.
+#
 # Tenancy__ResolutionCacheSeconds is short here because the console and the public website are
 # separate processes: creating a website invalidates the cache in the process that made the
 # change, and the other one has to notice by expiry. Three seconds keeps "create a site, open
@@ -70,6 +74,7 @@ ENV ASPNETCORE_ENVIRONMENT=Production \
     Proxy__TrustForwardedHeaders=true \
     PublicSite__PathBase=/site \
     Tenancy__ResolutionCacheSeconds=3 \
+    PublicCache__Seconds=0 \
     Seed__EnableDemoData=true \
     Seed__DemoAdminPassword=Admin@12345 \
     Seed__SkipStartup=true \

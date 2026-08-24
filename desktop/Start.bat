@@ -18,6 +18,8 @@ set "DemoMode__Enabled=true"
 set "Seed__EnableDemoData=true"
 set "Seed__DemoAdminPassword=Admin@12345"
 set "PublicSite__BaseUrl=http://localhost:5301"
+rem Saves must show on the website at once; page caching would delay them by up to half a minute.
+set "PublicCache__Seconds=0"
 
 rem A port already in use is the most common reason nothing appears, and it is silent
 rem otherwise: the application exits immediately and its window is already minimised.

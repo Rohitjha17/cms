@@ -1,3 +1,4 @@
+using Cms.Application.DTOs.SchoolContent;
 using Cms.Application.DTOs.Websites;
 using Cms.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -9,15 +10,37 @@ namespace Cms.Web.Pages;
 public sealed class IndexModel : PageModel
 {
     private readonly IWebsiteService _websiteService;
+    private readonly ISchoolContentService _schoolContent;
 
-    public IndexModel(IWebsiteService websiteService) => _websiteService = websiteService;
+    public IndexModel(IWebsiteService websiteService, ISchoolContentService schoolContent)
+    {
+        _websiteService = websiteService;
+        _schoolContent = schoolContent;
+    }
 
     public PublicWebsiteDto Website { get; private set; } = new();
+
+    /// <summary>
+    /// The notices and events the school actually maintains. The home page sections for these
+    /// used to show a list typed into the section's own configuration, so a notice added under
+    /// News and notices never appeared on the home page — it only existed on /news.
+    /// </summary>
+    public IReadOnlyList<NewsArticleDto> News { get; private set; } = [];
+
+    public IReadOnlyList<SchoolEventDto> Events { get; private set; } = [];
 
     public async Task OnGetAsync(CancellationToken cancellationToken)
     {
         Website = await _websiteService.GetPublicWebsiteAsync(cancellationToken);
+        News = await _schoolContent.GetNewsAsync(includeUnpublished: false, cancellationToken);
+
+        var events = await _schoolContent.GetEventsAsync(includeUnpublished: false, cancellationToken);
+        var now = DateTime.UtcNow;
+        Events = events.Where(e => !e.HasFinished(now)).Concat(events.Where(e => e.HasFinished(now))).ToList();
+
         ViewData["Website"] = Website;
+        ViewData["News"] = News;
+        ViewData["Events"] = Events;
         ViewData["Title"] = Website.Branding.Name;
     }
 }

@@ -13,7 +13,7 @@
     var statsJson = SectionJson.Parse(stats?.JsonData);
     var banner = brand.HeaderImageUrl ?? "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1800&q=80";
 }
-<section class="hero hero-academic" style="--hero:url('@banner')">
+<section data-section="hero" class="hero hero-academic" style="--hero:url('@banner')">
     <div class="shell">
         <p class="eyebrow">Academic excellence</p>
         <h1>@(SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name)</h1>
@@ -26,14 +26,14 @@
 </section>
 @if (stats is not null)
 {
-    <section class="shell stats-grid">
+    <section data-section="statistics" class="shell stats-grid">
         <div class="stat"><strong>@(SectionJson.GetString(statsJson, "students") ?? "—")</strong><span>Students</span></div>
         <div class="stat"><strong>@(SectionJson.GetString(statsJson, "teachers") ?? "—")</strong><span>Faculty</span></div>
         <div class="stat"><strong>@(SectionJson.GetString(statsJson, "years") ?? "—")</strong><span>Years</span></div>
         <div class="stat"><strong>@(SectionJson.GetString(statsJson, "placements") ?? "—")</strong><span>Outcomes</span></div>
     </section>
 }
-<section class="shell academic-columns">
+<section data-section="departments" class="shell academic-columns">
     <article>
         <h2>@(departments?.Title ?? "Departments")</h2>
         @foreach (var item in SectionJson.GetArray(departmentsJson, "items"))
@@ -53,3 +53,10 @@
         <a class="text-link" href="@(basePath)/messages">Leadership messages</a>
     </article>
 </section>
+
+@{
+    // Anything the console can edit that this design does not lay out itself is still shown,
+    // in the console's own order, so no edit is invisible on the website.
+    ViewData["renderedSections"] = new[] { "hero", "departments", "achievements", "statistics" };
+}
+<partial name="Home/_RemainingSections" model="Model" />
