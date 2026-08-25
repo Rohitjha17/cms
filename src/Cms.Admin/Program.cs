@@ -1,3 +1,4 @@
+using Cms.Infrastructure.Configuration;
 using Cms.Admin.Middleware;
 using Cms.Admin.Services;
 using Cms.Application.DependencyInjection;
@@ -67,6 +68,13 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 var app = builder.Build();
+
+// Stop here rather than serve a school's website on demo settings.
+ProductionReadiness.ThrowIfMisconfigured(
+    app.Configuration,
+    app.Environment,
+    app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup"));
+
 
 if (!builder.Configuration.GetValue<bool>("Seed:SkipStartup"))
 {
