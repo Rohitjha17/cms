@@ -39,45 +39,36 @@ COPY vercel/nginx.single-host.conf /app/nginx.single-host.conf
 COPY vercel/nginx.multi-host.conf.template /app/nginx.multi-host.conf.template
 COPY --chmod=755 vercel/entrypoint.sh /app/entrypoint.sh
 
-# Production, not Development. Development served the raw exception page to visitors — a school
-# saw a stack trace instead of an error page — and printed the demo sign-in credentials on the
-# login screen. Seed__DemoAdminPassword must be supplied explicitly outside Development; override
-# it in the hosting environment before anyone real uses this.
+# The image is production-first: SQL Server, migrations applied on the first run, and no demo
+# content or demo password anywhere. A deployment supplies its own connection string, the
+# console's domain and the first administrator through the hosting environment — see
+# deploy/production.env.example for the full list. Anything missing stops the application on
+# startup with a message naming it, rather than quietly serving a school demo data.
+#
+# To run the sample workspace instead, set DemoMode__Enabled=true, Seed__EnableDemoData=true,
+# Seed__DemoAdminPassword, Database__Provider=Sqlite and the Sqlite connection string.
+#
+# Seeding is deliberately NOT skipped here: the console applies the migrations and creates the
+# first administrator, and the entrypoint stops only the other two from racing it.
+#
+# ASPNETCORE_ENVIRONMENT is Production so a visitor never sees a stack trace and the sign-in
+# credentials are not printed on the login screen.
 #
 # DOTNET_USE_POLLING_FILE_WATCHER stops the file providers behind asset versioning from opening
-# inotify instances. The container's allowance is small and shared by all three applications, and
-# exhausting it made every page fail with "the configured user limit (128) on the number of
-# inotify instances has been reached".
+# inotify instances; the container's allowance is small and shared by all three applications.
 #
-# PublicCache__Seconds is 0 because an editor expects the website to change the moment they
-# save. Caching pages for half a minute makes a correct save look like a broken one. Raise it
-# only once traffic makes it necessary, and accept the delay that comes with it.
-#
-# Tenancy__ResolutionCacheSeconds is short here because the console and the public website are
-# separate processes: creating a website invalidates the cache in the process that made the
-# change, and the other one has to notice by expiry. Three seconds keeps "create a site, open
-# its link" instant without giving up the cache on every public request.
-#
-# PublicSite__PathBase says the public website is served by this same container under /site.
-# It takes precedence over PublicSite__BaseUrl, so a stale absolute URL left in the hosting
-# environment cannot send editors to a dead address.
 ENV ASPNETCORE_ENVIRONMENT=Production \
     DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false \
     DOTNET_USE_POLLING_FILE_WATCHER=true \
-    Database__Provider=Sqlite \
-    Database__ApplyMigrationsOnStartup=false \
-    ConnectionStrings__Sqlite="Data Source=/data/cms.db;Cache=Shared;Default Timeout=30" \
+    Database__Provider=SqlServer \
+    Database__ApplyMigrationsOnStartup=true \
     Storage__Provider=Local \
     Storage__LocalRootPath=/data/uploads \
     Storage__LocalBaseUrl=/uploads \
-    DemoMode__Enabled=true \
     Proxy__TrustForwardedHeaders=true \
     PublicSite__PathBase=/site \
     Tenancy__ResolutionCacheSeconds=3 \
     PublicCache__Seconds=0 \
-    Seed__EnableDemoData=true \
-    Seed__DemoAdminPassword=Admin@12345 \
-    Seed__SkipStartup=true \
     PORT=80
 
 EXPOSE 80

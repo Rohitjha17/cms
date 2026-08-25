@@ -36,3 +36,8 @@ _to_delete/
 
 # Windows desktop package build output (large, rebuilt by scripts/build-desktop-package.sh)
 SchoolCMS-Desktop/
+
+# A filled-in copy holds passwords; only the example belongs in the repository.
+deploy/production.env
+deploy/*.env
+!deploy/*.env.example

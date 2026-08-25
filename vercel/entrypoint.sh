@@ -6,7 +6,10 @@ set -eu
 # Data Protection keys live inside that database, shared by all three apps.
 mkdir -p /data/uploads /data/home
 export HOME=/data/home
-if [ ! -f /data/cms.db ]; then
+
+# The seeded file database belongs to the demo workspace only. A real deployment uses SQL Server
+# and never touches it.
+if [ "${Database__Provider:-SqlServer}" = "Sqlite" ] && [ ! -f /data/cms.db ]; then
     cp /app/demo-seed/cms.db /data/cms.db
 fi
 
@@ -40,7 +43,9 @@ fi
 nginx -c /tmp/nginx.conf -g 'daemon off;' &
 NGINX_PID=$!
 
-(cd /app/api && ASPNETCORE_URLS=http://127.0.0.1:5101 dotnet Cms.Api.dll) &
+# The console applies the migrations and creates the first administrator. The other two must not
+# race it on a first run against an empty database, so only they skip startup work.
+(cd /app/api && ASPNETCORE_URLS=http://127.0.0.1:5101 Seed__SkipStartup=true dotnet Cms.Api.dll) &
 API_PID=$!
 
 (cd /app/admin && ASPNETCORE_URLS=http://127.0.0.1:5201 dotnet Cms.Admin.dll) &
