@@ -29,10 +29,14 @@ public class TenantDomainConfiguration : IEntityTypeConfiguration<TenantDomain>
             .WithMany(t => t.Domains)
             .HasForeignKey(x => x.TenantId)
             .OnDelete(DeleteBehavior.Cascade);
+        // SQL Server refuses a table that can be reached from Tenants twice — directly, and
+        // again through Sites. ClientSetNull keeps the behaviour the application relies on (the
+        // domain is unbound when its website goes) without asking the database to cascade a
+        // second time, which is what stopped the schema being created on SQL Server at all.
         builder.HasOne(x => x.Site)
             .WithMany(s => s.Domains)
             .HasForeignKey(x => x.SiteId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.ClientSetNull);
     }
 }
 

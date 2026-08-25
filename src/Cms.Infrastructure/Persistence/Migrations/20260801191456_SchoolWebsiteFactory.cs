@@ -235,7 +235,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 column: "SiteId",
                 principalTable: "Sites",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
+                onDelete: ReferentialAction.NoAction);
         }
 
         /// <inheritdoc />

@@ -533,7 +533,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         column: x => x.SiteId,
                         principalTable: "Sites",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_TenantDomains_Tenants_TenantId",
                         column: x => x.TenantId,
