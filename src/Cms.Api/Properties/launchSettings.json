@@ -8,7 +8,8 @@
       "applicationUrl": "https://localhost:7101;http://localhost:5101",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE": "false"
+        "DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE": "false",
+        "Seed__SkipStartup": "true"
       }
     }
   }
