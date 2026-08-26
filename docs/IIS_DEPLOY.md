@@ -87,10 +87,31 @@ next publish and is tracked in Git. Open each folder's `web.config` and place an
 ```
 
 The same block goes in all three, changing only `arguments` — `.\Cms.Web.dll`,
-`.\Cms.Admin.dll`, `.\Cms.Api.dll`. The API needs one more:
+`.\Cms.Admin.dll`, `.\Cms.Api.dll`.
+
+Two settings are not shared. Add them only where the table says:
+
+| Setting | Web | Admin | API |
+| --- | :-: | :-: | :-: |
+| `Seed__SkipStartup=true` | yes | **no** | yes |
+| `Jwt__Key` | — | — | yes |
 
 ```xml
+<environmentVariable name="Seed__SkipStartup" value="true" />
 <environmentVariable name="Jwt__Key" value="AT-LEAST-32-RANDOM-CHARACTERS" />
+```
+
+`Seed__SkipStartup` decides which application creates the schema. All three would otherwise
+run the migrations against the same database at the same moment on the first start, and the
+two that lose the race fail. The console is the one that must do it, because it is also what
+creates the first administrator account and binds `Platform__Domain` — set it on the console
+as well and there is nothing to sign in with.
+
+`Jwt__Key` signs API tokens; it must be at least 32 characters and must not be the one from
+this repository. Generate one:
+
+```powershell
+[Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Max 256 }))
 ```
 
 Anything required but missing stops the application on startup with a message naming it, so a
