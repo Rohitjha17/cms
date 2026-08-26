@@ -18,15 +18,13 @@ namespace Cms.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.11")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:IdentityIncrement", 1)
-                .HasAnnotation("SqlServer:IdentitySeed", 1L)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Cms.Domain.Entities.ActivityLog", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Action")
@@ -81,7 +79,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.ContactSubmission", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CreatedBy")
@@ -138,7 +135,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.ContentEntry", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Body")
@@ -210,7 +206,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.HomePageSection", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("BackgroundImageUrl")
@@ -287,7 +282,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.MediaFile", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ContentType")
@@ -358,7 +352,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.Menu", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CreatedBy")
@@ -403,7 +396,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.MenuItem", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CreatedBy")
@@ -464,7 +456,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.Page", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
@@ -548,7 +539,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.PageTemplate", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CreatedBy")
@@ -617,7 +607,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.SeoSetting", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("AllowIndexing")
@@ -672,7 +661,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.Site", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
@@ -770,7 +758,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Code")
@@ -813,7 +800,6 @@ namespace Cms.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Cms.Domain.Entities.TenantDomain", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CreatedBy")
@@ -968,10 +954,9 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:IdentityIncrement", 1)
-                        .HasAnnotation("SqlServer:IdentitySeed", 1L)
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("FriendlyName")
                         .HasColumnType("nvarchar(max)");
@@ -981,17 +966,16 @@ namespace Cms.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DataProtectionKeys", (string)null);
+                    b.ToTable("DataProtectionKeys");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:IdentityIncrement", 1)
-                        .HasAnnotation("SqlServer:IdentitySeed", 1L)
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -1014,10 +998,9 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:IdentityIncrement", 1)
-                        .HasAnnotation("SqlServer:IdentitySeed", 1L)
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -1174,8 +1157,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 {
                     b.HasOne("Cms.Domain.Entities.Site", "Site")
                         .WithMany("Domains")
-                        .HasForeignKey("SiteId")
-                        .OnDelete(DeleteBehavior.ClientSetNull);
+                        .HasForeignKey("SiteId");
 
                     b.HasOne("Cms.Domain.Entities.Tenant", "Tenant")
                         .WithMany("Domains")

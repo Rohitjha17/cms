@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Cms.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddSeoIndexingFlag : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -125,6 +125,20 @@ namespace Cms.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ContentEntries", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DataProtectionKeys",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FriendlyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Xml = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DataProtectionKeys", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -532,8 +546,7 @@ namespace Cms.Infrastructure.Persistence.Migrations
                         name: "FK_TenantDomains_Sites_SiteId",
                         column: x => x.SiteId,
                         principalTable: "Sites",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_TenantDomains_Tenants_TenantId",
                         column: x => x.TenantId,
@@ -737,6 +750,9 @@ namespace Cms.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "ContentEntries");
+
+            migrationBuilder.DropTable(
+                name: "DataProtectionKeys");
 
             migrationBuilder.DropTable(
                 name: "HomePageSections");
