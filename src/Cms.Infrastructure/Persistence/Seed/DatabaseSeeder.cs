@@ -35,6 +35,9 @@ public static class DatabaseSeeder
         }
         else if (configuration.GetValue("Database:ApplyMigrationsOnStartup", environment.IsDevelopment()))
         {
+            // A database left half-built by an earlier attempt cannot be migrated forward, and
+            // the error SQL Server gives for it explains nothing. Say what to do instead.
+            await MigrationPreflight.EnsureCanMigrateAsync(db);
             await db.Database.MigrateAsync();
         }
 
