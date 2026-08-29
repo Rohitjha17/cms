@@ -48,7 +48,7 @@ public class S3StorageService : IFileStorageService
         }
 
         var storedName = $"{Guid.NewGuid():N}{extension}";
-        var key = $"{tenantId}/{siteId}/{folder}/{storedName}";
+        var key = Key(_options, $"{tenantId}/{siteId}/{folder}/{storedName}");
 
         var request = new PutObjectRequest
         {
@@ -60,12 +60,38 @@ public class S3StorageService : IFileStorageService
         };
 
         await _client.PutObjectAsync(request, cancellationToken);
-        var url = string.IsNullOrWhiteSpace(_options.PublicBaseUrl)
-            ? $"https://{_options.BucketName}.s3.{_options.Region}.amazonaws.com/{key}"
-            : $"{_options.PublicBaseUrl.TrimEnd('/')}/{key}";
+
+        // The address is stored with the content and outlives this upload by years, so it must
+        // stay valid no matter what the bucket's own permissions are set to later. Only a CDN or
+        // a bucket that is deliberately public gets linked directly; otherwise the file is
+        // served through this application, which is the one thing that always has the key.
+        var url = PublicUrl(_options, key);
 
         _logger.LogInformation("Uploaded file to S3 key {Key}", key);
         return new StoredFileResult(url, key, storedName);
+    }
+
+    /// <summary>
+    /// Where the browser should ask for this file. Same shape as local storage when the bucket
+    /// is private, so nothing downstream has to know which provider stored it.
+    /// </summary>
+    /// <summary>Applies the configured prefix, if the bucket is shared with anything else.</summary>
+    public static string Key(AwsOptions options, string path)
+    {
+        var prefix = options.FolderPath?.Trim().Trim('/');
+        return string.IsNullOrEmpty(prefix) ? path : $"{prefix}/{path}";
+    }
+
+    public static string PublicUrl(AwsOptions options, string key)
+    {
+        if (!string.IsNullOrWhiteSpace(options.PublicBaseUrl))
+        {
+            return $"{options.PublicBaseUrl.TrimEnd('/')}/{key}";
+        }
+
+        return options.PublicBucket
+            ? $"https://{options.BucketName}.s3.{options.Region}.amazonaws.com/{key}"
+            : $"{S3MediaProxyMiddleware.PathPrefix}/{key}";
     }
 
     public async Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default)

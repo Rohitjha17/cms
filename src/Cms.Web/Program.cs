@@ -111,6 +111,7 @@ app.UseMiddleware<TenantResolutionMiddleware>();
 
 app.UseStaticFiles();
 app.UseLocalMediaFiles();
+app.UseS3MediaFiles();
 app.UseRouting();
 app.UseRateLimiter();
 

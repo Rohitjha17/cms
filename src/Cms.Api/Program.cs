@@ -169,6 +169,7 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStaticFiles();
 app.UseLocalMediaFiles();
+app.UseS3MediaFiles();
 app.UseCors("Frontend");
 app.UseRateLimiter();
 app.UseMiddleware<TenantResolutionMiddleware>();

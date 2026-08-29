@@ -28,6 +28,27 @@ public static class LocalStorageApplicationBuilderExtensions
         });
     }
 
+    /// <summary>
+    /// Serves S3-backed media through the application, so the bucket can stay private.
+    /// Does nothing when the bucket is public or a CDN is in front of it — those are linked
+    /// directly and never reach this application.
+    /// </summary>
+    public static IApplicationBuilder UseS3MediaFiles(this IApplicationBuilder app)
+    {
+        var services = app.ApplicationServices;
+        var storage = services.GetRequiredService<IOptions<StorageOptions>>().Value;
+        var aws = services.GetRequiredService<IOptions<AwsOptions>>().Value;
+
+        if (!string.Equals(storage.Provider, "S3", StringComparison.OrdinalIgnoreCase)
+            || aws.PublicBucket
+            || !string.IsNullOrWhiteSpace(aws.PublicBaseUrl))
+        {
+            return app;
+        }
+
+        return app.UseMiddleware<S3MediaProxyMiddleware>();
+    }
+
     internal static string ResolveRoot(string contentRootPath, string configuredPath) =>
         Path.GetFullPath(Path.IsPathRooted(configuredPath)
             ? configuredPath

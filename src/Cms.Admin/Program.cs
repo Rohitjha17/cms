@@ -97,6 +97,7 @@ app.UseSecurityHeaders();
 app.UseMiddleware<DemoApiGatewayMiddleware>();
 app.UseStaticFiles();
 app.UseLocalMediaFiles();
+app.UseS3MediaFiles();
 app.UseRouting();
 app.UseRateLimiter();
 app.UseMiddleware<TenantResolutionMiddleware>();
