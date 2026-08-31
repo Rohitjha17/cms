@@ -312,6 +312,7 @@ public sealed class SchoolContentService : ISchoolContentService
             LinkedIn = String(json, "linkedIn"),
 
             NoticeTickerScrolls = Boolean(json, "noticeTickerScrolls"),
+            NoticeTickerSeconds = Number(json, "noticeTickerSeconds") ?? 0,
             LogoHeight = Number(json, "logoHeight") ?? 0,
             ScrollAnimations = Boolean(json, "scrollAnimations", true),
 
@@ -346,6 +347,7 @@ public sealed class SchoolContentService : ISchoolContentService
             ["linkedIn"] = Clean(dto.LinkedIn),
 
             ["noticeTickerScrolls"] = dto.NoticeTickerScrolls,
+            ["noticeTickerSeconds"] = dto.NoticeTickerSeconds,
             ["logoHeight"] = dto.LogoHeight,
             ["scrollAnimations"] = dto.ScrollAnimations,
 

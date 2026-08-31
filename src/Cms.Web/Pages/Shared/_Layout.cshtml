@@ -74,7 +74,7 @@
             // The text is repeated so the loop has no gap at the seam. aria-hidden on the copy
             // keeps a screen reader from announcing the notice twice.
             <div class="notice-bar notice-bar--scrolling">
-                <div class="notice-marquee">
+                <div class="notice-marquee" style="@(settings.NoticeTickerSeconds > 0 ? $"--notice-speed:{Math.Clamp(settings.NoticeTickerSeconds, 5, 120)}s" : null)">
                     <span class="notice-marquee__text">@settings.NoticeTicker</span>
                     <span class="notice-marquee__text" aria-hidden="true">@settings.NoticeTicker</span>
                 </div>

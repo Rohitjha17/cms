@@ -120,6 +120,40 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
         Assert.Contains("aria-hidden=\"true\"", html);
     }
 
+    /// <summary>
+    /// A long notice at the pace that suited a short one runs past before it can be read, so the
+    /// speed has to be the school's to set — and has to survive being set absurdly.
+    /// </summary>
+    [Theory]
+    [InlineData(45, "--notice-speed:45s")]
+    [InlineData(9999, "--notice-speed:120s")]
+    [InlineData(1, "--notice-speed:5s")]
+    public async Task TheChosenScrollSpeed_ReachesTheStrip(int seconds, string expected)
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["noticeTicker"] = "Admissions are open",
+            ["noticeTickerScrolls"] = true,
+            ["noticeTickerSeconds"] = seconds
+        });
+
+        Assert.Contains(expected, await _client.GetStringAsync("/"));
+    }
+
+    [Fact]
+    public async Task NoSpeedChosen_LeavesTheDefaultPaceAlone()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["noticeTicker"] = "Admissions are open",
+            ["noticeTickerScrolls"] = true
+        });
+
+        var html = await _client.GetStringAsync("/");
+        Assert.Contains("notice-marquee", html);
+        Assert.DoesNotContain("--notice-speed", html);
+    }
+
     [Fact]
     public async Task TheChosenLogoHeight_ReachesTheStylesheet()
     {

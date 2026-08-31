@@ -259,6 +259,13 @@ public sealed class SiteSettingsDto
     public bool NoticeTickerScrolls { get; set; }
 
     /// <summary>
+    /// Seconds for the notice to travel across once. A long notice at the speed that suited a
+    /// short one is unreadable, so the school sets it against its own text. Zero keeps the
+    /// default pace.
+    /// </summary>
+    public int NoticeTickerSeconds { get; set; }
+
+    /// <summary>
     /// Height of the header logo in pixels. Schools send crests of wildly different proportions
     /// and one fixed size flatters none of them, so the size is theirs to set. Zero keeps the
     /// design's own default.
