@@ -299,6 +299,8 @@
       ["zoom", "Zoom in"],
       ["slide-left", "Slide from left"],
       ["slide-right", "Slide from right"],
+      ["rise", "Rise up"],
+      ["blur", "Sharpen into focus"],
       ["none", "No animation"]
     ];
 

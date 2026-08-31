@@ -284,3 +284,188 @@
     if (event.key === "Escape" && !popup.hidden) close();
   });
 })();
+
+/* ------------------------------------------------------------- Gallery lightbox */
+
+(function () {
+  "use strict";
+
+  // A photograph in a gallery is a thumbnail, and a thumbnail is not what anyone came to see.
+  // Opening it full size is the whole point of a gallery page, and every visitor already expects
+  // a click to do it.
+  var images = Array.prototype.slice.call(
+    document.querySelectorAll(".gallery-grid figure img, .page-gallery img, img[data-lightbox]")
+  );
+  if (images.length === 0) return;
+
+  var overlay = document.createElement("div");
+  overlay.className = "lightbox";
+  overlay.hidden = true;
+  overlay.innerHTML =
+    '<button class="lightbox__close" type="button" aria-label="Close">&times;</button>' +
+    '<button class="lightbox__nav lightbox__nav--prev" type="button" aria-label="Previous">&#8249;</button>' +
+    '<figure class="lightbox__stage"><img alt="" /><figcaption></figcaption></figure>' +
+    '<button class="lightbox__nav lightbox__nav--next" type="button" aria-label="Next">&#8250;</button>';
+  document.body.appendChild(overlay);
+
+  var stageImage = overlay.querySelector("img");
+  var stageCaption = overlay.querySelector("figcaption");
+  var index = 0;
+  var opener = null;
+
+  function captionFor(img) {
+    var figure = img.closest("figure");
+    var caption = figure && figure.querySelector("figcaption");
+    return (caption && caption.textContent.trim()) || img.getAttribute("alt") || "";
+  }
+
+  function show(next) {
+    index = (next + images.length) % images.length;
+    var img = images[index];
+    stageImage.src = img.currentSrc || img.src;
+    stageImage.alt = img.getAttribute("alt") || "";
+    var caption = captionFor(img);
+    stageCaption.textContent = caption;
+    stageCaption.hidden = caption.length === 0;
+    // One picture is a picture, not a slideshow.
+    overlay.classList.toggle("lightbox--single", images.length < 2);
+  }
+
+  function open(at, from) {
+    opener = from || null;
+    show(at);
+    overlay.hidden = false;
+    document.body.classList.add("popup-open");
+    overlay.querySelector(".lightbox__close").focus({ preventScroll: true });
+  }
+
+  function close() {
+    overlay.hidden = true;
+    document.body.classList.remove("popup-open");
+    // Back where the visitor was, so the keyboard does not jump to the top of the page.
+    if (opener) opener.focus({ preventScroll: true });
+    opener = null;
+  }
+
+  images.forEach(function (img, at) {
+    img.classList.add("is-zoomable");
+    // Keyboard users need a control, not a picture: a bare <img> cannot be tabbed to or pressed.
+    if (!img.closest("a")) {
+      img.setAttribute("tabindex", "0");
+      img.setAttribute("role", "button");
+      if (!img.getAttribute("aria-label")) {
+        img.setAttribute("aria-label", "View " + (img.getAttribute("alt") || "image") + " full size");
+      }
+      img.addEventListener("click", function () { open(at, img); });
+      img.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          open(at, img);
+        }
+      });
+    }
+  });
+
+  overlay.addEventListener("click", function (event) {
+    if (event.target.closest(".lightbox__close")) return close();
+    if (event.target.closest(".lightbox__nav--prev")) return show(index - 1);
+    if (event.target.closest(".lightbox__nav--next")) return show(index + 1);
+    // A click on the backdrop, not on the picture itself.
+    if (!event.target.closest(".lightbox__stage")) close();
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (overlay.hidden) return;
+    if (event.key === "Escape") close();
+    else if (event.key === "ArrowLeft") show(index - 1);
+    else if (event.key === "ArrowRight") show(index + 1);
+  });
+})();
+
+/* ---------------------------------------------------------- Counting statistics */
+
+(function () {
+  "use strict";
+
+  var stats = Array.prototype.slice.call(document.querySelectorAll(".stats-grid .stat strong"));
+  if (stats.length === 0) return;
+  if (document.body.getAttribute("data-scroll-animations") === "off") return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!("IntersectionObserver" in window)) return;
+
+  // "1 500+" is a prefix, a number and a suffix, and only the middle should move. Anything that
+  // is not that shape — a dash, a word — is left exactly as the school typed it.
+  var SHAPE = /^(\D*?)([\d][\d\s,]*)(\D*)$/;
+
+  function countUp(el) {
+    var match = SHAPE.exec(el.textContent.trim());
+    if (!match) return;
+
+    var prefix = match[1];
+    var raw = match[2];
+    var suffix = match[3];
+    var separator = raw.indexOf(",") >= 0 ? "," : (raw.indexOf(" ") >= 0 ? " " : "");
+    var target = parseInt(raw.replace(/[\s,]/g, ""), 10);
+    if (!isFinite(target) || target <= 0) return;
+
+    function render(value) {
+      var text = String(value);
+      if (separator) text = text.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+      el.textContent = prefix + text + suffix;
+    }
+
+    var duration = 1100;
+    var started = null;
+    function frame(now) {
+      if (started === null) started = now;
+      var progress = Math.min((now - started) / duration, 1);
+      // Fast first, settling at the end — a linear count reads like a loading spinner.
+      render(Math.round(target * (1 - Math.pow(1 - progress, 3))));
+      if (progress < 1) window.requestAnimationFrame(frame);
+    }
+
+    render(0);
+    window.requestAnimationFrame(frame);
+  }
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      observer.unobserve(entry.target);
+      countUp(entry.target);
+    });
+  }, { threshold: 0.4 });
+
+  stats.forEach(function (el) { observer.observe(el); });
+})();
+
+/* -------------------------------------------------------------- Reading progress */
+
+(function () {
+  "use strict";
+
+  if (document.body.getAttribute("data-scroll-animations") === "off") return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  var bar = document.createElement("div");
+  bar.className = "scroll-progress";
+  bar.setAttribute("aria-hidden", "true");
+  document.body.appendChild(bar);
+
+  var ticking = false;
+  function update() {
+    var doc = document.documentElement;
+    var scrollable = doc.scrollHeight - doc.clientHeight;
+    // A page that does not scroll has no progress to report.
+    bar.style.transform = "scaleX(" + (scrollable > 0 ? window.scrollY / scrollable : 0) + ")";
+    ticking = false;
+  }
+
+  window.addEventListener("scroll", function () {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(update);
+  }, { passive: true });
+
+  update();
+})();
