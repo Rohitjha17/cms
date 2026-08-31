@@ -290,11 +290,43 @@
     let config = {};
     try { config = JSON.parse(jsonField?.value || "{}"); } catch { config = {}; }
 
+    // Offered on every section, whatever else it can be configured with — a school should not
+    // have to know which sections happen to have a field list to choose how one arrives.
+    const animationChoices = [
+      ["", "Default (fade up)"],
+      ["fade", "Fade only"],
+      ["fade-down", "Fade down"],
+      ["zoom", "Zoom in"],
+      ["slide-left", "Slide from left"],
+      ["slide-right", "Slide from right"],
+      ["none", "No animation"]
+    ];
+
+    function appendAnimationField(host) {
+      const field = document.createElement("label");
+      field.className = "field";
+      const title = document.createElement("span");
+      title.innerHTML = "Entrance animation<small>How this section arrives when scrolled to</small>";
+      const select = document.createElement("select");
+      select.dataset.configKey = "animation";
+      animationChoices.forEach(([value, label]) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        select.append(option);
+      });
+      select.value = config.animation ?? "";
+      field.append(title, select);
+      host.append(field);
+      select.addEventListener("change", syncConfig);
+    }
+
     const schema = sectionSchemas[sectionKey] || [];
     if (builder) {
       const collectionSchema = collectionSchemas[sectionKey];
       if (schema.length === 0 && !collectionSchema) {
         builder.innerHTML = '<div class="field full"><span class="field-help">This section uses an advanced flexible configuration. Edit the JSON below when additional structured content is required.</span></div>';
+        appendAnimationField(builder);
       } else {
         schema.forEach(([key, label, type, help]) => {
           const field = document.createElement("label");
@@ -309,6 +341,8 @@
           builder.append(field);
           input.addEventListener("input", syncConfig);
         });
+
+        appendAnimationField(builder);
 
         if (collectionSchema) {
           const collection = document.createElement("div");
@@ -400,7 +434,7 @@
 
     function syncConfig() {
       $$("[data-config-key]", builder).forEach((input) => {
-        config[input.dataset.configKey] = input.type === "number"
+        config[input.dataset.configKey] = input.tagName !== "SELECT" && input.type === "number"
           ? Number(input.value || 0)
           : input.value;
       });

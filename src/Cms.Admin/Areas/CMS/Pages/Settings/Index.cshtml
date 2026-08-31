@@ -38,6 +38,10 @@
                     <input asp-for="Input.NoticeTicker" placeholder="Admissions for 2026–27 are now open" />
                     <small class="hint">Leave blank to hide the bar.</small>
                 </label>
+                <label class="switch-row full">
+                    <input asp-for="Input.NoticeTickerScrolls" type="checkbox" />
+                    <span><strong>Scroll the text across the bar</strong><small>Moves continuously, and pauses when a visitor hovers over it. Still text is easier to read — use this only when the notice matters more than the rest of the page.</small></span>
+                </label>
             </div>
         </div>
     </section>
@@ -88,6 +92,69 @@
                 <label class="field"><span>YouTube</span><input asp-for="Input.YouTube" placeholder="https://youtube.com/@@…" /></label>
                 <label class="field"><span>X / Twitter</span><input asp-for="Input.Twitter" placeholder="https://x.com/…" /></label>
                 <label class="field"><span>LinkedIn</span><input asp-for="Input.LinkedIn" placeholder="https://linkedin.com/school/…" /></label>
+            </div>
+        </div>
+    </section>
+
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">04</span>
+                <span><strong>Appearance and motion</strong><small>Applies to every design</small></span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <div class="field-grid">
+                <label class="field">
+                    <span>Logo height (pixels)</span>
+                    <input asp-for="Input.LogoHeight" type="number" min="0" max="160" placeholder="46" />
+                    <small class="hint">0 keeps the design’s own size. 46 is the default; 80–110 suits a tall crest.</small>
+                </label>
+                <label class="switch-row full">
+                    <input asp-for="Input.ScrollAnimations" type="checkbox" />
+                    <span><strong>Fade sections in as the visitor scrolls</strong><small>Turn off for a completely still page. Visitors who ask their device for reduced motion never see the effect either way.</small></span>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">05</span>
+                <span><strong>Opening popup</strong><small>A poster, an enquiry form, or both — shown when the website opens</small></span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <div class="field-grid">
+                <label class="switch-row full">
+                    <input asp-for="Input.PopupEnabled" type="checkbox" />
+                    <span><strong>Show the popup</strong><small>Nothing appears until there is a poster or the form is switched on.</small></span>
+                </label>
+
+                <label class="field full">
+                    <span>Poster image</span>
+                    <span class="upload-row">
+                        <input asp-for="Input.PopupImageUrl" id="settings-popup-image" placeholder="/uploads/… or https://…" />
+                        <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#settings-popup-image">Browse media</button>
+                    </span>
+                    <small class="hint">A tall poster works best — roughly 800×1100. Upload it under Media first.</small>
+                </label>
+
+                <label class="field"><span>Heading</span><input asp-for="Input.PopupHeading" placeholder="Admissions open 2027–28" /></label>
+                <label class="field"><span>Poster links to</span><input asp-for="Input.PopupLinkUrl" placeholder="/admissions" /></label>
+
+                <label class="switch-row full">
+                    <input asp-for="Input.PopupShowEnquiryForm" type="checkbox" />
+                    <span><strong>Add an enquiry form beside the poster</strong><small>Enquiries arrive in the Contact inbox, same as the contact page.</small></span>
+                </label>
+
+                <label class="field full"><span>Form heading</span><input asp-for="Input.PopupFormHeading" placeholder="Request a callback" /></label>
+
+                <label class="switch-row full">
+                    <input asp-for="Input.PopupOncePerVisit" type="checkbox" />
+                    <span><strong>Show once per visit</strong><small>Off means it opens on every page, which visitors find tiresome quickly.</small></span>
+                </label>
             </div>
         </div>
     </section>

@@ -64,12 +64,26 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <style>:root{--brand:@primary;--accent:@secondary;}</style>
+    <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")}</style>
 </head>
-<body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant()">
+<body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant()" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
     @if (!string.IsNullOrWhiteSpace(settings.NoticeTicker))
     {
-        <div class="notice-bar"><div class="shell"><span>@settings.NoticeTicker</span></div></div>
+        if (settings.NoticeTickerScrolls)
+        {
+            // The text is repeated so the loop has no gap at the seam. aria-hidden on the copy
+            // keeps a screen reader from announcing the notice twice.
+            <div class="notice-bar notice-bar--scrolling">
+                <div class="notice-marquee">
+                    <span class="notice-marquee__text">@settings.NoticeTicker</span>
+                    <span class="notice-marquee__text" aria-hidden="true">@settings.NoticeTicker</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="notice-bar"><div class="shell"><span>@settings.NoticeTicker</span></div></div>
+        }
     }
     <div class="top-meta">
         <div class="shell">
@@ -149,6 +163,56 @@
             </div>
         </div>
     </footer>
+    @if (settings.HasPopup)
+    {
+        var popupFormHeading = string.IsNullOrWhiteSpace(settings.PopupFormHeading)
+            ? "Request a callback"
+            : settings.PopupFormHeading;
+        <div class="site-popup" data-site-popup
+             data-popup-key="@(settings.PopupOncePerVisit ? "visit" : "always")"
+             hidden>
+            <div class="site-popup__backdrop" data-popup-close></div>
+            <div class="site-popup__panel" role="dialog" aria-modal="true"
+                 aria-label="@(settings.PopupHeading ?? brand.Name)">
+                <button class="site-popup__close" type="button" data-popup-close aria-label="Close">&times;</button>
+                @if (!string.IsNullOrWhiteSpace(settings.PopupImageUrl))
+                {
+                    <div class="site-popup__poster">
+                        @if (!string.IsNullOrWhiteSpace(settings.PopupLinkUrl))
+                        {
+                            <a href="@settings.PopupLinkUrl"><img src="@settings.PopupImageUrl" alt="@(settings.PopupHeading ?? brand.Name)" /></a>
+                        }
+                        else
+                        {
+                            <img src="@settings.PopupImageUrl" alt="@(settings.PopupHeading ?? brand.Name)" />
+                        }
+                    </div>
+                }
+                @if (settings.PopupShowEnquiryForm)
+                {
+                    <div class="site-popup__form">
+                        @if (!string.IsNullOrWhiteSpace(settings.PopupHeading))
+                        {
+                            <h2>@settings.PopupHeading</h2>
+                        }
+                        <h3>@popupFormHeading</h3>
+                        @if (TempData["EnquiryStatus"] is string enquiryStatus && !string.IsNullOrWhiteSpace(enquiryStatus))
+                        {
+                            <p class="site-popup__status">@enquiryStatus</p>
+                        }
+                        <form method="post" action="@(shell.BasePath)/enquiry">
+                            @Html.AntiForgeryToken()
+                            <label><span>Name</span><input name="Input.Name" required autocomplete="name" /></label>
+                            <label><span>Email</span><input name="Input.Email" type="email" required autocomplete="email" /></label>
+                            <label><span>Phone</span><input name="Input.Phone" autocomplete="tel" /></label>
+                            <label><span>Message</span><textarea name="Input.Message" rows="3" required></textarea></label>
+                            <button type="submit">Send enquiry</button>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+    }
     <script src="~/js/site.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

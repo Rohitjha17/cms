@@ -163,8 +163,11 @@ p:last-child { margin-bottom: 0; }
 
 .brand { display: flex; align-items: center; gap: .8rem; min-width: 0; }
 .brand img {
-  width: 46px;
-  height: 46px;
+  /* Schools send crests of wildly different proportions, so the height is theirs to set from
+     the console. The width follows so nothing is squashed. */
+  width: auto;
+  height: var(--logo-size, 46px);
+  max-width: min(220px, 40vw);
   flex: none;
   object-fit: contain;
 }
@@ -935,7 +938,10 @@ img { opacity: 1; }
 }
 .site-header .shell { transition: min-height .25s var(--ease); }
 .site-header.is-scrolled .shell { min-height: 64px; }
-.site-header.is-scrolled .brand img { width: 40px; height: 40px; transition: width .25s var(--ease), height .25s var(--ease); }
+.site-header.is-scrolled .brand img {
+  height: calc(var(--logo-size, 46px) * .82);
+  transition: height .25s var(--ease);
+}
 
 /* Back to top -------------------------------------------------------------- */
 
@@ -1109,4 +1115,146 @@ body.nav-locked { overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   .site-header, .site-header .shell, .brand small { transition: none; }
+}
+
+/* ===========================================================================
+   Scrolling notice strip, opening popup and per-section reveal styles.
+   Everything here is additive: with the settings off, or with JavaScript
+   disabled, the page is exactly what it was before.
+   =========================================================================== */
+
+/* --- Notice strip that moves ---------------------------------------------- */
+
+.notice-bar--scrolling { overflow: hidden; padding-block: .6rem; }
+.notice-marquee {
+  display: flex;
+  width: max-content;
+  gap: 4rem;
+  padding-left: 100%;
+  animation: notice-scroll var(--notice-speed, 26s) linear infinite;
+}
+.notice-marquee__text {
+  display: block;
+  font-weight: 600;
+  letter-spacing: .005em;
+  white-space: nowrap;
+}
+/* Reading stops while the visitor is trying to read it. */
+.notice-bar--scrolling:hover .notice-marquee,
+.notice-bar--scrolling:focus-within .notice-marquee { animation-play-state: paused; }
+
+@keyframes notice-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* --- Opening popup -------------------------------------------------------- */
+
+.site-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: clamp(.75rem, 3vw, 2rem);
+}
+.site-popup[hidden] { display: none; }
+.site-popup__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 17, 31, .72);
+  backdrop-filter: blur(2px);
+}
+.site-popup__panel {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  width: min(960px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 30px 80px rgba(8, 17, 31, .45);
+  animation: popup-in .32s var(--ease, cubic-bezier(.22, .61, .36, 1)) both;
+}
+@keyframes popup-in {
+  from { opacity: 0; transform: translateY(18px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+.site-popup__close {
+  position: absolute;
+  top: .5rem;
+  right: .6rem;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .92);
+  color: #08111f;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(8, 17, 31, .25);
+}
+.site-popup__close:hover { background: #fff; }
+.site-popup__poster { flex: 1 1 320px; min-width: 0; }
+.site-popup__poster img { display: block; width: 100%; height: auto; }
+.site-popup__form {
+  flex: 1 1 300px;
+  min-width: 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+.site-popup__form h2 { margin: 0 0 .25rem; font-size: 1.3rem; }
+.site-popup__form h3 { margin: 0 0 1rem; font-size: 1rem; color: var(--brand); }
+.site-popup__form label { display: block; margin-bottom: .7rem; }
+.site-popup__form label span { display: block; margin-bottom: .25rem; font-size: .82rem; font-weight: 600; }
+.site-popup__form input,
+.site-popup__form textarea {
+  width: 100%;
+  padding: .55rem .7rem;
+  border: 1px solid #d7dde6;
+  border-radius: 8px;
+  font: inherit;
+}
+.site-popup__form button {
+  width: 100%;
+  padding: .7rem 1rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.site-popup__status {
+  margin: 0 0 .9rem;
+  padding: .6rem .75rem;
+  border-radius: 8px;
+  background: #eef7ee;
+  color: #205c2a;
+  font-size: .9rem;
+}
+/* A poster on its own should not be stretched to a form's width. */
+.site-popup__panel:not(:has(.site-popup__form)) { width: min(560px, 100%); }
+body.popup-open { overflow: hidden; }
+
+/* --- Per-section reveal styles -------------------------------------------- */
+
+[data-animate="none"].reveal,
+[data-animate="none"] .reveal { opacity: 1 !important; transform: none !important; }
+
+[data-animate="fade"].reveal { transform: none; }
+[data-animate="zoom"].reveal { transform: scale(.965); }
+[data-animate="slide-left"].reveal { transform: translateX(-28px); }
+[data-animate="slide-right"].reveal { transform: translateX(28px); }
+[data-animate="fade-down"].reveal { transform: translateY(-18px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .notice-marquee { animation: none; padding-left: 0; }
+  .notice-marquee__text[aria-hidden="true"] { display: none; }
+  .notice-bar--scrolling .notice-marquee { justify-content: center; width: 100%; }
+  .site-popup__panel { animation: none; }
 }

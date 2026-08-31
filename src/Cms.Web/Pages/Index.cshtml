@@ -1,7 +1,26 @@
 @page
 @model Cms.Web.Pages.IndexModel
+@using Cms.Web.Helpers
+@using System.Text.Json
 @{
     var brand = Model.Website.Branding;
+
+    // Each section can say how it should arrive on screen. Handing the choices to the script as
+    // one map keeps every design's markup untouched — the alternative is threading an attribute
+    // through six partials, which is six chances to miss one.
+    var animations = Model.Website.HomeSections
+        .Select(section => new
+        {
+            section.SectionKey,
+            Animation = SectionJson.GetString(SectionJson.Parse(section.JsonData), "animation")
+        })
+        .Where(x => !string.IsNullOrWhiteSpace(x.Animation))
+        .ToDictionary(x => x.SectionKey, x => x.Animation!);
+}
+
+@if (animations.Count > 0)
+{
+    <script>window.cmsSectionAnimations = @Html.Raw(JsonSerializer.Serialize(animations));</script>
 }
 
 @if (brand.HomeVariant == HomeVariant.Modern)

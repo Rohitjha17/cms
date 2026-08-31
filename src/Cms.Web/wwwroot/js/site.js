@@ -96,7 +96,19 @@
     ".steps li"
   ].join(",");
 
-  if (!prefersReducedMotion && "IntersectionObserver" in window) {
+  // A school that wants a still page can say so from the console. Reading it here rather than
+  // per element means the whole effect is skipped, not applied and then undone.
+  var animationsOn = document.body.getAttribute("data-scroll-animations") !== "off";
+
+  // Each section can choose how it arrives. The choice is per section and lives with the
+  // section's own content, so it travels with a template rather than being a site-wide switch.
+  var sectionAnimations = window.cmsSectionAnimations || {};
+  Object.keys(sectionAnimations).forEach(function (key) {
+    var host = document.querySelector('[data-section="' + key + '"]');
+    if (host && sectionAnimations[key]) host.setAttribute("data-animate", sectionAnimations[key]);
+  });
+
+  if (animationsOn && !prefersReducedMotion && "IntersectionObserver" in window) {
     // Anything already on screen is left untouched: animating it would mean hiding
     // content the visitor can already see, then fading it back in.
     var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
@@ -216,4 +228,59 @@
 
   window.addEventListener("scroll", update, { passive: true });
   update();
+})();
+
+/* ---------------------------------------------------------------- Opening popup */
+
+(function () {
+  "use strict";
+
+  var popup = document.querySelector("[data-site-popup]");
+  if (!popup) return;
+
+  // Shown once per visit by default. Anything that cannot be remembered — a private window,
+  // storage switched off — must still show the popup rather than throw and leave the page
+  // half-initialised, so every read and write is guarded.
+  var STORAGE_KEY = "cms-popup-dismissed";
+  var oncePerVisit = popup.getAttribute("data-popup-key") === "visit";
+
+  function dismissed() {
+    if (!oncePerVisit) return false;
+    try { return window.sessionStorage.getItem(STORAGE_KEY) === "1"; } catch (e) { return false; }
+  }
+
+  function remember() {
+    if (!oncePerVisit) return;
+    try { window.sessionStorage.setItem(STORAGE_KEY, "1"); } catch (e) { /* not worth failing over */ }
+  }
+
+  function open() {
+    popup.hidden = false;
+    document.body.classList.add("popup-open");
+    var focusable = popup.querySelector("input, button");
+    if (focusable) focusable.focus({ preventScroll: true });
+  }
+
+  function close() {
+    popup.hidden = true;
+    document.body.classList.remove("popup-open");
+    remember();
+  }
+
+  // A form that came back with something to say has to be seen, whether or not the visitor
+  // closed the popup earlier in this visit.
+  var hasStatus = popup.querySelector(".site-popup__status");
+
+  if (hasStatus || !dismissed()) {
+    // A beat after load, so the popup does not fight the page for attention while it paints.
+    window.setTimeout(open, hasStatus ? 0 : 900);
+  }
+
+  popup.addEventListener("click", function (event) {
+    if (event.target.closest("[data-popup-close]")) close();
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && !popup.hidden) close();
+  });
 })();

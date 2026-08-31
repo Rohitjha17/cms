@@ -309,7 +309,19 @@ public sealed class SchoolContentService : ISchoolContentService
             Instagram = String(json, "instagram"),
             YouTube = String(json, "youTube"),
             Twitter = String(json, "twitter"),
-            LinkedIn = String(json, "linkedIn")
+            LinkedIn = String(json, "linkedIn"),
+
+            NoticeTickerScrolls = Boolean(json, "noticeTickerScrolls"),
+            LogoHeight = Number(json, "logoHeight") ?? 0,
+            ScrollAnimations = Boolean(json, "scrollAnimations", true),
+
+            PopupEnabled = Boolean(json, "popupEnabled"),
+            PopupImageUrl = String(json, "popupImageUrl"),
+            PopupHeading = String(json, "popupHeading"),
+            PopupLinkUrl = String(json, "popupLinkUrl"),
+            PopupShowEnquiryForm = Boolean(json, "popupShowEnquiryForm"),
+            PopupFormHeading = String(json, "popupFormHeading"),
+            PopupOncePerVisit = Boolean(json, "popupOncePerVisit", true)
         };
     }
 
@@ -331,7 +343,19 @@ public sealed class SchoolContentService : ISchoolContentService
             ["instagram"] = Clean(dto.Instagram),
             ["youTube"] = Clean(dto.YouTube),
             ["twitter"] = Clean(dto.Twitter),
-            ["linkedIn"] = Clean(dto.LinkedIn)
+            ["linkedIn"] = Clean(dto.LinkedIn),
+
+            ["noticeTickerScrolls"] = dto.NoticeTickerScrolls,
+            ["logoHeight"] = dto.LogoHeight,
+            ["scrollAnimations"] = dto.ScrollAnimations,
+
+            ["popupEnabled"] = dto.PopupEnabled,
+            ["popupImageUrl"] = Clean(dto.PopupImageUrl),
+            ["popupHeading"] = Clean(dto.PopupHeading),
+            ["popupLinkUrl"] = Clean(dto.PopupLinkUrl),
+            ["popupShowEnquiryForm"] = dto.PopupShowEnquiryForm,
+            ["popupFormHeading"] = Clean(dto.PopupFormHeading),
+            ["popupOncePerVisit"] = dto.PopupOncePerVisit
         };
 
         var existing = await FindSettingsEntryAsync(cancellationToken);
@@ -583,6 +607,17 @@ public sealed class SchoolContentService : ISchoolContentService
     private static bool Boolean(JsonElement? root, string property) =>
         root is { } element && element.TryGetProperty(property, out var value)
             && value.ValueKind == JsonValueKind.True;
+
+    /// <summary>
+    /// A flag added after sites already existed has no entry in their settings, and reading that
+    /// silence as "off" would switch off behaviour those sites already have. The caller says what
+    /// absence means.
+    /// </summary>
+    private static bool Boolean(JsonElement? root, string property, bool whenAbsent) =>
+        root is { } element && element.TryGetProperty(property, out var value)
+            && value.ValueKind is JsonValueKind.True or JsonValueKind.False
+                ? value.ValueKind == JsonValueKind.True
+                : whenAbsent;
 
     private static IReadOnlyList<string> StringArray(JsonElement? root, string property)
     {

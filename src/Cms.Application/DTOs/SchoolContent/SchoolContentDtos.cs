@@ -252,4 +252,40 @@ public sealed class SiteSettingsDto
         !string.IsNullOrWhiteSpace(Facebook) || !string.IsNullOrWhiteSpace(Instagram)
         || !string.IsNullOrWhiteSpace(YouTube) || !string.IsNullOrWhiteSpace(Twitter)
         || !string.IsNullOrWhiteSpace(LinkedIn);
+
+    // ------------------------------------------------------------------ Appearance
+
+    /// <summary>Scrolls the notice strip across the page instead of leaving it still.</summary>
+    public bool NoticeTickerScrolls { get; set; }
+
+    /// <summary>
+    /// Height of the header logo in pixels. Schools send crests of wildly different proportions
+    /// and one fixed size flatters none of them, so the size is theirs to set. Zero keeps the
+    /// design's own default.
+    /// </summary>
+    public int LogoHeight { get; set; }
+
+    /// <summary>Whether sections fade in as they are scrolled to. On unless turned off.</summary>
+    public bool ScrollAnimations { get; set; } = true;
+
+    // ------------------------------------------------------------------ Opening popup
+
+    public bool PopupEnabled { get; set; }
+    public string? PopupImageUrl { get; set; }
+    public string? PopupHeading { get; set; }
+
+    /// <summary>Where the poster leads when clicked. Left empty, the poster is not a link.</summary>
+    public string? PopupLinkUrl { get; set; }
+
+    /// <summary>Adds an enquiry form beside the poster. Submissions reach the contact inbox.</summary>
+    public bool PopupShowEnquiryForm { get; set; }
+
+    public string? PopupFormHeading { get; set; }
+
+    /// <summary>Shows the popup once per visit rather than on every page.</summary>
+    public bool PopupOncePerVisit { get; set; } = true;
+
+    /// <summary>Nothing to show is not the same as switched on, and an empty box helps nobody.</summary>
+    public bool HasPopup =>
+        PopupEnabled && (!string.IsNullOrWhiteSpace(PopupImageUrl) || PopupShowEnquiryForm);
 }
