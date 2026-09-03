@@ -1442,3 +1442,31 @@ body.popup-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .site-popup__slide { transition: none; }
 }
+
+/* --- Moving backdrops ------------------------------------------------------
+   Drawn with gradients, so they cost no request and no image. The section's
+   own text always sits above them, and a visitor who asked for less motion —
+   or a school that switched animations off — gets the still version. */
+
+@keyframes backdrop-drift {
+  from { background-position: 0 0; }
+  to { background-position: 260px 260px; }
+}
+@keyframes backdrop-rise {
+  from { background-position: 0 0, 0 0, 0 0; }
+  to { background-position: 0 -540px, 0 -700px, 0 -440px; }
+}
+@keyframes backdrop-sweep {
+  0%, 100% { background-position: 200% 0; }
+  50% { background-position: -100% 0; }
+}
+@keyframes backdrop-twinkle {
+  0%, 100% { opacity: .05; }
+  50% { opacity: .13; }
+}
+
+body[data-scroll-animations="off"] [data-section]::after { animation: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-section]::after { animation: none !important; }
+}

@@ -28,11 +28,32 @@ public sealed class SectionBackdropTests
         => Assert.Equal(string.Empty, SectionBackdrop.SafeUrl(url));
 
     [Fact]
-    public void EveryOfferedPattern_ResolvesToCss()
+    public void EveryOfferedPattern_ResolvesToDrawableCss()
     {
-        foreach (var name in SectionBackdrop.Patterns.Keys)
+        foreach (var (name, style) in SectionBackdrop.Patterns)
         {
-            Assert.NotEqual("none", SectionBackdrop.Pattern(name));
+            Assert.False(string.IsNullOrWhiteSpace(style.Image), $"{name} draws nothing.");
+            Assert.False(string.IsNullOrWhiteSpace(style.Size), $"{name} has no tile size.");
+            // Drawn, never downloaded: a decorative backdrop that costs a request and a
+            // megabyte is a backdrop that makes the page worse.
+            Assert.DoesNotContain("url(", style.Image);
+            Assert.Same(style, SectionBackdrop.Style(name));
+        }
+    }
+
+    [Fact]
+    public void TheMovingOnes_NameAKeyframeAndNothingElse()
+    {
+        var moving = SectionBackdrop.Patterns.Values.Where(x => x.Animation is not null).ToList();
+        Assert.NotEmpty(moving);
+
+        foreach (var style in moving)
+        {
+            // An animation shorthand ends up inside a rule this application writes; a semicolon
+            // or a brace in it would close that rule early.
+            Assert.DoesNotContain(";", style.Animation);
+            Assert.DoesNotContain("}", style.Animation);
+            Assert.StartsWith("backdrop-", style.Animation);
         }
     }
 
@@ -40,6 +61,6 @@ public sealed class SectionBackdropTests
     [InlineData("stripes-that-do-not-exist")]
     [InlineData("red;} body{display:none")]
     [InlineData(null)]
-    public void AnythingElse_IsNoPatternAtAll(string? name)
-        => Assert.Equal("none", SectionBackdrop.Pattern(name));
+    public void AnythingElse_IsNoBackdropAtAll(string? name)
+        => Assert.Null(SectionBackdrop.Style(name));
 }

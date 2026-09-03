@@ -45,20 +45,27 @@
         @foreach (var backdrop in backdrops)
         {
             var photo = SectionBackdrop.SafeUrl(backdrop.Image);
-            var pattern = SectionBackdrop.Pattern(backdrop.Pattern);
+            var style = SectionBackdrop.Style(backdrop.Pattern);
             var selector = $"[data-section=\"{backdrop.SectionKey}\"]";
+            var motion = style?.Animation is { } animation ? $";animation:{animation}" : string.Empty;
 
             if (photo.Length > 0)
             {
                 @Html.Raw($"{selector}::before{{background-image:url(\"{photo}\");opacity:1}}")
                 // A veil under the type, or the words vanish into whatever photograph was picked.
                 var veil = "color-mix(in srgb, var(--surface) 86%, transparent)";
-                var over = pattern == "none" ? string.Empty : "," + pattern;
-                @Html.Raw($"{selector}::after{{background-image:linear-gradient({veil},{veil}){over};background-size:cover,22px 22px;opacity:1}}")
+                if (style is null)
+                {
+                    @Html.Raw($"{selector}::after{{background-image:linear-gradient({veil},{veil});background-size:cover;opacity:1}}")
+                }
+                else
+                {
+                    @Html.Raw($"{selector}::after{{background-image:linear-gradient({veil},{veil}),{style.Image};background-size:cover,{style.Size};opacity:1{motion}}}")
+                }
             }
-            else if (pattern != "none")
+            else if (style is not null)
             {
-                @Html.Raw($"{selector}::after{{background-image:{pattern};opacity:.07}}")
+                @Html.Raw($"{selector}::after{{background-image:{style.Image};background-size:{style.Size};opacity:.07{motion}}}")
             }
         }
     </style>

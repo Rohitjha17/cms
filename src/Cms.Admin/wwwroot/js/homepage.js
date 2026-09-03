@@ -304,6 +304,38 @@
       ["none", "No animation"]
     ];
 
+    const backdropChoices = [
+      ["", "None"],
+      ["dots", "Dots"],
+      ["grid", "Grid"],
+      ["diagonal", "Diagonal lines"],
+      ["rings", "Rings"],
+      ["waves", "Waves"],
+      ["drift", "Drifting dots (moving)"],
+      ["bubbles", "Rising bubbles (moving)"],
+      ["shimmer", "Shimmer sweep (moving)"],
+      ["twinkle", "Twinkling stars (moving)"]
+    ];
+
+    function appendChoiceField(host, key, title, help, choices) {
+      const field = document.createElement("label");
+      field.className = "field";
+      const label = document.createElement("span");
+      label.innerHTML = `${title}<small>${help}</small>`;
+      const select = document.createElement("select");
+      select.dataset.configKey = key;
+      choices.forEach(([value, text]) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = text;
+        select.append(option);
+      });
+      select.value = config[key] ?? "";
+      field.append(label, select);
+      host.append(field);
+      select.addEventListener("change", syncConfig);
+    }
+
     function appendAnimationField(host) {
       const field = document.createElement("label");
       field.className = "field";
@@ -329,6 +361,9 @@
       if (schema.length === 0 && !collectionSchema) {
         builder.innerHTML = '<div class="field full"><span class="field-help">This section uses an advanced flexible configuration. Edit the JSON below when additional structured content is required.</span></div>';
         appendAnimationField(builder);
+        appendChoiceField(builder, "background", "Background pattern",
+          "Drawn on the page — costs nothing to load. Sits behind this section's text.",
+          backdropChoices);
       } else {
         schema.forEach(([key, label, type, help]) => {
           const field = document.createElement("label");
@@ -345,6 +380,9 @@
         });
 
         appendAnimationField(builder);
+        appendChoiceField(builder, "background", "Background pattern",
+          "Drawn on the page — costs nothing to load. Sits behind this section's text.",
+          backdropChoices);
 
         if (collectionSchema) {
           const collection = document.createElement("div");
