@@ -81,7 +81,10 @@
     @{ var typeface = Cms.Web.Helpers.DesignIdentity.Fonts(brand.HomeVariant); }
     <link href="https://fonts.googleapis.com/css2?@(typeface.Query)&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")@(buttonColor is null ? "" : $"--btn-color:{buttonColor};")@(hoverColor is null ? "" : $"--hover-color:{hoverColor};")--font-display:@typeface.Display;--font-body:@typeface.Body;}</style>
+    <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")@(buttonColor is null ? "" : $"--btn-color:{buttonColor};")@(hoverColor is null ? "" : $"--hover-color:{hoverColor};")@* Raw because a font stack contains apostrophes — 'Segoe UI' — and Razor encodes them to
+       &#x27;, which makes the whole declaration invalid and drops every design back to Times.
+       These strings come from DesignIdentity, not from anything a school can type. *@
+--font-display:@Html.Raw(typeface.Display);--font-body:@Html.Raw(typeface.Body);}</style>
 </head>
 <body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant() @skin" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
     @if (!string.IsNullOrWhiteSpace(settings.NoticeTicker))
