@@ -30,11 +30,14 @@
         Cms.Web.Helpers.AppearanceChoice.ButtonStyle(settings.ButtonStyle),
         Cms.Web.Helpers.AppearanceChoice.ButtonShape(settings.ButtonShape),
         Cms.Web.Helpers.AppearanceChoice.ButtonHover(settings.ButtonHover),
-        Cms.Web.Helpers.AppearanceChoice.CardHover(settings.CardHover)
+        Cms.Web.Helpers.AppearanceChoice.CardHover(settings.CardHover),
+        Cms.Web.Helpers.AppearanceChoice.ImageHover(settings.ImageHover),
+        Cms.Web.Helpers.AppearanceChoice.LinkHover(settings.LinkHover)
     }.Where(x => x is not null));
     var noticeColor = Cms.Web.Helpers.AppearanceChoice.Color(settings.NoticeBarColor);
     var noticeStyle = Cms.Web.Helpers.AppearanceChoice.NoticeStyle(settings.NoticeBarStyle);
     var buttonColor = Cms.Web.Helpers.AppearanceChoice.Color(settings.ButtonColor);
+    var hoverColor = Cms.Web.Helpers.AppearanceChoice.Color(settings.HoverColor);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -77,7 +80,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")@(buttonColor is null ? "" : $"--btn-color:{buttonColor};")}</style>
+    <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")@(buttonColor is null ? "" : $"--btn-color:{buttonColor};")@(hoverColor is null ? "" : $"--hover-color:{hoverColor};")}</style>
 </head>
 <body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant() @skin" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
     @if (!string.IsNullOrWhiteSpace(settings.NoticeTicker))

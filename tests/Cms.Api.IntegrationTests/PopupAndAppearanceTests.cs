@@ -353,6 +353,88 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
         Assert.Contains("<svg class=\"icon\"", html);
     }
 
+    /// <summary>
+    /// Setting twenty-three sections one at a time to get a consistent site is not a choice
+    /// anyone would make, so one setting stands in for all of them — and never overrules a
+    /// section that chose for itself.
+    /// </summary>
+    [Fact]
+    public async Task ASiteWideEntrance_AppliesToSectionsThatDidNotChoose()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?> { ["sectionAnimation"] = "zoom" });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("cmsSectionAnimations", html);
+        Assert.Contains("\"zoom\"", html);
+    }
+
+    [Fact]
+    public async Task ASiteWideBackdrop_AppliesToSectionsThatDidNotChoose()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?> { ["sectionPattern"] = "dots" });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("radial-gradient(currentColor 1px, transparent 1px)", html);
+    }
+
+    [Fact]
+    public async Task TheHoverColour_ReachesTheStylesheet()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?> { ["hoverColor"] = "#c9a227" });
+        Assert.Contains("--hover-color:#c9a227", await _client.GetStringAsync("/"));
+    }
+
+    [Fact]
+    public async Task PictureAndLinkHovers_BecomeClassesOnThePage()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["imageHover"] = "zoom",
+            ["linkHover"] = "color"
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("img-hover-zoom", html);
+        Assert.Contains("link-hover-color", html);
+    }
+
+    /// <summary>
+    /// The hero slideshow is on every design, so its timing has to be settable without opening
+    /// the hero section — but a hero that was given its own timing keeps it.
+    /// </summary>
+    [Fact]
+    public async Task ASiteWideHeroInterval_IsUsedWhenTheHeroDidNotSetOne()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?> { ["heroSlideSeconds"] = 9 });
+        await GiveTheHeroPicturesAsync(withOwnInterval: null);
+
+        Assert.Contains("data-autoplay=\"9\"", await _client.GetStringAsync("/"));
+    }
+
+    [Fact]
+    public async Task TheHerosOwnInterval_WinsOverTheSiteWideOne()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?> { ["heroSlideSeconds"] = 9 });
+        await GiveTheHeroPicturesAsync(withOwnInterval: 4);
+
+        Assert.Contains("data-autoplay=\"4\"", await _client.GetStringAsync("/"));
+    }
+
+    [Fact]
+    public async Task HeroControls_CanBeTurnedOff()
+    {
+        await GiveTheHeroPicturesAsync(withOwnInterval: null);
+        await SaveSettingsAsync(new Dictionary<string, object?> { ["heroShowControls"] = false });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("hero-slides__item", html);
+        Assert.DoesNotContain("data-hero-next", html);
+    }
+
     [Fact]
     public async Task AnimationsSwitchedOff_AreSaidSoOnThePage()
     {
@@ -392,6 +474,34 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
             entry.IsActive = true;
         }
 
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>Puts two pictures on the hero, optionally with a timing of its own.</summary>
+    private async Task GiveTheHeroPicturesAsync(int? withOwnInterval)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
+        var hero = await db.HomePageSections.IgnoreQueryFilters()
+            .FirstAsync(x => x.SiteId == site.Id && x.SectionKey == "hero");
+
+        var json = new Dictionary<string, object?>
+        {
+            ["items"] = new[]
+            {
+                new { imageUrl = "/uploads/one.jpg", alt = "One" },
+                new { imageUrl = "/uploads/two.jpg", alt = "Two" }
+            }
+        };
+        if (withOwnInterval is int own)
+        {
+            json["autoplaySeconds"] = own.ToString();
+        }
+
+        hero.JsonData = JsonSerializer.Serialize(json);
+        hero.IsActive = true;
         await db.SaveChangesAsync();
     }
 

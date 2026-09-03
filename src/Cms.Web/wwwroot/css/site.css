@@ -1642,3 +1642,68 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 /* One copy crossing the strip: it begins off the right edge, so there is a gap behind it. */
 .notice-marquee--single { padding-left: 100%; }
 .notice-marquee--single .notice-marquee__set { padding-right: 0; }
+
+/* ===========================================================================
+   Hover colour, and the treatments for pictures and links.
+   Everything below reads --hover-color, which falls back to the accent when
+   the school has not chosen one.
+   =========================================================================== */
+
+.btn-hover-glow .btn:hover {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hover-color, var(--accent)) 45%, transparent),
+              0 10px 26px color-mix(in srgb, var(--hover-color, var(--accent)) 35%, transparent);
+}
+.card-hover-glow :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--hover-color, var(--accent)) 55%, transparent),
+              0 14px 34px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+/* --- Pictures ------------------------------------------------------------- */
+
+/* The wrapper has to clip, or a zooming picture spills over the card's corner. */
+.img-hover-zoom :is(.card-grid > article, .news-item, .people-card, .event-card, .gallery-grid figure) {
+  overflow: hidden;
+}
+.img-hover-zoom :is(.card-grid > article, .news-item, .people-card, .event-card, .gallery-grid figure) img {
+  transition: transform .45s var(--ease);
+}
+.img-hover-zoom :is(.card-grid > article, .news-item, .people-card, .event-card, .gallery-grid figure):hover img {
+  transform: scale(1.06);
+}
+
+.img-hover-lift :is(.card-grid > article, .news-item, .people-card, .event-card, .gallery-grid figure) img {
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+}
+.img-hover-lift :is(.card-grid > article, .news-item, .people-card, .event-card, .gallery-grid figure):hover img {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 28px rgba(8, 17, 31, .22);
+}
+
+.img-hover-tint :is(.card-grid > article, .news-item, .people-card, .event-card, .gallery-grid figure) img {
+  transition: filter .35s var(--ease);
+}
+.img-hover-tint :is(.card-grid > article, .news-item, .people-card, .event-card, .gallery-grid figure):hover img {
+  filter: saturate(1.25) contrast(1.05);
+}
+
+/* --- Links in body copy --------------------------------------------------- */
+
+/* Never the navigation or a button: those already say what they are, and a second
+   treatment on them reads as a mistake. */
+.link-hover-underline :is(.section-body, .page-body, .prose) a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link-hover-color :is(.section-body, .page-body, .prose) a {
+  transition: color .2s var(--ease);
+}
+.link-hover-color :is(.section-body, .page-body, .prose) a:hover {
+  color: var(--hover-color, var(--accent));
+}
+
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .img-hover-zoom :is(.card-grid > article, .news-item, .people-card, .event-card, .gallery-grid figure):hover img,
+  .img-hover-lift :is(.card-grid > article, .news-item, .people-card, .event-card, .gallery-grid figure):hover img {
+    transform: none;
+  }
+}

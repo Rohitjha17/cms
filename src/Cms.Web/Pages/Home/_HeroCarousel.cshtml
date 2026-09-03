@@ -1,6 +1,11 @@
 @model PublicWebsiteDto
 @using Cms.Web.Helpers
+@inject Cms.Application.Interfaces.ISchoolContentService SchoolContent
 @{
+    Cms.Application.DTOs.SchoolContent.SiteSettingsDto heroSettings;
+    try { heroSettings = await SchoolContent.GetSettingsAsync(Context.RequestAborted); }
+    catch { heroSettings = new Cms.Application.DTOs.SchoolContent.SiteSettingsDto(); }
+
     // The hero's own images, managed from the console. With none, nothing is rendered and the
     // hero keeps the single banner picture it always had.
     var hero = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "hero");
@@ -14,8 +19,12 @@
         .Where(x => !string.IsNullOrWhiteSpace(x.Url))
         .ToList();
 
+    // The hero's own setting wins where one was entered; the site-wide one is for a school
+    // that would rather set it once for whichever template it is using.
     var seconds = SectionJson.GetString(heroJson, "autoplaySeconds");
-    var autoplay = double.TryParse(seconds, out var parsed) && parsed > 0 ? parsed : 6;
+    var autoplay = double.TryParse(seconds, out var parsed) && parsed > 0
+        ? parsed
+        : heroSettings.HeroSlideSeconds > 0 ? Math.Clamp(heroSettings.HeroSlideSeconds, 1, 60) : 6;
 }
 
 @if (slides.Count > 0)
@@ -29,7 +38,7 @@
                  style="background-image:url('@slides[index].Url')"></div>
         }
 
-        @if (slides.Count > 1)
+        @if (slides.Count > 1 && heroSettings.HeroShowControls)
         {
             <button class="hero-slides__nav hero-slides__nav--prev" type="button" data-hero-prev aria-label="Previous image">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>

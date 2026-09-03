@@ -14,12 +14,16 @@ public static class AppearanceChoice
     private static readonly string[] ButtonHovers = ["lift", "fill", "glow", "slide"];
     private static readonly string[] CardHovers = ["lift", "zoom", "glow", "tilt"];
     private static readonly string[] NoticeStyles = ["solid", "gradient", "dark", "outline"];
+    private static readonly string[] ImageHovers = ["zoom", "lift", "tint"];
+    private static readonly string[] LinkHovers = ["underline", "color"];
 
     public static string? ButtonStyle(string? value) => Pick(value, ButtonStyles, "btn-style-");
     public static string? ButtonShape(string? value) => Pick(value, ButtonShapes, "btn-shape-");
     public static string? ButtonHover(string? value) => Pick(value, ButtonHovers, "btn-hover-");
     public static string? CardHover(string? value) => Pick(value, CardHovers, "card-hover-");
     public static string? NoticeStyle(string? value) => Pick(value, NoticeStyles, "notice-bar--");
+    public static string? ImageHover(string? value) => Pick(value, ImageHovers, "img-hover-");
+    public static string? LinkHover(string? value) => Pick(value, LinkHovers, "link-hover-");
 
     /// <summary>A section's own hover, applied to the cards inside it.</summary>
     public static string? SectionHover(string? value) => Pick(value, CardHovers, "card-hover-");

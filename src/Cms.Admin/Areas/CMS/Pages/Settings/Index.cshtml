@@ -202,6 +202,66 @@
                     </select>
                     <small class="hint">Applies to news, events, staff and gallery cards.</small>
                 </label>
+
+                <label class="field">
+                    <span>Picture hover effect</span>
+                    <select asp-for="Input.ImageHover">
+                        <option value="">The design's own</option>
+                        <option value="zoom">Zoom</option>
+                        <option value="lift">Lift</option>
+                        <option value="tint">Richer colour</option>
+                    </select>
+                    <small class="hint">Applies to pictures inside cards and the gallery.</small>
+                </label>
+
+                <label class="field">
+                    <span>Link hover effect</span>
+                    <select asp-for="Input.LinkHover">
+                        <option value="">The design's own</option>
+                        <option value="underline">Underline</option>
+                        <option value="color">Change colour</option>
+                    </select>
+                    <small class="hint">Links inside body copy only — never the menu or a button.</small>
+                </label>
+
+                <label class="field">
+                    <span>Hover colour</span>
+                    <input asp-for="Input.HoverColor" placeholder="#c9a227" />
+                    <small class="hint">Used by the glow, fill and link-colour effects. Leave blank to use the accent colour.</small>
+                </label>
+
+                <label class="field">
+                    <span>Default section entrance</span>
+                    <select asp-for="Input.SectionAnimation">
+                        <option value="">The design's own</option>
+                        <option value="fade">Fade only</option>
+                        <option value="fade-down">Fade down</option>
+                        <option value="zoom">Zoom in</option>
+                        <option value="slide-left">Slide from left</option>
+                        <option value="slide-right">Slide from right</option>
+                        <option value="rise">Rise up</option>
+                        <option value="blur">Sharpen into focus</option>
+                        <option value="none">No animation</option>
+                    </select>
+                    <small class="hint">Used by every section that has not chosen its own, so a consistent site takes one setting rather than twenty-three.</small>
+                </label>
+
+                <label class="field">
+                    <span>Default section background</span>
+                    <select asp-for="Input.SectionPattern">
+                        <option value="">None</option>
+                        <option value="dots">Dots</option>
+                        <option value="grid">Grid</option>
+                        <option value="diagonal">Diagonal lines</option>
+                        <option value="rings">Rings</option>
+                        <option value="waves">Waves</option>
+                        <option value="drift">Drifting dots (moving)</option>
+                        <option value="bubbles">Rising bubbles (moving)</option>
+                        <option value="shimmer">Shimmer sweep (moving)</option>
+                        <option value="twinkle">Twinkling stars (moving)</option>
+                    </select>
+                    <small class="hint">A section with its own background is never overruled by this.</small>
+                </label>
             </div>
         </div>
     </section>
@@ -254,6 +314,28 @@
                 <label class="switch-row full">
                     <input asp-for="Input.PopupOncePerVisit" type="checkbox" />
                     <span><strong>Show once per visit</strong><small>Off means it opens on every page, which visitors find tiresome quickly.</small></span>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <section class="form-card">
+        <div class="form-card__header">
+            <div>
+                <span class="step-number">06</span>
+                <span><strong>Hero slideshow</strong><small>The pictures at the top of the home page, on every design</small></span>
+            </div>
+        </div>
+        <div class="form-card__body">
+            <div class="field-grid">
+                <label class="field">
+                    <span>Seconds on each picture</span>
+                    <input asp-for="Input.HeroSlideSeconds" type="number" min="0" max="60" placeholder="6" />
+                    <small class="hint">0 uses six seconds. The hero's own setting, if one was entered under Home page, wins over this.</small>
+                </label>
+                <label class="switch-row full">
+                    <input asp-for="Input.HeroShowControls" type="checkbox" />
+                    <span><strong>Show arrows and dots</strong><small>Turn off for a slideshow that runs on its own. Add the pictures under Home page → Hero Banner.</small></span>
                 </label>
             </div>
         </div>

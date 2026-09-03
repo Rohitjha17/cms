@@ -325,6 +325,22 @@
       ["twinkle", "Twinkling stars (moving)"]
     ];
 
+    function appendColorField(host, key, title, help) {
+      const field = document.createElement("label");
+      field.className = "field";
+      const label = document.createElement("span");
+      label.innerHTML = `${title}<small>${help}</small>`;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.dataset.configKey = key;
+      input.dataset.colorField = "true";
+      input.placeholder = "#f5f7fb";
+      input.value = config[key] ?? "";
+      field.append(label, input);
+      host.append(field);
+      input.addEventListener("input", syncConfig);
+    }
+
     function appendChoiceField(host, key, title, help, choices) {
       const field = document.createElement("label");
       field.className = "field";
@@ -375,6 +391,8 @@
         appendChoiceField(builder, "hover", "Card hover in this section",
           "Applies to the cards in this section, and wins over the site-wide choice.",
           hoverChoices);
+        appendColorField(builder, "backgroundColor", "Background colour",
+          "Behind this section only. Leave blank for the design's own.");
       } else {
         schema.forEach(([key, label, type, help]) => {
           const field = document.createElement("label");
@@ -397,6 +415,8 @@
         appendChoiceField(builder, "hover", "Card hover in this section",
           "Applies to the cards in this section, and wins over the site-wide choice.",
           hoverChoices);
+        appendColorField(builder, "backgroundColor", "Background colour",
+          "Behind this section only. Leave blank for the design's own.");
 
         if (collectionSchema) {
           const collection = document.createElement("div");

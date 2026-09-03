@@ -29,10 +29,19 @@ public sealed class IndexModel : PageModel
 
     public IReadOnlyList<SchoolEventDto> Events { get; private set; } = [];
 
+    /// <summary>
+    /// The school's appearance choices. Read here rather than in the view so a settings record
+    /// that cannot be loaded leaves the page with defaults instead of an exception.
+    /// </summary>
+    public SiteSettingsDto Settings { get; private set; } = new();
+
     public async Task OnGetAsync(CancellationToken cancellationToken)
     {
         Website = await _websiteService.GetPublicWebsiteAsync(cancellationToken);
         News = await _schoolContent.GetNewsAsync(includeUnpublished: false, cancellationToken);
+
+        try { Settings = await _schoolContent.GetSettingsAsync(cancellationToken); }
+        catch { Settings = new SiteSettingsDto(); }
 
         var events = await _schoolContent.GetEventsAsync(includeUnpublished: false, cancellationToken);
         var now = DateTime.UtcNow;

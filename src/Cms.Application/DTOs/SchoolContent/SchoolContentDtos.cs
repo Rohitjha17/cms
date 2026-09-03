@@ -315,6 +315,40 @@ public sealed class SiteSettingsDto
     /// <summary>lift · zoom · glow · tilt. How cards and tiles answer the pointer.</summary>
     public string? CardHover { get; set; }
 
+    /// <summary>none · zoom · lift · tint. How pictures answer the pointer.</summary>
+    public string? ImageHover { get; set; }
+
+    /// <summary>none · underline · color. How links in body copy answer the pointer.</summary>
+    public string? LinkHover { get; set; }
+
+    /// <summary>
+    /// The colour a glow, a fill or a tint uses. Every hover took the accent, so a school could
+    /// choose the effect but not what colour it happened in. Empty keeps the accent.
+    /// </summary>
+    public string? HoverColor { get; set; }
+
+    // ------------------------------------------------------- Defaults for every section
+
+    /// <summary>
+    /// The entrance every section uses unless it chose its own. Setting twenty-three sections
+    /// one at a time to get a consistent site is not a choice anyone would make.
+    /// </summary>
+    public string? SectionAnimation { get; set; }
+
+    /// <summary>The backdrop every section uses unless it chose its own.</summary>
+    public string? SectionPattern { get; set; }
+
+    // ------------------------------------------------------------------- Hero slideshow
+
+    /// <summary>
+    /// Seconds between hero images. The hero's own setting wins where one was entered; this is
+    /// for a school that would rather set it once for whichever template it is using.
+    /// </summary>
+    public int HeroSlideSeconds { get; set; }
+
+    /// <summary>Arrows and dots on the hero slideshow. On unless turned off.</summary>
+    public bool HeroShowControls { get; set; } = true;
+
     // ------------------------------------------------------------------ Opening popup
 
     public bool PopupEnabled { get; set; }

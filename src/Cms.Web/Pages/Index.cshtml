@@ -14,6 +14,11 @@
             section.SectionKey,
             Animation = SectionJson.GetString(SectionJson.Parse(section.JsonData), "animation")
         })
+        .Select(x => new
+        {
+            x.SectionKey,
+            Animation = string.IsNullOrWhiteSpace(x.Animation) ? Model.Settings.SectionAnimation : x.Animation
+        })
         .Where(x => !string.IsNullOrWhiteSpace(x.Animation))
         .ToDictionary(x => x.SectionKey, x => x.Animation!);
 
@@ -45,14 +50,23 @@
     // so it is applied by selector rather than by editing six partials. Emitting the rules here
     // rather than setting them from script also means the background is painted on first paint —
     // a photograph that fades in after the text has settled looks like a mistake.
+    // A site-wide default keeps a school from having to set twenty-three sections one at a
+    // time; a section that chose for itself is never overruled by it.
+    var defaultPattern = Model.Settings.SectionPattern;
+
     var backdrops = Model.Website.HomeSections
         .Select(section => new
         {
             section.SectionKey,
             Image = section.BackgroundImageUrl,
             Pattern = SectionJson.GetString(SectionJson.Parse(section.JsonData), "background")
+                ?? defaultPattern,
+            Color = AppearanceChoice.Color(
+                SectionJson.GetString(SectionJson.Parse(section.JsonData), "backgroundColor"))
         })
-        .Where(x => !string.IsNullOrWhiteSpace(x.Image) || !string.IsNullOrWhiteSpace(x.Pattern))
+        .Where(x => !string.IsNullOrWhiteSpace(x.Image)
+            || !string.IsNullOrWhiteSpace(x.Pattern)
+            || x.Color is not null)
         .ToList();
 }
 
@@ -62,6 +76,10 @@
         @foreach (var backdrop in backdrops)
         {
             var photo = SectionBackdrop.SafeUrl(backdrop.Image);
+            if (backdrop.Color is not null)
+            {
+                @Html.Raw($"[data-section=\"{backdrop.SectionKey}\"]{{background-color:{backdrop.Color}}}")
+            }
             var style = SectionBackdrop.Style(backdrop.Pattern);
             var selector = $"[data-section=\"{backdrop.SectionKey}\"]";
             var motion = style?.Animation is { } animation ? $";animation:{animation}" : string.Empty;
