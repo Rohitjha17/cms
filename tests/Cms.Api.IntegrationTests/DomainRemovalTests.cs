@@ -33,9 +33,12 @@ public sealed class DomainRemovalTests : IClassFixture<AdminFactory>
         var refusal = await Assert.ThrowsAsync<ValidationAppException>(
             () => websites.DeleteDomainAsync(domainId, default));
 
-        // The refusal has to say the way out, or it is a locked door with no key.
+        // The refusal has to say the way out, or it is a locked door with no key — and it has
+        // to name the website, since an operator with a dozen of them cannot guess which.
+        Assert.Contains("Test Academy", refusal.Message);
         Assert.Contains("Add another domain", refusal.Message);
-        Assert.Contains("switch the website off", refusal.Message);
+        Assert.Contains("switch it off under Websites", refusal.Message);
+        Assert.Contains("remove this one", refusal.Message);
     }
 
     [Fact]
@@ -73,6 +76,49 @@ public sealed class DomainRemovalTests : IClassFixture<AdminFactory>
         await websites.DeleteDomainAsync(domainId, default);
 
         Assert.DoesNotContain(await websites.GetDomainsAsync(default), x => x.Id == domainId);
+    }
+
+    /// <summary>
+    /// Pointing a website's only address at a different website strands the first one just as
+    /// surely as deleting it, so it is refused the same way — but the way out is different, and
+    /// telling someone editing a domain to "remove it" sends them hunting for the wrong button.
+    /// </summary>
+    [Fact]
+    public async Task MovingTheLastLiveAddressToAnotherWebsite_SaysHowToMoveIt()
+    {
+        var (websites, domainId, siteId) = await ArrangeAsync(hostLive: true, siteLive: true);
+        var elsewhere = await websites.GetWebsitesAsync(default);
+        var target = elsewhere.First(x => x.Id != siteId).Id;
+
+        var refusal = await Assert.ThrowsAsync<ValidationAppException>(
+            () => websites.SaveDomainAsync(domainId, new SaveSiteDomainDto
+            {
+                DomainName = $"only-{Guid.NewGuid():N}.test",
+                SiteId = target,
+                IsActive = true
+            }, default));
+
+        var message = string.Join(" ", refusal.Errors);
+        Assert.Contains("Test Academy", message);
+        Assert.Contains("move this one", message);
+        Assert.DoesNotContain("remove this one", message);
+    }
+
+    /// <summary>A website nobody can reach has nothing left to strand.</summary>
+    [Fact]
+    public async Task WithTheWebsiteSwitchedOff_ItsAddressCanBeMovedElsewhere()
+    {
+        var (websites, domainId, siteId) = await ArrangeAsync(hostLive: true, siteLive: false);
+        var target = (await websites.GetWebsitesAsync(default)).First(x => x.Id != siteId).Id;
+
+        var moved = await websites.SaveDomainAsync(domainId, new SaveSiteDomainDto
+        {
+            DomainName = $"moved-{Guid.NewGuid():N}.test",
+            SiteId = target,
+            IsActive = true
+        }, default);
+
+        Assert.Equal(target, moved.SiteId);
     }
 
     /// <summary>

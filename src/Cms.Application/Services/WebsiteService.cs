@@ -804,7 +804,8 @@ public sealed class WebsiteService : IWebsiteService
             && (!dto.IsActive || dto.SiteId != domain.SiteId))
         {
             await GuardLastLiveHostAsync(
-                tenantId, boundSite, domain.Id, domain.IsActive, cancellationToken);
+                tenantId, boundSite, domain.Id, domain.IsActive,
+                movingAway: dto.SiteId != domain.SiteId, cancellationToken);
         }
 
         domain.DomainName = dto.DomainName;
@@ -836,7 +837,8 @@ public sealed class WebsiteService : IWebsiteService
         if (domain.SiteId is Guid boundSite)
         {
             await GuardLastLiveHostAsync(
-                tenantId, boundSite, domain.Id, domain.IsActive, cancellationToken);
+                tenantId, boundSite, domain.Id, domain.IsActive,
+                movingAway: false, cancellationToken);
         }
 
         _repository.RemoveDomain(domain);
@@ -861,6 +863,7 @@ public sealed class WebsiteService : IWebsiteService
         Guid siteId,
         Guid excludingDomainId,
         bool hostIsLive,
+        bool movingAway,
         CancellationToken cancellationToken)
     {
         if (!hostIsLive)
@@ -879,10 +882,17 @@ public sealed class WebsiteService : IWebsiteService
 
         if (remaining == 0)
         {
+            // The way out depends on what is being attempted. Telling someone editing a domain
+            // to "remove it" sends them looking for a button that is not the one they want.
+            var remedy = movingAway
+                ? $"Point another domain at '{site.Name}' first, or switch '{site.Name}' off under "
+                  + "Websites and then move this one."
+                : $"Add another domain for '{site.Name}' first, or switch it off under Websites "
+                  + "and then remove this one.";
+
             throw new ValidationAppException(
-                $"'{site.Name}' has no other live address, so this would take the website off the "
-                + "internet. Add another domain first, or switch the website off under Websites "
-                + "and then remove it.");
+                $"'{site.Name}' has no other live address, so this would take that website off "
+                + "the internet. " + remedy);
         }
     }
 
