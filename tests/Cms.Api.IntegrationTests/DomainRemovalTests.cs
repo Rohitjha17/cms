@@ -1,4 +1,4 @@
-extern alias webapp;
+extern alias adminapp;
 
 using Cms.Application.DTOs.Websites;
 using Cms.Application.Interfaces;
@@ -11,13 +11,15 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Cms.Api.IntegrationTests;
 
 /// <summary>
-/// A website's last live address must not be removable, or a school disappears off the internet
-/// because someone tidied a list — which is exactly how the console locked its own operator out.
+/// Housekeeping on domains has to be possible.
 ///
-/// But the guard was checking only "is this the last one", not "is there anything to lose". A
-/// host already switched off is serving nobody, and a website switched off has nobody to strand,
-/// so both were refused for a danger that did not exist. That left a school's only domain
-/// impossible to remove, impossible to disable, and impossible to get rid of at all.
+/// Removing a school's last address, or pointing it at a different website, used to be refused
+/// outright. But switching the website off, doing it, and switching the website back on reaches
+/// exactly the same end state — so the refusal never prevented anything, it only made ordinary
+/// work three times longer, and read as though the screen were broken.
+///
+/// The console's own address is the exception, because losing it locks the operator out of the
+/// screen they would use to put it back.
 /// </summary>
 public sealed class DomainRemovalTests : IClassFixture<AdminFactory>
 {
@@ -26,89 +28,19 @@ public sealed class DomainRemovalTests : IClassFixture<AdminFactory>
     public DomainRemovalTests(AdminFactory factory) => _factory = factory;
 
     [Fact]
-    public async Task TheLastLiveAddressOfALiveWebsite_CannotBeRemoved()
+    public async Task AWebsitesLastAddress_CanBeRemoved()
     {
         var (websites, domainId, _) = await ArrangeAsync(hostLive: true, siteLive: true);
 
-        var refusal = await Assert.ThrowsAsync<ValidationAppException>(
-            () => websites.DeleteDomainAsync(domainId, default));
-
-        // The refusal has to say the way out, or it is a locked door with no key — and it has
-        // to name the website, since an operator with a dozen of them cannot guess which.
-        Assert.Contains("Test Academy", refusal.Message);
-        Assert.Contains("Add another domain", refusal.Message);
-        Assert.Contains("switch it off under Websites", refusal.Message);
-        Assert.Contains("remove this one", refusal.Message);
-    }
-
-    [Fact]
-    public async Task AHostThatIsAlreadySwitchedOff_CanBeRemoved()
-    {
-        var (websites, domainId, _) = await ArrangeAsync(hostLive: false, siteLive: true);
-
         await websites.DeleteDomainAsync(domainId, default);
 
         Assert.DoesNotContain(await websites.GetDomainsAsync(default), x => x.Id == domainId);
     }
 
     [Fact]
-    public async Task WhenTheWebsiteItselfIsSwitchedOff_ItsAddressCanBeRemoved()
-    {
-        var (websites, domainId, _) = await ArrangeAsync(hostLive: true, siteLive: false);
-
-        await websites.DeleteDomainAsync(domainId, default);
-
-        Assert.DoesNotContain(await websites.GetDomainsAsync(default), x => x.Id == domainId);
-    }
-
-    /// <summary>With a second live address there is nothing to strand, so the first may go.</summary>
-    [Fact]
-    public async Task WithAnotherLiveAddress_TheFirstCanBeRemoved()
+    public async Task AWebsitesLastAddress_CanBeMovedToAnotherWebsite()
     {
         var (websites, domainId, siteId) = await ArrangeAsync(hostLive: true, siteLive: true);
-        await websites.SaveDomainAsync(null, new SaveSiteDomainDto
-        {
-            DomainName = $"spare-{Guid.NewGuid():N}.test",
-            SiteId = siteId,
-            IsActive = true
-        }, default);
-
-        await websites.DeleteDomainAsync(domainId, default);
-
-        Assert.DoesNotContain(await websites.GetDomainsAsync(default), x => x.Id == domainId);
-    }
-
-    /// <summary>
-    /// Pointing a website's only address at a different website strands the first one just as
-    /// surely as deleting it, so it is refused the same way — but the way out is different, and
-    /// telling someone editing a domain to "remove it" sends them hunting for the wrong button.
-    /// </summary>
-    [Fact]
-    public async Task MovingTheLastLiveAddressToAnotherWebsite_SaysHowToMoveIt()
-    {
-        var (websites, domainId, siteId) = await ArrangeAsync(hostLive: true, siteLive: true);
-        var elsewhere = await websites.GetWebsitesAsync(default);
-        var target = elsewhere.First(x => x.Id != siteId).Id;
-
-        var refusal = await Assert.ThrowsAsync<ValidationAppException>(
-            () => websites.SaveDomainAsync(domainId, new SaveSiteDomainDto
-            {
-                DomainName = $"only-{Guid.NewGuid():N}.test",
-                SiteId = target,
-                IsActive = true
-            }, default));
-
-        var message = string.Join(" ", refusal.Errors);
-        Assert.Contains("Test Academy", message);
-        Assert.Contains("move this one", message);
-        Assert.DoesNotContain("remove this one", message);
-    }
-
-    /// <summary>A website nobody can reach has nothing left to strand.</summary>
-    [Fact]
-    public async Task WithTheWebsiteSwitchedOff_ItsAddressCanBeMovedElsewhere()
-    {
-        var (websites, domainId, siteId) = await ArrangeAsync(hostLive: true, siteLive: false);
         var target = (await websites.GetWebsitesAsync(default)).First(x => x.Id != siteId).Id;
 
         var moved = await websites.SaveDomainAsync(domainId, new SaveSiteDomainDto
@@ -122,11 +54,65 @@ public sealed class DomainRemovalTests : IClassFixture<AdminFactory>
     }
 
     /// <summary>
+    /// The operator is told rather than stopped: the Domains page names every website left
+    /// without a live address, which is how they find out they have work to finish.
+    /// </summary>
+    [Fact]
+    public async Task AWebsiteLeftWithNoAddress_IsReportedAsUnreachable()
+    {
+        var (websites, domainId, siteId) = await ArrangeAsync(hostLive: true, siteLive: true);
+
+        await websites.DeleteDomainAsync(domainId, default);
+
+        var stranded = await websites.GetWebsitesAsync(default);
+        var domains = await websites.GetDomainsAsync(default);
+        var site = stranded.First(x => x.Id == siteId);
+
+        Assert.True(site.IsActive);
+        Assert.DoesNotContain(domains, d => d.SiteId == siteId && d.IsActive);
+    }
+
+    /// <summary>
+    /// Losing this one locks everyone out of the console with no way back except editing the
+    /// database by hand — which is exactly what happened once.
+    /// </summary>
+    [Fact]
+    public async Task TheConsolesOwnLastAddress_IsRefused()
+    {
+        var (websites, domainId, _) = await ArrangeAsync(
+            hostLive: true, siteLive: true, siteKey: "platform");
+
+        var refusal = await Assert.ThrowsAsync<ValidationAppException>(
+            () => websites.DeleteDomainAsync(domainId, default));
+
+        Assert.Contains("sign in on", refusal.Message);
+        Assert.Contains("Add another address", refusal.Message);
+    }
+
+    [Fact]
+    public async Task TheConsolesAddress_CanGoOnceItHasASpare()
+    {
+        var (websites, domainId, siteId) = await ArrangeAsync(
+            hostLive: true, siteLive: true, siteKey: "platform");
+
+        await websites.SaveDomainAsync(null, new SaveSiteDomainDto
+        {
+            DomainName = $"spare-{Guid.NewGuid():N}.test",
+            SiteId = siteId,
+            IsActive = true
+        }, default);
+
+        await websites.DeleteDomainAsync(domainId, default);
+
+        Assert.DoesNotContain(await websites.GetDomainsAsync(default), x => x.Id == domainId);
+    }
+
+    /// <summary>
     /// Builds one website with exactly one address, in the state under test, and hands back a
     /// service scoped to that tenant.
     /// </summary>
     private async Task<(IWebsiteService Websites, Guid DomainId, Guid SiteId)> ArrangeAsync(
-        bool hostLive, bool siteLive)
+        bool hostLive, bool siteLive, string? siteKey = null)
     {
         var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -135,8 +121,8 @@ public sealed class DomainRemovalTests : IClassFixture<AdminFactory>
         var site = new Site
         {
             TenantId = tenantId,
-            Name = "Test Academy",
-            SiteKey = $"t{Guid.NewGuid():N}"[..12],
+            Name = siteKey == "platform" ? "Platform Console" : "Test Academy",
+            SiteKey = siteKey ?? $"t{Guid.NewGuid():N}"[..12],
             IsActive = siteLive
         };
         var domain = new TenantDomain

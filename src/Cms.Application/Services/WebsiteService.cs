@@ -803,9 +803,8 @@ public sealed class WebsiteService : IWebsiteService
         if (id.HasValue && domain.SiteId is Guid boundSite
             && (!dto.IsActive || dto.SiteId != domain.SiteId))
         {
-            await GuardLastLiveHostAsync(
-                tenantId, boundSite, domain.Id, domain.IsActive,
-                movingAway: dto.SiteId != domain.SiteId, cancellationToken);
+            await GuardTheConsolesOwnAddressAsync(
+                tenantId, boundSite, domain.Id, domain.IsActive, cancellationToken);
         }
 
         domain.DomainName = dto.DomainName;
@@ -836,9 +835,8 @@ public sealed class WebsiteService : IWebsiteService
 
         if (domain.SiteId is Guid boundSite)
         {
-            await GuardLastLiveHostAsync(
-                tenantId, boundSite, domain.Id, domain.IsActive,
-                movingAway: false, cancellationToken);
+            await GuardTheConsolesOwnAddressAsync(
+                tenantId, boundSite, domain.Id, domain.IsActive, cancellationToken);
         }
 
         _repository.RemoveDomain(domain);
@@ -858,12 +856,25 @@ public sealed class WebsiteService : IWebsiteService
     /// those left a school's only domain impossible to remove or even disable, with no way out
     /// of the console at all.
     /// </summary>
-    private async Task GuardLastLiveHostAsync(
+    /// <summary>
+    /// Refuses only the removal that cannot be undone from here: the console's own address.
+    ///
+    /// Taking the last address off a school's website makes that school unreachable, and this
+    /// used to refuse that too. But switching the website off, moving the domain and switching
+    /// it back on reaches exactly the same end state in three times the clicks — a guard that is
+    /// trivially walked around is not protecting anything, it is only in the way. The Domains
+    /// page already names every website left without a live address, in a warning above the
+    /// list, so the operator is told rather than stopped.
+    ///
+    /// The console is different. Its address is how anyone signs in, and losing it locks the
+    /// operator out of the very screen they would use to put it back — there is no way home
+    /// except editing the database by hand.
+    /// </summary>
+    private async Task GuardTheConsolesOwnAddressAsync(
         Guid tenantId,
         Guid siteId,
         Guid excludingDomainId,
         bool hostIsLive,
-        bool movingAway,
         CancellationToken cancellationToken)
     {
         if (!hostIsLive)
@@ -872,7 +883,7 @@ public sealed class WebsiteService : IWebsiteService
         }
 
         var site = await _repository.GetSiteAsync(tenantId, siteId, cancellationToken);
-        if (site is null || !site.IsActive)
+        if (site is null || !site.IsActive || !string.Equals(site.SiteKey, "platform", StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
@@ -882,17 +893,10 @@ public sealed class WebsiteService : IWebsiteService
 
         if (remaining == 0)
         {
-            // The way out depends on what is being attempted. Telling someone editing a domain
-            // to "remove it" sends them looking for a button that is not the one they want.
-            var remedy = movingAway
-                ? $"Point another domain at '{site.Name}' first, or switch '{site.Name}' off under "
-                  + "Websites and then move this one."
-                : $"Add another domain for '{site.Name}' first, or switch it off under Websites "
-                  + "and then remove this one.";
-
             throw new ValidationAppException(
-                $"'{site.Name}' has no other live address, so this would take that website off "
-                + "the internet. " + remedy);
+                $"'{site.Name}' is the address you sign in on, and this is its only live one. "
+                + "Removing it would lock everyone out of this console with no way back in. "
+                + "Add another address for it first.");
         }
     }
 
