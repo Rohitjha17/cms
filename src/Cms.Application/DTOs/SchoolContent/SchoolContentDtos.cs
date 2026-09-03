@@ -380,15 +380,6 @@ public sealed class SiteSettingsDto
                 ['|', '\n', '\r'],
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-    /// <summary>
-    /// How wide the popup may be, in pixels. A tall poster in a wide panel is mostly empty
-    /// space, and a wide one squeezed into a narrow panel cannot be read at all.
-    /// Zero keeps the standard width.
-    /// </summary>
-    public int PopupWidth { get; set; }
-
-    /// <summary>How tall the poster may be, in pixels. Zero lets the picture decide.</summary>
-    public int PopupHeight { get; set; }
     public string? PopupHeading { get; set; }
 
     /// <summary>Where the poster leads when clicked. Left empty, the poster is not a link.</summary>
@@ -399,8 +390,11 @@ public sealed class SiteSettingsDto
 
     public string? PopupFormHeading { get; set; }
 
-    /// <summary>Shows the popup once per visit rather than on every page.</summary>
-    public bool PopupOncePerVisit { get; set; } = true;
+    /// <summary>
+    /// Shows the popup once per visit rather than on every page. Off by default: a school runs
+    /// a popup to be seen, and a visitor who reloads to look again should find it there.
+    /// </summary>
+    public bool PopupOncePerVisit { get; set; }
 
     /// <summary>Nothing to show is not the same as switched on, and an empty box helps nobody.</summary>
     public bool HasPopup => PopupEnabled && (PopupImages.Count > 0 || PopupShowEnquiryForm);

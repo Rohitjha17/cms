@@ -78,6 +78,9 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
         Assert.Contains("/uploads/results.jpg", html);
         Assert.Contains("/uploads/openday.jpg", html);
         Assert.Contains("data-popup-slide=\"3\"", html);
+        // Arrows as well as dots: waiting three seconds to see the next one is not a control.
+        Assert.Contains("data-popup-prev", html);
+        Assert.Contains("data-popup-next", html);
         // Three posters, three dots — and only the first showing to begin with.
         Assert.Equal(3, System.Text.RegularExpressions.Regex.Matches(html, "data-popup-dot=").Count);
         Assert.Single(System.Text.RegularExpressions.Regex.Matches(html, "site-popup__slide is-active"));
@@ -108,43 +111,28 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
     }
 
     /// <summary>
-    /// A tall poster in a wide panel is mostly empty space, and a wide one squeezed into a
-    /// narrow panel cannot be read. Both are the school's to set, within reason.
+    /// A school runs a popup to be seen. Remembering that it was closed is the exception, so a
+    /// visitor who reloads to look again finds it there — unless the school asked otherwise.
     /// </summary>
-    [Theory]
-    [InlineData(620, 900, "--popup-width:620px", "--popup-poster-height:900px")]
-    [InlineData(99999, 99999, "--popup-width:1400px", "--popup-poster-height:1200px")]
-    [InlineData(10, 10, "--popup-width:280px", "--popup-poster-height:160px")]
-    public async Task ThePopupSize_ReachesThePageWithinReason(
-        int width, int height, string expectedWidth, string expectedHeight)
-    {
-        await SaveSettingsAsync(new Dictionary<string, object?>
-        {
-            ["popupEnabled"] = true,
-            ["popupImageUrl"] = "/uploads/a.jpg",
-            ["popupWidth"] = width,
-            ["popupHeight"] = height
-        });
-
-        var html = await _client.GetStringAsync("/");
-
-        Assert.Contains(expectedWidth, html);
-        Assert.Contains(expectedHeight, html);
-    }
-
     [Fact]
-    public async Task NoSizeChosen_LeavesThePopupAsItWas()
+    public async Task ThePopup_OpensOnEveryLoadUnlessTheSchoolSaysOtherwise()
     {
         await SaveSettingsAsync(new Dictionary<string, object?>
         {
             ["popupEnabled"] = true,
-            ["popupImageUrl"] = "/uploads/a.jpg"
+            ["popupImageUrl"] = "/uploads/admissions.jpg"
         });
 
-        var html = await _client.GetStringAsync("/");
+        Assert.Contains("data-popup-key=\"always\"", await _client.GetStringAsync("/"));
 
-        Assert.DoesNotContain("--popup-width", html);
-        Assert.DoesNotContain("--popup-poster-height", html);
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["popupEnabled"] = true,
+            ["popupImageUrl"] = "/uploads/admissions.jpg",
+            ["popupOncePerVisit"] = true
+        });
+
+        Assert.Contains("data-popup-key=\"visit\"", await _client.GetStringAsync("/"));
     }
 
     /// <summary>One poster is a poster, not a slideshow: no dots, nothing to move between.</summary>
@@ -161,6 +149,7 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
 
         Assert.Contains("/uploads/admissions.jpg", html);
         Assert.DoesNotContain("data-popup-dot=", html);
+        Assert.DoesNotContain("data-popup-next", html);
     }
 
     [Theory]

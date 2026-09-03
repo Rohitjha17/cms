@@ -335,14 +335,12 @@ public sealed class SchoolContentService : ISchoolContentService
             PopupEnabled = Boolean(json, "popupEnabled"),
             PopupImageUrl = String(json, "popupImageUrl"),
             PopupSlideSeconds = Number(json, "popupSlideSeconds") ?? 0,
-            PopupWidth = Number(json, "popupWidth") ?? 0,
-            PopupHeight = Number(json, "popupHeight") ?? 0,
             PopupAutoCloseSeconds = Number(json, "popupAutoCloseSeconds") ?? 0,
             PopupHeading = String(json, "popupHeading"),
             PopupLinkUrl = String(json, "popupLinkUrl"),
             PopupShowEnquiryForm = Boolean(json, "popupShowEnquiryForm"),
             PopupFormHeading = String(json, "popupFormHeading"),
-            PopupOncePerVisit = Boolean(json, "popupOncePerVisit", true)
+            PopupOncePerVisit = Boolean(json, "popupOncePerVisit")
         };
     }
 
@@ -390,8 +388,6 @@ public sealed class SchoolContentService : ISchoolContentService
             ["popupEnabled"] = dto.PopupEnabled,
             ["popupImageUrl"] = Clean(dto.PopupImageUrl),
             ["popupSlideSeconds"] = dto.PopupSlideSeconds,
-            ["popupWidth"] = dto.PopupWidth,
-            ["popupHeight"] = dto.PopupHeight,
             ["popupAutoCloseSeconds"] = dto.PopupAutoCloseSeconds,
             ["popupHeading"] = Clean(dto.PopupHeading),
             ["popupLinkUrl"] = Clean(dto.PopupLinkUrl),

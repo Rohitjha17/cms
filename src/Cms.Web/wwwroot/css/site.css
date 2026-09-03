@@ -1180,7 +1180,7 @@ body.nav-locked { overflow: hidden; }
   display: flex;
   flex-wrap: wrap;
   gap: 0;
-  width: min(var(--popup-width, 960px), 100%);
+  width: min(960px, 100%);
   max-height: 90vh;
   overflow: auto;
   border-radius: 14px;
@@ -1248,12 +1248,8 @@ body.nav-locked { overflow: hidden; }
   font-size: .9rem;
 }
 /* A poster on its own should not be stretched to a form's width. */
-.site-popup__panel:not(:has(.site-popup__form)) { width: min(var(--popup-width, 560px), 100%); }
+.site-popup__panel:not(:has(.site-popup__form)) { width: min(560px, 100%); }
 
-/* A height the school set applies to the poster, not the panel: the form beside it has to keep
-   whatever room its fields need, and cropping that would lose the last question. */
-.site-popup__poster { max-height: var(--popup-poster-height, none); overflow: hidden; }
-.site-popup__slide img { max-height: var(--popup-poster-height, none); }
 body.popup-open { overflow: hidden; }
 
 /* --- Per-section reveal styles -------------------------------------------- */
@@ -1712,3 +1708,27 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
     transform: none;
   }
 }
+
+/* Arrows on the poster, so a visitor can move through them rather than only wait. */
+.site-popup__arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: rgba(8, 17, 31, .45);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .18s ease;
+}
+.site-popup__arrow:hover { background: rgba(8, 17, 31, .7); }
+.site-popup__arrow:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.site-popup__arrow--prev { left: .5rem; }
+.site-popup__arrow--next { right: .5rem; }

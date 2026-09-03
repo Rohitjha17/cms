@@ -291,18 +291,6 @@
                 </label>
 
                 <label class="field">
-                    <span>Popup width (pixels)</span>
-                    <input asp-for="Input.PopupWidth" type="number" min="0" max="1400" placeholder="960" />
-                    <small class="hint">0 uses 960 with a form beside the poster, 560 without. Narrower suits a tall poster.</small>
-                </label>
-
-                <label class="field">
-                    <span>Poster height (pixels)</span>
-                    <input asp-for="Input.PopupHeight" type="number" min="0" max="1200" placeholder="0" />
-                    <small class="hint">0 lets the picture decide. This crops the poster only — the form beside it keeps the room its fields need.</small>
-                </label>
-
-                <label class="field">
                     <span>Seconds on each poster</span>
                     <input asp-for="Input.PopupSlideSeconds" type="number" min="0" max="60" placeholder="3" />
                     <small class="hint">0 leaves the first poster up. Three seconds suits two or three posters.</small>
@@ -326,7 +314,7 @@
 
                 <label class="switch-row full">
                     <input asp-for="Input.PopupOncePerVisit" type="checkbox" />
-                    <span><strong>Show once per visit</strong><small>Off means it opens on every page, which visitors find tiresome quickly.</small></span>
+                    <span><strong>Show once per visit</strong><small>Off — the default — opens it on every page load, so a visitor who reloads finds it there. On shows it once and then leaves them alone.</small></span>
                 </label>
             </div>
         </div>

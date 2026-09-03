@@ -324,7 +324,16 @@
   });
 
   popup.addEventListener("click", function (event) {
-    if (event.target.closest("[data-popup-close]")) close();
+    if (event.target.closest("[data-popup-close]")) return close();
+    // Reaching for a poster stops the rotation: it should not be taken away mid-look.
+    if (event.target.closest("[data-popup-prev]")) {
+      window.clearInterval(slideTimer);
+      return showSlide(slideAt - 1);
+    }
+    if (event.target.closest("[data-popup-next]")) {
+      window.clearInterval(slideTimer);
+      return showSlide(slideAt + 1);
+    }
   });
 
   document.addEventListener("keydown", function (event) {

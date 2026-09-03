@@ -214,9 +214,6 @@
              hidden>
             <div class="site-popup__backdrop" data-popup-close></div>
             <div class="site-popup__panel" role="dialog" aria-modal="true"
-                 style="@(string.Concat(
-                     settings.PopupWidth > 0 ? $"--popup-width:{Math.Clamp(settings.PopupWidth, 280, 1400)}px;" : "",
-                     settings.PopupHeight > 0 ? $"--popup-poster-height:{Math.Clamp(settings.PopupHeight, 160, 1200)}px;" : ""))"
                  aria-label="@(settings.PopupHeading ?? brand.Name)">
                 <button class="site-popup__close" type="button" data-popup-close aria-label="Close">&times;</button>
                 @if (settings.PopupImages.Count > 0)
@@ -238,6 +235,10 @@
                         }
                         @if (settings.PopupImages.Count > 1)
                         {
+                            <button class="site-popup__arrow site-popup__arrow--prev" type="button"
+                                    data-popup-prev aria-label="Previous poster">&#8249;</button>
+                            <button class="site-popup__arrow site-popup__arrow--next" type="button"
+                                    data-popup-next aria-label="Next poster">&#8250;</button>
                             <div class="site-popup__dots">
                                 @for (var i = 0; i < settings.PopupImages.Count; i++)
                                 {
