@@ -539,14 +539,26 @@
     var width = set.getBoundingClientRect().width;
     if (width < 1) return;
 
-    var copies = Math.ceil((window.innerWidth + width) / width) + 1;
+    var strip = marquee.parentElement.getBoundingClientRect().width || window.innerWidth;
+    var asked = parseInt(marquee.getAttribute("data-notice-repeat") || "0", 10);
+
+    // One copy is a copy crossing the strip, not a strip kept full: it starts off the right
+    // edge, crosses, and leaves a gap behind it before coming round again. Anything more tiles,
+    // and the travel is exactly one copy's width so the seam never shows.
+    var single = asked === 1;
+    marquee.classList.toggle("notice-marquee--single", single);
+
+    var copies = single ? 1
+      : asked > 1 ? asked
+      : Math.ceil((strip + width) / width) + 1;
+
     for (var i = 1; i < copies; i++) {
       var clone = set.cloneNode(true);
       clone.setAttribute("aria-hidden", "true");
       marquee.appendChild(clone);
     }
 
-    marquee.style.setProperty("--notice-set-width", width + "px");
+    marquee.style.setProperty("--notice-set-width", (single ? strip + width : width) + "px");
   }
 
   build();

@@ -92,6 +92,7 @@
                 .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             <div class="notice-bar notice-bar--scrolling @noticeStyle" style="@(noticeColor is null ? null : $"background:{noticeColor}")">
                 <div class="notice-marquee" data-notice-marquee
+                     data-notice-repeat="@Math.Clamp(settings.NoticeTickerRepeat, 0, 3)"
                      style="@(settings.NoticeTickerSeconds > 0 ? $"--notice-speed:{Math.Clamp(settings.NoticeTickerSeconds, 5, 120)}s" : null)">
                     <div class="notice-marquee__set">
                         @foreach (var notice in notices) { <span>@notice</span> }

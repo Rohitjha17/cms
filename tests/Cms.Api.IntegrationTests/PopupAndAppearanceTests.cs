@@ -234,6 +234,32 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
         Assert.DoesNotContain("--notice-speed", html);
     }
 
+    /// <summary>
+    /// A school that typed its notice once expects to see it once. The strip still has to tile
+    /// to loop without a gap, so how many copies are on it at a time is the school's to say.
+    /// </summary>
+    [Theory]
+    [InlineData(1, "data-notice-repeat=\"1\"")]
+    [InlineData(3, "data-notice-repeat=\"3\"")]
+    [InlineData(0, "data-notice-repeat=\"0\"")]
+    [InlineData(99, "data-notice-repeat=\"3\"")]
+    public async Task HowOftenTheNoticeAppears_IsTheSchoolsToChoose(int repeat, string expected)
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["noticeTicker"] = "Admissions are open",
+            ["noticeTickerScrolls"] = true,
+            ["noticeTickerRepeat"] = repeat
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains(expected, html);
+        // However many end up on the strip, the page carries the notice once: the copies are
+        // made in the browser, and a screen reader should hear it a single time.
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(html, "Admissions are open"));
+    }
+
     [Fact]
     public async Task TheChosenLogoHeight_ReachesTheStylesheet()
     {

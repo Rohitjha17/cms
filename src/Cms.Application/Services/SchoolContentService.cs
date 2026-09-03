@@ -313,6 +313,7 @@ public sealed class SchoolContentService : ISchoolContentService
 
             NoticeTickerScrolls = Boolean(json, "noticeTickerScrolls"),
             NoticeTickerSeconds = Number(json, "noticeTickerSeconds") ?? 0,
+            NoticeTickerRepeat = Number(json, "noticeTickerRepeat") ?? 0,
             LogoHeight = Number(json, "logoHeight") ?? 0,
             ScrollAnimations = Boolean(json, "scrollAnimations", true),
             NoticeBarColor = String(json, "noticeBarColor"),
@@ -358,6 +359,7 @@ public sealed class SchoolContentService : ISchoolContentService
 
             ["noticeTickerScrolls"] = dto.NoticeTickerScrolls,
             ["noticeTickerSeconds"] = dto.NoticeTickerSeconds,
+            ["noticeTickerRepeat"] = dto.NoticeTickerRepeat,
             ["logoHeight"] = dto.LogoHeight,
             ["scrollAnimations"] = dto.ScrollAnimations,
             ["noticeBarColor"] = Clean(dto.NoticeBarColor),

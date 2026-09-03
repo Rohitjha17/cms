@@ -1638,3 +1638,7 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 [data-section].card-hover-tilt :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover {
   transform: perspective(700px) rotateX(3deg) rotateY(-3deg) translateY(-4px);
 }
+
+/* One copy crossing the strip: it begins off the right edge, so there is a gap behind it. */
+.notice-marquee--single { padding-left: 100%; }
+.notice-marquee--single .notice-marquee__set { padding-right: 0; }

@@ -43,6 +43,17 @@
                     <span><strong>Scroll the text across the bar</strong><small>Moves continuously, and pauses when a visitor hovers over it. Still text is easier to read — use this only when the notice matters more than the rest of the page.</small></span>
                 </label>
                 <label class="field">
+                    <span>Ek waqt mein kitni baar</span>
+                    <select asp-for="Input.NoticeTickerRepeat">
+                        <option value="1">Ek baar — patti par ek hi copy, peeche khaali jagah</option>
+                        <option value="2">Do baar</option>
+                        <option value="3">Teen baar</option>
+                        <option value="0">Patti bhar jaye — jitni zaroorat ho</option>
+                    </select>
+                    <small class="hint">Chhoti notice ko "ek baar" par saaf dikhta hai. Lambi notice ke liye "patti bhar jaye" behtar hai, warna beech mein khaali jagah aati hai.</small>
+                </label>
+
+                <label class="field">
                     <span>Seconds for one pass</span>
                     <input asp-for="Input.NoticeTickerSeconds" type="number" min="0" max="120" placeholder="26" />
                     <small class="hint">0 keeps the default pace. Higher is slower — a long notice needs 40–60, a short one reads well at 15–20.</small>

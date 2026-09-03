@@ -266,6 +266,16 @@ public sealed class SiteSettingsDto
     public int NoticeTickerSeconds { get; set; }
 
     /// <summary>
+    /// How many copies of the notice are on the strip at once.
+    ///
+    /// A continuous strip has to tile, or the loop shows a gap and a jump at the seam — but a
+    /// school that entered its notice once reasonably expects to see it once. One means one
+    /// copy crossing the strip with a gap behind it; two or three keep the strip full. Zero
+    /// fills the width, whatever that takes.
+    /// </summary>
+    public int NoticeTickerRepeat { get; set; }
+
+    /// <summary>
     /// Height of the header logo in pixels. Schools send crests of wildly different proportions
     /// and one fixed size flatters none of them, so the size is theirs to set. Zero keeps the
     /// design's own default.
