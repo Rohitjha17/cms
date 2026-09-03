@@ -164,9 +164,14 @@ p:last-child { margin-bottom: 0; }
 .brand { display: flex; align-items: center; gap: .8rem; min-width: 0; }
 .brand img {
   /* Schools send crests of wildly different proportions, so the height is theirs to set from
-     the console. The width follows so nothing is squashed. */
+     the console. The width follows so nothing is squashed.
+
+     The negative margin absorbs whatever the crest gains over the default, so a taller logo
+     hangs past the bar instead of pushing it open: a bigger crest was the ask, a fatter header
+     that shoves the whole page down was not. */
   width: auto;
   height: var(--logo-size, 46px);
+  margin-block: calc((var(--logo-size, 46px) - 46px) / -2);
   max-width: min(220px, 40vw);
   flex: none;
   object-fit: contain;
@@ -940,7 +945,8 @@ img { opacity: 1; }
 .site-header.is-scrolled .shell { min-height: 64px; }
 .site-header.is-scrolled .brand img {
   height: calc(var(--logo-size, 46px) * .82);
-  transition: height .25s var(--ease);
+  margin-block: calc((var(--logo-size, 46px) * .82 - 46px) / -2);
+  transition: height .25s var(--ease), margin-block .25s var(--ease);
 }
 
 /* Back to top -------------------------------------------------------------- */
@@ -1129,23 +1135,27 @@ body.nav-locked { overflow: hidden; }
 .notice-marquee {
   display: flex;
   width: max-content;
-  gap: 4rem;
-  padding-left: 100%;
   animation: notice-scroll var(--notice-speed, 26s) linear infinite;
 }
-.notice-marquee__text {
-  display: block;
+/* One set is the school's notices end to end. The track holds as many identical sets as it
+   takes to outrun the screen, and travels exactly one set's width — so the loop closes with no
+   gap and no visible repeat, whatever the notice says. */
+.notice-marquee__set {
+  display: flex;
+  gap: 3.5rem;
+  padding-right: 3.5rem;
   font-weight: 600;
   letter-spacing: .005em;
   white-space: nowrap;
 }
+.notice-marquee__set > span { display: block; }
 /* Reading stops while the visitor is trying to read it. */
 .notice-bar--scrolling:hover .notice-marquee,
 .notice-bar--scrolling:focus-within .notice-marquee { animation-play-state: paused; }
 
 @keyframes notice-scroll {
   from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  to { transform: translateX(calc(var(--notice-set-width, 50%) * -1)); }
 }
 
 /* --- Opening popup -------------------------------------------------------- */
@@ -1253,9 +1263,10 @@ body.popup-open { overflow: hidden; }
 [data-animate="fade-down"].reveal { transform: translateY(-18px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .notice-marquee { animation: none; padding-left: 0; }
-  .notice-marquee__text[aria-hidden="true"] { display: none; }
-  .notice-bar--scrolling .notice-marquee { justify-content: center; width: 100%; }
+  /* Standing still, one set is enough and the copies would only read as stutter. */
+  .notice-marquee { animation: none; width: 100%; justify-content: center; }
+  .notice-marquee__set[aria-hidden="true"] { display: none; }
+  .notice-marquee__set { padding-right: 0; }
   .site-popup__panel { animation: none; }
 }
 

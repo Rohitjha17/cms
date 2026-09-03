@@ -116,8 +116,31 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
         var html = await _client.GetStringAsync("/");
 
         Assert.Contains("notice-bar--scrolling", html);
-        // The text is repeated to close the loop; the copy must be hidden from screen readers.
-        Assert.Contains("aria-hidden=\"true\"", html);
+        // The copies that close the loop are made in the browser, against the measured width.
+        // The page itself must carry the notice exactly once, or a reader without JavaScript —
+        // and every screen reader — hears it twice.
+        Assert.Equal(1, System.Text.RegularExpressions.Regex.Matches(html, "Admissions are open").Count);
+    }
+
+    /// <summary>
+    /// A school runs more than one notice at a time. Separating them has to produce separate
+    /// notices, not one line with a stray bar in the middle of it.
+    /// </summary>
+    [Fact]
+    public async Task SeveralNotices_AreSeparateItems()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["noticeTicker"] = "Admissions open | Results on 12 May | Apply online",
+            ["noticeTickerScrolls"] = true
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("<span>Admissions open</span>", html);
+        Assert.Contains("<span>Results on 12 May</span>", html);
+        Assert.Contains("<span>Apply online</span>", html);
+        Assert.DoesNotContain("Admissions open |", html);
     }
 
     /// <summary>

@@ -469,3 +469,47 @@
 
   update();
 })();
+
+/* --------------------------------------------------------------- Notice marquee */
+
+(function () {
+  "use strict";
+
+  var marquee = document.querySelector("[data-notice-marquee]");
+  if (!marquee) return;
+
+  var set = marquee.querySelector(".notice-marquee__set");
+  if (!set) return;
+
+  // Two copies looked like the notice had been typed twice whenever the text was shorter than
+  // the screen — both were on screen at once. The track needs as many copies as it takes to
+  // outrun the screen, and must travel exactly one copy's width for the loop to close unseen.
+  function build() {
+    marquee.querySelectorAll(".notice-marquee__set:not(:first-child)").forEach(function (extra) {
+      extra.remove();
+    });
+
+    var width = set.getBoundingClientRect().width;
+    if (width < 1) return;
+
+    var copies = Math.ceil((window.innerWidth + width) / width) + 1;
+    for (var i = 1; i < copies; i++) {
+      var clone = set.cloneNode(true);
+      clone.setAttribute("aria-hidden", "true");
+      marquee.appendChild(clone);
+    }
+
+    marquee.style.setProperty("--notice-set-width", width + "px");
+  }
+
+  build();
+
+  // Fonts land after first paint and change the width the loop is measured against.
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
+
+  var resizeTimer;
+  window.addEventListener("resize", function () {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(build, 200);
+  });
+})();

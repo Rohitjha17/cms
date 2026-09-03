@@ -73,16 +73,22 @@
         {
             // The text is repeated so the loop has no gap at the seam. aria-hidden on the copy
             // keeps a screen reader from announcing the notice twice.
+            // A school runs more than one notice at a time — admissions and a results day, say —
+            // so the field takes several separated by a vertical bar.
+            var notices = settings.NoticeTicker
+                .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             <div class="notice-bar notice-bar--scrolling">
-                <div class="notice-marquee" style="@(settings.NoticeTickerSeconds > 0 ? $"--notice-speed:{Math.Clamp(settings.NoticeTickerSeconds, 5, 120)}s" : null)">
-                    <span class="notice-marquee__text">@settings.NoticeTicker</span>
-                    <span class="notice-marquee__text" aria-hidden="true">@settings.NoticeTicker</span>
+                <div class="notice-marquee" data-notice-marquee
+                     style="@(settings.NoticeTickerSeconds > 0 ? $"--notice-speed:{Math.Clamp(settings.NoticeTickerSeconds, 5, 120)}s" : null)">
+                    <div class="notice-marquee__set">
+                        @foreach (var notice in notices) { <span>@notice</span> }
+                    </div>
                 </div>
             </div>
         }
         else
         {
-            <div class="notice-bar"><div class="shell"><span>@settings.NoticeTicker</span></div></div>
+            <div class="notice-bar"><div class="shell"><span>@settings.NoticeTicker.Replace(" | ", " · ").Replace("|", " · ")</span></div></div>
         }
     }
     <div class="top-meta">
