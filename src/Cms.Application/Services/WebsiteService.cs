@@ -803,7 +803,8 @@ public sealed class WebsiteService : IWebsiteService
         if (id.HasValue && domain.SiteId is Guid boundSite
             && (!dto.IsActive || dto.SiteId != domain.SiteId))
         {
-            await GuardLastLiveHostAsync(tenantId, boundSite, domain.Id, cancellationToken);
+            await GuardLastLiveHostAsync(
+                tenantId, boundSite, domain.Id, domain.IsActive, cancellationToken);
         }
 
         domain.DomainName = dto.DomainName;
@@ -834,7 +835,8 @@ public sealed class WebsiteService : IWebsiteService
 
         if (domain.SiteId is Guid boundSite)
         {
-            await GuardLastLiveHostAsync(tenantId, boundSite, domain.Id, cancellationToken);
+            await GuardLastLiveHostAsync(
+                tenantId, boundSite, domain.Id, domain.IsActive, cancellationToken);
         }
 
         _repository.RemoveDomain(domain);
@@ -846,18 +848,41 @@ public sealed class WebsiteService : IWebsiteService
     /// Refuses an edit that would leave a website with no live host, which would make that
     /// school's site unreachable without any warning.
     /// </summary>
+    /// <summary>
+    /// Refuses to take a live website's last address away.
+    ///
+    /// It only applies when there is something to strand. A host that is already switched off is
+    /// serving nobody, and a website that has been switched off has nobody to lose — guarding
+    /// those left a school's only domain impossible to remove or even disable, with no way out
+    /// of the console at all.
+    /// </summary>
     private async Task GuardLastLiveHostAsync(
-        Guid tenantId, Guid siteId, Guid excludingDomainId, CancellationToken cancellationToken)
+        Guid tenantId,
+        Guid siteId,
+        Guid excludingDomainId,
+        bool hostIsLive,
+        CancellationToken cancellationToken)
     {
+        if (!hostIsLive)
+        {
+            return;
+        }
+
+        var site = await _repository.GetSiteAsync(tenantId, siteId, cancellationToken);
+        if (site is null || !site.IsActive)
+        {
+            return;
+        }
+
         var remaining = (await _repository.GetDomainsAsync(tenantId, cancellationToken))
             .Count(x => x.SiteId == siteId && x.IsActive && x.Id != excludingDomainId);
 
         if (remaining == 0)
         {
-            var site = await _repository.GetSiteAsync(tenantId, siteId, cancellationToken);
             throw new ValidationAppException(
-                $"This is the only live domain for '{site?.Name ?? "that website"}'. "
-                + "Add another domain first, or the website will be unreachable.");
+                $"'{site.Name}' has no other live address, so this would take the website off the "
+                + "internet. Add another domain first, or switch the website off under Websites "
+                + "and then remove it.");
         }
     }
 
