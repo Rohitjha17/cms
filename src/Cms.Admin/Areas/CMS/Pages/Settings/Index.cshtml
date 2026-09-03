@@ -36,21 +36,21 @@
                 <label class="field full">
                     <span>Notice text</span>
                     <input asp-for="Input.NoticeTicker" placeholder="Admissions open 2027–28 | Results out on 12 May | Apply online" />
-                    <small class="hint">Leave blank to hide the bar. Ek se zyada notice ke liye <code>|</code> se alag kijiye — har notice alag-alag dikhega.</small>
+                    <small class="hint">Leave blank to hide the bar. Separate several notices with <code>|</code> and each is shown in turn.</small>
                 </label>
                 <label class="switch-row full">
                     <input asp-for="Input.NoticeTickerScrolls" type="checkbox" />
                     <span><strong>Scroll the text across the bar</strong><small>Moves continuously, and pauses when a visitor hovers over it. Still text is easier to read — use this only when the notice matters more than the rest of the page.</small></span>
                 </label>
                 <label class="field">
-                    <span>Ek waqt mein kitni baar</span>
+                    <span>Copies on the strip</span>
                     <select asp-for="Input.NoticeTickerRepeat">
-                        <option value="1">Ek baar — patti par ek hi copy, peeche khaali jagah</option>
-                        <option value="2">Do baar</option>
-                        <option value="3">Teen baar</option>
-                        <option value="0">Patti bhar jaye — jitni zaroorat ho</option>
+                        <option value="1">One — a single copy crossing, with a gap behind it</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                        <option value="0">Fill the strip — as many as it takes</option>
                     </select>
-                    <small class="hint">Chhoti notice ko "ek baar" par saaf dikhta hai. Lambi notice ke liye "patti bhar jaye" behtar hai, warna beech mein khaali jagah aati hai.</small>
+                    <small class="hint">A short notice reads best as one copy. A long one is better filling the strip, or a gap opens in the middle of it.</small>
                 </label>
 
                 <label class="field">
@@ -134,13 +134,13 @@
                 <label class="field">
                     <span>Notice bar colour</span>
                     <input asp-for="Input.NoticeBarColor" placeholder="#c0392b" />
-                    <small class="hint">Khaali chhodne par brand colour lagta hai. Admissions ki patti ke liye laal aksar behtar dikhti hai.</small>
+                    <small class="hint">Leave blank to use the brand colour. Red usually suits an admissions strip better.</small>
                 </label>
 
                 <label class="field">
                     <span>Notice bar style</span>
                     <select asp-for="Input.NoticeBarStyle">
-                        <option value="">Design ka apna</option>
+                        <option value="">The design's own</option>
                         <option value="solid">Solid</option>
                         <option value="gradient">Gradient</option>
                         <option value="dark">Dark</option>
@@ -150,19 +150,19 @@
 
                 <label class="switch-row full">
                     <input asp-for="Input.TopBarIcons" type="checkbox" />
-                    <span><strong>Top bar mein icons dikhaiye</strong><small>Phone aur email ke saath icon, aur Settings mein bhare hue social links bhi upar aa jayenge.</small></span>
+                    <span><strong>Show icons in the top strip</strong><small>Draws the phone and email with icons, and brings the social links up beside them.</small></span>
                 </label>
 
                 <label class="field">
                     <span>Button colour</span>
                     <input asp-for="Input.ButtonColor" placeholder="#c0392b" />
-                    <small class="hint">Sirf buttons ka colour. Khaali chhodne par brand colour lagta hai — pehle poori site ka colour badalna padta tha.</small>
+                    <small class="hint">The buttons only. Leave blank to use the brand colour — until now a louder button meant repainting the whole site.</small>
                 </label>
 
                 <label class="field">
                     <span>Button style</span>
                     <select asp-for="Input.ButtonStyle">
-                        <option value="">Design ka apna</option>
+                        <option value="">The design's own</option>
                         <option value="solid">Solid</option>
                         <option value="outline">Outline</option>
                         <option value="soft">Soft</option>
@@ -173,7 +173,7 @@
                 <label class="field">
                     <span>Button shape</span>
                     <select asp-for="Input.ButtonShape">
-                        <option value="">Design ka apna</option>
+                        <option value="">The design's own</option>
                         <option value="rounded">Rounded</option>
                         <option value="pill">Pill</option>
                         <option value="square">Square</option>
@@ -183,7 +183,7 @@
                 <label class="field">
                     <span>Button hover effect</span>
                     <select asp-for="Input.ButtonHover">
-                        <option value="">Design ka apna</option>
+                        <option value="">The design's own</option>
                         <option value="lift">Lift</option>
                         <option value="fill">Colour fills in</option>
                         <option value="glow">Glow</option>
@@ -194,13 +194,13 @@
                 <label class="field">
                     <span>Card hover effect</span>
                     <select asp-for="Input.CardHover">
-                        <option value="">Design ka apna</option>
+                        <option value="">The design's own</option>
                         <option value="lift">Lift</option>
                         <option value="zoom">Zoom</option>
                         <option value="glow">Glow</option>
                         <option value="tilt">Tilt</option>
                     </select>
-                    <small class="hint">News, events, staff aur gallery ke cards par lagta hai.</small>
+                    <small class="hint">Applies to news, events, staff and gallery cards.</small>
                 </label>
             </div>
         </div>
@@ -226,19 +226,19 @@
                         <input asp-for="Input.PopupImageUrl" id="settings-popup-image" data-picker-append placeholder="/uploads/… or https://…" />
                         <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#settings-popup-image">Browse media</button>
                     </span>
-                    <small class="hint">A tall poster works best — roughly 800×1100. Browse jodta jayega; ek se zyada poster <code>|</code> se alag rehte hain.</small>
+                    <small class="hint">A tall poster works best — roughly 800×1100. Browse adds to the list; several posters are separated by <code>|</code>.</small>
                 </label>
 
                 <label class="field">
-                    <span>Poster badalne ka samay (seconds)</span>
+                    <span>Seconds on each poster</span>
                     <input asp-for="Input.PopupSlideSeconds" type="number" min="0" max="60" placeholder="3" />
-                    <small class="hint">0 pehla poster hi rehne deta hai. Do-teen poster ke liye 3 theek hai.</small>
+                    <small class="hint">0 leaves the first poster up. Three seconds suits two or three posters.</small>
                 </label>
 
                 <label class="field">
-                    <span>Apne aap band (seconds)</span>
+                    <span>Close by itself after (seconds)</span>
                     <input asp-for="Input.PopupAutoCloseSeconds" type="number" min="0" max="120" placeholder="0" />
-                    <small class="hint">0 visitor ke band karne ka intezaar karta hai. Form laga ho to ye lagu nahi hota — koi likh raha ho to band karna theek nahi.</small>
+                    <small class="hint">0 waits for the visitor. Never applies when the popup carries a form — closing on someone mid-answer throws it away.</small>
                 </label>
 
                 <label class="field"><span>Heading</span><input asp-for="Input.PopupHeading" placeholder="Admissions open 2027–28" /></label>

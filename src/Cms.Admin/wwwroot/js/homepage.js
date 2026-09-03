@@ -305,7 +305,7 @@
     ];
 
     const hoverChoices = [
-      ["", "Site ka jo hai wahi"],
+      ["", "Same as the site"],
       ["lift", "Lift"],
       ["zoom", "Zoom"],
       ["glow", "Glow"],
@@ -373,7 +373,7 @@
           "Drawn on the page — costs nothing to load. Sits behind this section's text.",
           backdropChoices);
         appendChoiceField(builder, "hover", "Card hover in this section",
-          "Is section ke cards par lagega. Site ki setting se upar rahega.",
+          "Applies to the cards in this section, and wins over the site-wide choice.",
           hoverChoices);
       } else {
         schema.forEach(([key, label, type, help]) => {
@@ -395,7 +395,7 @@
           "Drawn on the page — costs nothing to load. Sits behind this section's text.",
           backdropChoices);
         appendChoiceField(builder, "hover", "Card hover in this section",
-          "Is section ke cards par lagega. Site ki setting se upar rahega.",
+          "Applies to the cards in this section, and wins over the site-wide choice.",
           hoverChoices);
 
         if (collectionSchema) {
