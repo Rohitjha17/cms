@@ -66,7 +66,18 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")}</style>
 </head>
-<body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant()" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
+@{
+    // Only names this application recognises become classes; anything else is nothing at all.
+    var skin = string.Join(' ', new[]
+    {
+        Cms.Web.Helpers.AppearanceChoice.ButtonStyle(settings.ButtonStyle),
+        Cms.Web.Helpers.AppearanceChoice.ButtonShape(settings.ButtonShape),
+        Cms.Web.Helpers.AppearanceChoice.ButtonHover(settings.ButtonHover),
+        Cms.Web.Helpers.AppearanceChoice.CardHover(settings.CardHover)
+    }.Where(x => x is not null));
+    var noticeColor = Cms.Web.Helpers.AppearanceChoice.Color(settings.NoticeBarColor);
+}
+<body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant() @skin" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
     @if (!string.IsNullOrWhiteSpace(settings.NoticeTicker))
     {
         if (settings.NoticeTickerScrolls)
@@ -77,7 +88,7 @@
             // so the field takes several separated by a vertical bar.
             var notices = settings.NoticeTicker
                 .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            <div class="notice-bar notice-bar--scrolling">
+            <div class="notice-bar notice-bar--scrolling" style="@(noticeColor is null ? null : $"background:{noticeColor}")">
                 <div class="notice-marquee" data-notice-marquee
                      style="@(settings.NoticeTickerSeconds > 0 ? $"--notice-speed:{Math.Clamp(settings.NoticeTickerSeconds, 5, 120)}s" : null)">
                     <div class="notice-marquee__set">
@@ -88,7 +99,7 @@
         }
         else
         {
-            <div class="notice-bar"><div class="shell"><span>@settings.NoticeTicker.Replace(" | ", " · ").Replace("|", " · ")</span></div></div>
+            <div class="notice-bar" style="@(noticeColor is null ? null : $"background:{noticeColor}")"><div class="shell"><span>@settings.NoticeTicker.Replace(" | ", " · ").Replace("|", " · ")</span></div></div>
         }
     }
     <div class="top-meta">

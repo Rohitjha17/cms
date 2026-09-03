@@ -1470,3 +1470,124 @@ body[data-scroll-animations="off"] [data-section]::after { animation: none !impo
 @media (prefers-reduced-motion: reduce) {
   [data-section]::after { animation: none !important; }
 }
+
+/* ===========================================================================
+   Button and card treatments a school picks in the console.
+   Each is a class on <body>, so a design's own look is what shows until one
+   is chosen — nothing here applies by default.
+   =========================================================================== */
+
+/* --- Button shape --------------------------------------------------------- */
+
+.btn-shape-rounded .btn, .btn-shape-rounded .contact-form button,
+.btn-shape-rounded .site-popup__form button { border-radius: 10px; }
+.btn-shape-pill .btn, .btn-shape-pill .contact-form button,
+.btn-shape-pill .site-popup__form button { border-radius: 999px; }
+.btn-shape-square .btn, .btn-shape-square .contact-form button,
+.btn-shape-square .site-popup__form button { border-radius: 0; }
+
+/* --- Button style --------------------------------------------------------- */
+
+.btn-style-solid .btn { color: #fff; background: var(--brand); }
+
+.btn-style-outline .btn {
+  color: var(--brand);
+  background: transparent;
+  border-color: currentColor;
+  box-shadow: none;
+}
+
+.btn-style-soft .btn {
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.btn-style-gradient .btn {
+  color: #fff;
+  background: linear-gradient(120deg, var(--brand), var(--accent));
+  border-color: transparent;
+}
+
+/* --- Button hover --------------------------------------------------------- */
+
+/* Each replaces the default lift rather than stacking on it, or two effects fight. */
+.btn-hover-lift .btn:hover { transform: translateY(-3px); filter: none; }
+
+.btn-hover-fill .btn {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+.btn-hover-fill .btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform .32s var(--ease);
+}
+.btn-hover-fill .btn:hover { color: #fff; transform: none; filter: none; }
+.btn-hover-fill .btn:hover::before { transform: scaleX(1); }
+
+.btn-hover-glow .btn:hover {
+  transform: none;
+  filter: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent),
+              0 10px 26px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* A sweep of light crossing the button, rather than the button moving. */
+.btn-hover-slide .btn { position: relative; overflow: hidden; }
+.btn-hover-slide .btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -60%;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent);
+  transform: skewX(-18deg);
+  transition: left .5s var(--ease);
+}
+.btn-hover-slide .btn:hover { transform: none; filter: none; }
+.btn-hover-slide .btn:hover::after { left: 120%; }
+
+/* --- Card and tile hover -------------------------------------------------- */
+
+.card-hover-lift :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+}
+.card-hover-zoom :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover {
+  transform: scale(1.025);
+}
+.card-hover-glow :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent),
+              0 14px 34px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+.card-hover-tilt :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure) {
+  transform-style: preserve-3d;
+}
+.card-hover-tilt :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover {
+  transform: perspective(700px) rotateX(3deg) rotateY(-3deg) translateY(-4px);
+}
+
+/* A pointer that cannot hover has nothing to show, and a visitor who asked for
+   less motion should not be moved at. */
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .btn-hover-lift .btn:hover,
+  .btn-hover-fill .btn:hover,
+  .btn-hover-glow .btn:hover,
+  .btn-hover-slide .btn:hover { transform: none; box-shadow: var(--shadow-xs); }
+  .btn-hover-fill .btn:hover::before { transform: scaleX(0); }
+  .btn-hover-slide .btn:hover::after { left: -60%; }
+  .card-hover-lift :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover,
+  .card-hover-zoom :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover,
+  .card-hover-tilt :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover {
+    transform: none;
+  }
+}

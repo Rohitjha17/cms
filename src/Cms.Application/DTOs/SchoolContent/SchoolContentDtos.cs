@@ -275,6 +275,24 @@ public sealed class SiteSettingsDto
     /// <summary>Whether sections fade in as they are scrolled to. On unless turned off.</summary>
     public bool ScrollAnimations { get; set; } = true;
 
+    /// <summary>
+    /// The notice strip's own colour. Schools want the admissions strip to shout in a colour
+    /// that is not their crest's navy, and had no way to say so. Empty keeps the brand colour.
+    /// </summary>
+    public string? NoticeBarColor { get; set; }
+
+    /// <summary>solid · outline · soft · gradient. Empty is the design's own button.</summary>
+    public string? ButtonStyle { get; set; }
+
+    /// <summary>rounded · pill · square. Empty is the design's own corner.</summary>
+    public string? ButtonShape { get; set; }
+
+    /// <summary>lift · fill · glow · slide. Empty is the design's own hover.</summary>
+    public string? ButtonHover { get; set; }
+
+    /// <summary>lift · zoom · glow · tilt. How cards and tiles answer the pointer.</summary>
+    public string? CardHover { get; set; }
+
     // ------------------------------------------------------------------ Opening popup
 
     public bool PopupEnabled { get; set; }

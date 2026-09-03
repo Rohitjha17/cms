@@ -315,6 +315,11 @@ public sealed class SchoolContentService : ISchoolContentService
             NoticeTickerSeconds = Number(json, "noticeTickerSeconds") ?? 0,
             LogoHeight = Number(json, "logoHeight") ?? 0,
             ScrollAnimations = Boolean(json, "scrollAnimations", true),
+            NoticeBarColor = String(json, "noticeBarColor"),
+            ButtonStyle = String(json, "buttonStyle"),
+            ButtonShape = String(json, "buttonShape"),
+            ButtonHover = String(json, "buttonHover"),
+            CardHover = String(json, "cardHover"),
 
             PopupEnabled = Boolean(json, "popupEnabled"),
             PopupImageUrl = String(json, "popupImageUrl"),
@@ -352,6 +357,11 @@ public sealed class SchoolContentService : ISchoolContentService
             ["noticeTickerSeconds"] = dto.NoticeTickerSeconds,
             ["logoHeight"] = dto.LogoHeight,
             ["scrollAnimations"] = dto.ScrollAnimations,
+            ["noticeBarColor"] = Clean(dto.NoticeBarColor),
+            ["buttonStyle"] = Clean(dto.ButtonStyle),
+            ["buttonShape"] = Clean(dto.ButtonShape),
+            ["buttonHover"] = Clean(dto.ButtonHover),
+            ["cardHover"] = Clean(dto.CardHover),
 
             ["popupEnabled"] = dto.PopupEnabled,
             ["popupImageUrl"] = Clean(dto.PopupImageUrl),

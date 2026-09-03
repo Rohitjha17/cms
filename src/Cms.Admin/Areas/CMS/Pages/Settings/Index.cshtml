@@ -119,6 +119,56 @@
                     <input asp-for="Input.ScrollAnimations" type="checkbox" />
                     <span><strong>Fade sections in as the visitor scrolls</strong><small>Turn off for a completely still page. Visitors who ask their device for reduced motion never see the effect either way.</small></span>
                 </label>
+
+                <label class="field">
+                    <span>Notice bar colour</span>
+                    <input asp-for="Input.NoticeBarColor" placeholder="#c0392b" />
+                    <small class="hint">Khaali chhodne par brand colour lagta hai. Admissions ki patti ke liye laal aksar behtar dikhti hai.</small>
+                </label>
+
+                <label class="field">
+                    <span>Button style</span>
+                    <select asp-for="Input.ButtonStyle">
+                        <option value="">Design ka apna</option>
+                        <option value="solid">Solid</option>
+                        <option value="outline">Outline</option>
+                        <option value="soft">Soft</option>
+                        <option value="gradient">Gradient</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Button shape</span>
+                    <select asp-for="Input.ButtonShape">
+                        <option value="">Design ka apna</option>
+                        <option value="rounded">Rounded</option>
+                        <option value="pill">Pill</option>
+                        <option value="square">Square</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Button hover effect</span>
+                    <select asp-for="Input.ButtonHover">
+                        <option value="">Design ka apna</option>
+                        <option value="lift">Lift</option>
+                        <option value="fill">Colour fills in</option>
+                        <option value="glow">Glow</option>
+                        <option value="slide">Light sweep</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Card hover effect</span>
+                    <select asp-for="Input.CardHover">
+                        <option value="">Design ka apna</option>
+                        <option value="lift">Lift</option>
+                        <option value="zoom">Zoom</option>
+                        <option value="glow">Glow</option>
+                        <option value="tilt">Tilt</option>
+                    </select>
+                    <small class="hint">News, events, staff aur gallery ke cards par lagta hai.</small>
+                </label>
             </div>
         </div>
     </section>
