@@ -1,0 +1,123 @@
+@model PublicWebsiteDto
+@using Cms.Application.DTOs.SchoolContent
+@using Cms.Web.Helpers
+@{
+    // Dense and utilitarian: what a school with circulars, timetables and downloads to publish
+    // actually needs. Notices come first, before the welcome; figures sit in a tight row rather
+    // than a band of cards; news is a dated list, not a grid of pictures. Everything is close
+    // together on purpose — the visitor is here to find something, not to be impressed.
+    var brand = Model.Branding;
+    var basePath = Model.BasePath;
+    var hero = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "hero");
+    var welcome = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "welcome");
+    var stats = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "statistics");
+    var why = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "why_choose_us");
+    var cta = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "admission_cta");
+
+    var heroJson = SectionJson.Parse(hero?.JsonData);
+    var statsJson = SectionJson.Parse(stats?.JsonData);
+    var whyJson = SectionJson.Parse(why?.JsonData);
+    var ctaJson = SectionJson.Parse(cta?.JsonData);
+
+    var banner = brand.HeaderImageUrl
+        ?? "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1800&q=80";
+    var heading = SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name;
+    var description = SectionJson.GetString(heroJson, "description")
+        ?? RichText.ToPlainText(hero?.Description) ?? brand.Tagline;
+
+    var news = ViewData["News"] as IReadOnlyList<NewsArticleDto> ?? [];
+    var pillars = SectionJson.GetArray(whyJson, "items").Take(4).ToList();
+
+    ViewData["renderedSections"] = new[] { "hero", "welcome", "statistics", "why_choose_us", "latest_news", "admission_cta" };
+}
+
+<section data-section="hero" class="hero hero-bulletin" style="--hero:url('@banner')">
+    <partial name="Home/_HeroCarousel" model="Model" />
+    <div class="shell hero-copy">
+        <h1>@heading</h1>
+        <p>@description</p>
+        <div class="cta-row">
+            <a class="btn" href="@(hero?.ButtonLink ?? basePath + "/admission")">@(SectionJson.GetString(heroJson, "primaryButton") ?? hero?.ButtonText ?? "Admission enquiry")</a>
+            <a class="btn btn-ghost" href="@(basePath)/contact">@(SectionJson.GetString(heroJson, "secondaryButton") ?? "Contact us")</a>
+        </div>
+    </div>
+</section>
+
+@if (pillars.Count > 0)
+{
+    @* Four claims in a tight strip, above the welcome — the first thing a parent reads. *@
+    <section data-section="why_choose_us" class="bulletin-pillars">
+        <div class="shell">
+            @foreach (var pillar in pillars)
+            {
+                <article>
+                    <h3>@SectionJson.Item(pillar, "title")</h3>
+                    <p>@(SectionJson.Item(pillar, "description") ?? SectionJson.Item(pillar, "summary"))</p>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+<section data-section="welcome" class="shell bulletin-welcome">
+    <div class="bulletin-welcome__copy">
+        <p class="eyebrow">Welcome to</p>
+        <h2>@(welcome?.Title ?? brand.Name)</h2>
+        @if (!string.IsNullOrWhiteSpace(welcome?.SubTitle)) { <p class="lede">@welcome.SubTitle</p> }
+        @if (!string.IsNullOrWhiteSpace(welcome?.Description))
+        {
+            <div class="section-body">@Html.Raw(welcome.Description)</div>
+        }
+        <p><a class="text-link" href="@(basePath)/about">Read more</a></p>
+    </div>
+
+    @if (news.Count > 0)
+    {
+        @* A dated list, not cards: a parent scanning for "is school open tomorrow" wants the
+           date and the line, and wants five of them visible at once. *@
+        <aside data-section="latest_news" class="bulletin-news">
+            <h3>News &amp; notices</h3>
+            <ul>
+                @foreach (var item in news.Take(5))
+                {
+                    <li>
+                        <a href="@(basePath)/news">@item.Headline</a>
+                        @if (!string.IsNullOrWhiteSpace(item.Summary)) { <p>@item.Summary</p> }
+                        @if (item.PublishDate is DateTime published)
+                        {
+                            <time datetime="@published.ToString("yyyy-MM-dd")">@published.ToString("d MMMM yyyy")</time>
+                        }
+                    </li>
+                }
+            </ul>
+            <p><a class="text-link" href="@(basePath)/news">All notices</a></p>
+        </aside>
+    }
+</section>
+
+@if (stats is not null)
+{
+    <section data-section="statistics" class="bulletin-figures">
+        <div class="shell">
+            <div><strong>@(SectionJson.GetString(statsJson, "students") ?? "1500")+</strong><span>Students</span></div>
+            <div><strong>@(SectionJson.GetString(statsJson, "teachers") ?? "80")+</strong><span>Teachers</span></div>
+            <div><strong>@(SectionJson.GetString(statsJson, "placements") ?? "500")+</strong><span>Alumni placed</span></div>
+            <div><strong>@(SectionJson.GetString(statsJson, "years") ?? "20")+</strong><span>Years</span></div>
+        </div>
+    </section>
+}
+
+@if (cta is not null)
+{
+    <section data-section="admission_cta" class="bulletin-cta">
+        <div class="shell">
+            <div>
+                <h2>@(SectionJson.GetString(ctaJson, "heading") ?? cta.Title ?? "Admissions are open")</h2>
+                <p>@(SectionJson.GetString(ctaJson, "supportingText") ?? RichText.ToPlainText(cta.Description))</p>
+            </div>
+            <a class="btn" href="@(cta.ButtonLink ?? basePath + "/admission")">@(cta.ButtonText ?? "Apply now")</a>
+        </div>
+    </section>
+}
+
+<partial name="Home/_RemainingSections" model="Model" />

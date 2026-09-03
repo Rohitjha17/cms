@@ -106,7 +106,15 @@
     </style>
 }
 
-@if (brand.HomeVariant == HomeVariant.Modern)
+@if (brand.HomeVariant == HomeVariant.Bulletin)
+{
+    <partial name="Home/_Bulletin" model="Model.Website" />
+}
+else if (brand.HomeVariant == HomeVariant.Atrium)
+{
+    <partial name="Home/_Atrium" model="Model.Website" />
+}
+else if (brand.HomeVariant == HomeVariant.Modern)
 {
     <partial name="Home/_Modern" model="Model.Website" />
 }

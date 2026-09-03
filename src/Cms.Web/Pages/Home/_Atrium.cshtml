@@ -1,0 +1,129 @@
+@model PublicWebsiteDto
+@using Cms.Web.Helpers
+@{
+    // Spacious and editorial: a prospectus rather than a noticeboard. Few things on screen, each
+    // given room — one statement, one message, one set of pillars, one wall of photographs.
+    // Where Bulletin puts four claims in a strip, this gives each a whole row.
+    var brand = Model.Branding;
+    var basePath = Model.BasePath;
+    var hero = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "hero");
+    var about = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "about");
+    var principal = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "principal");
+    var why = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "why_choose_us");
+    var gallery = Model.HomeSections.FirstOrDefault(s => s.SectionKey == "gallery");
+
+    var heroJson = SectionJson.Parse(hero?.JsonData);
+    var aboutJson = SectionJson.Parse(about?.JsonData);
+    var principalJson = SectionJson.Parse(principal?.JsonData);
+    var whyJson = SectionJson.Parse(why?.JsonData);
+    var galleryJson = SectionJson.Parse(gallery?.JsonData);
+
+    var banner = brand.HeaderImageUrl
+        ?? "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1800&q=80";
+    var heading = SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name;
+    var description = SectionJson.GetString(heroJson, "description")
+        ?? RichText.ToPlainText(hero?.Description) ?? brand.Tagline;
+
+    var pillars = SectionJson.GetArray(whyJson, "items").Take(4).ToList();
+    var photographs = SectionJson.GetArray(galleryJson, "items").Take(8).ToList();
+
+    ViewData["renderedSections"] = new[] { "hero", "about", "principal", "why_choose_us", "gallery" };
+}
+
+<section data-section="hero" class="hero hero-atrium" style="--hero:url('@banner')">
+    <partial name="Home/_HeroCarousel" model="Model" />
+    <div class="shell hero-copy">
+        <h1>@heading</h1>
+        <p>@description</p>
+        <div class="cta-row">
+            <a class="btn" href="@(hero?.ButtonLink ?? basePath + "/admission")">@(SectionJson.GetString(heroJson, "primaryButton") ?? hero?.ButtonText ?? "Admissions")</a>
+            <a class="btn btn-ghost" href="@(basePath)/about">@(SectionJson.GetString(heroJson, "secondaryButton") ?? "Our story")</a>
+        </div>
+    </div>
+</section>
+
+@if (about is not null)
+{
+    @* One statement, held in the middle of the page with nothing beside it. *@
+    <section data-section="about" class="atrium-statement">
+        <div class="shell">
+            @if (!string.IsNullOrWhiteSpace(about.SubTitle)) { <p class="eyebrow">@about.SubTitle</p> }
+            <h2>@(about.Title ?? brand.Name)</h2>
+            @if (!string.IsNullOrWhiteSpace(about.Description))
+            {
+                <div class="section-body">@Html.Raw(about.Description)</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(about.ButtonText))
+            {
+                <p><a class="btn" href="@(about.ButtonLink ?? basePath + "/about")">@about.ButtonText</a></p>
+            }
+        </div>
+    </section>
+}
+
+@if (principal is not null)
+{
+    @* A portrait beside a quotation, at the size a portrait deserves. *@
+    <section data-section="principal" class="atrium-message">
+        <div class="shell">
+            @if (!string.IsNullOrWhiteSpace(principal.ImageUrl))
+            {
+                <figure><img src="@principal.ImageUrl" alt="@(SectionJson.GetString(principalJson, "name") ?? "Principal")" loading="lazy" /></figure>
+            }
+            <div>
+                <p class="eyebrow">@(principal.Title ?? "Principal's message")</p>
+                <blockquote>@(SectionJson.GetString(principalJson, "quote") ?? RichText.ToPlainText(principal.Description))</blockquote>
+                <p class="atrium-message__by">
+                    <strong>@SectionJson.GetString(principalJson, "name")</strong>
+                    @if (SectionJson.GetString(principalJson, "designation") is { Length: > 0 } role)
+                    {
+                        <span>@role</span>
+                    }
+                </p>
+                <p><a class="text-link" href="@(basePath)/messages">Read the full message</a></p>
+            </div>
+        </div>
+    </section>
+}
+
+@if (pillars.Count > 0)
+{
+    @* Each claim on its own row, numbered — a sequence of arguments, not a grid of tiles. *@
+    <section data-section="why_choose_us" class="atrium-pillars">
+        <div class="shell">
+            <h2>@(why?.Title ?? "What makes us different")</h2>
+            <ol>
+                @foreach (var pillar in pillars)
+                {
+                    <li>
+                        <h3>@SectionJson.Item(pillar, "title")</h3>
+                        <p>@(SectionJson.Item(pillar, "description") ?? SectionJson.Item(pillar, "summary"))</p>
+                    </li>
+                }
+            </ol>
+        </div>
+    </section>
+}
+
+@if (photographs.Count > 0)
+{
+    <section data-section="gallery" class="atrium-wall">
+        <div class="shell">
+            <h2>@(gallery?.Title ?? "Life here")</h2>
+        </div>
+        <div class="atrium-wall__grid">
+            @foreach (var photo in photographs)
+            {
+                var url = SectionJson.Item(photo, "imageUrl") ?? SectionJson.Item(photo, "url");
+                if (!string.IsNullOrWhiteSpace(url))
+                {
+                    <figure>
+                        <img src="@url" alt="@(SectionJson.Item(photo, "caption") ?? gallery?.Title)" loading="lazy" />
+                    </figure>
+                }
+            }
+        </div>
+    </section>
+}
+
+<partial name="Home/_RemainingSections" model="Model" />

@@ -78,9 +78,10 @@
     }
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    @{ var typeface = Cms.Web.Helpers.DesignIdentity.Fonts(brand.HomeVariant); }
+    <link href="https://fonts.googleapis.com/css2?@(typeface.Query)&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")@(buttonColor is null ? "" : $"--btn-color:{buttonColor};")@(hoverColor is null ? "" : $"--hover-color:{hoverColor};")}</style>
+    <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")@(buttonColor is null ? "" : $"--btn-color:{buttonColor};")@(hoverColor is null ? "" : $"--hover-color:{hoverColor};")--font-display:@typeface.Display;--font-body:@typeface.Body;}</style>
 </head>
 <body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant() @skin" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
     @if (!string.IsNullOrWhiteSpace(settings.NoticeTicker))
