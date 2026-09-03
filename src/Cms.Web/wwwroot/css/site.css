@@ -1380,3 +1380,27 @@ body.popup-open { overflow: hidden; }
 @media print {
   .lightbox, .scroll-progress, .site-popup { display: none !important; }
 }
+
+/* ===========================================================================
+   Section backdrops — a photograph, a drawn pattern, or both.
+   The layers below are inert until the home page emits a rule naming a section;
+   nothing here applies to a section that was never given a backdrop.
+   =========================================================================== */
+
+[data-section] { position: relative; }
+
+/* Behind the section's own content, never over it. */
+[data-section]::before,
+[data-section]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+}
+[data-section]::before { background-size: cover; }
+[data-section]::after { background-size: 22px 22px; color: var(--ink); }
+[data-section] > * { position: relative; z-index: 1; }

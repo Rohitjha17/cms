@@ -119,7 +119,7 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
         // The copies that close the loop are made in the browser, against the measured width.
         // The page itself must carry the notice exactly once, or a reader without JavaScript —
         // and every screen reader — hears it twice.
-        Assert.Equal(1, System.Text.RegularExpressions.Regex.Matches(html, "Admissions are open").Count);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(html, "Admissions are open"));
     }
 
     /// <summary>

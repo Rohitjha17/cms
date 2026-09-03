@@ -981,6 +981,7 @@ public sealed class WebsiteService : IWebsiteService
                 ButtonText = s.ButtonText,
                 ButtonLink = ToPublicUrl(s.ButtonLink, siteBasePath),
                 ImageUrl = s.ImageUrl,
+                BackgroundImageUrl = s.BackgroundImageUrl,
                 JsonData = s.JsonData,
                 DisplayOrder = s.DisplayOrder
             }).ToList()

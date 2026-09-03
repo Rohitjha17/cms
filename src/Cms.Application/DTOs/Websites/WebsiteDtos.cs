@@ -154,6 +154,14 @@ public sealed class HomeSectionPublicDto
     public string? ButtonText { get; set; }
     public string? ButtonLink { get; set; }
     public string? ImageUrl { get; set; }
+
+    /// <summary>
+    /// The section's backdrop. The console has offered this since the beginning and the website
+    /// never carried it out here, so a school could pick a background, save it, see the preview,
+    /// and find the page unchanged.
+    /// </summary>
+    public string? BackgroundImageUrl { get; set; }
+
     public string? JsonData { get; set; }
     public int DisplayOrder { get; set; }
 }

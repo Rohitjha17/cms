@@ -23,6 +23,47 @@
     <script>window.cmsSectionAnimations = @Html.Raw(JsonSerializer.Serialize(animations));</script>
 }
 
+@{
+    // A background belongs to one section, and every design lays its sections out differently,
+    // so it is applied by selector rather than by editing six partials. Emitting the rules here
+    // rather than setting them from script also means the background is painted on first paint —
+    // a photograph that fades in after the text has settled looks like a mistake.
+    var backdrops = Model.Website.HomeSections
+        .Select(section => new
+        {
+            section.SectionKey,
+            Image = section.BackgroundImageUrl,
+            Pattern = SectionJson.GetString(SectionJson.Parse(section.JsonData), "background")
+        })
+        .Where(x => !string.IsNullOrWhiteSpace(x.Image) || !string.IsNullOrWhiteSpace(x.Pattern))
+        .ToList();
+}
+
+@if (backdrops.Count > 0)
+{
+    <style>
+        @foreach (var backdrop in backdrops)
+        {
+            var photo = SectionBackdrop.SafeUrl(backdrop.Image);
+            var pattern = SectionBackdrop.Pattern(backdrop.Pattern);
+            var selector = $"[data-section=\"{backdrop.SectionKey}\"]";
+
+            if (photo.Length > 0)
+            {
+                @Html.Raw($"{selector}::before{{background-image:url(\"{photo}\");opacity:1}}")
+                // A veil under the type, or the words vanish into whatever photograph was picked.
+                var veil = "color-mix(in srgb, var(--surface) 86%, transparent)";
+                var over = pattern == "none" ? string.Empty : "," + pattern;
+                @Html.Raw($"{selector}::after{{background-image:linear-gradient({veil},{veil}){over};background-size:cover,22px 22px;opacity:1}}")
+            }
+            else if (pattern != "none")
+            {
+                @Html.Raw($"{selector}::after{{background-image:{pattern};opacity:.07}}")
+            }
+        }
+    </style>
+}
+
 @if (brand.HomeVariant == HomeVariant.Modern)
 {
     <partial name="Home/_Modern" model="Model.Website" />
