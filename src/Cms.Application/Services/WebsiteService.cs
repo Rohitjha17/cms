@@ -798,15 +798,6 @@ public sealed class WebsiteService : IWebsiteService
             await _repository.AddDomainAsync(domain, cancellationToken);
         }
 
-        // Taking the last live host off a bound website makes that school unreachable,
-        // so it must be an explicit act elsewhere, not a side effect of an edit here.
-        if (id.HasValue && domain.SiteId is Guid boundSite
-            && (!dto.IsActive || dto.SiteId != domain.SiteId))
-        {
-            await GuardTheConsolesOwnAddressAsync(
-                tenantId, boundSite, domain.Id, domain.IsActive, cancellationToken);
-        }
-
         domain.DomainName = dto.DomainName;
         domain.SiteId = dto.SiteId;
         domain.IsActive = dto.IsActive;
@@ -833,71 +824,9 @@ public sealed class WebsiteService : IWebsiteService
         var domain = await _repository.GetDomainByIdAsync(tenantId, id, cancellationToken)
             ?? throw new NotFoundException("Domain was not found.");
 
-        if (domain.SiteId is Guid boundSite)
-        {
-            await GuardTheConsolesOwnAddressAsync(
-                tenantId, boundSite, domain.Id, domain.IsActive, cancellationToken);
-        }
-
         _repository.RemoveDomain(domain);
         await _repository.SaveChangesAsync(cancellationToken);
         _hostCache.Invalidate();
-    }
-
-    /// <summary>
-    /// Refuses an edit that would leave a website with no live host, which would make that
-    /// school's site unreachable without any warning.
-    /// </summary>
-    /// <summary>
-    /// Refuses to take a live website's last address away.
-    ///
-    /// It only applies when there is something to strand. A host that is already switched off is
-    /// serving nobody, and a website that has been switched off has nobody to lose — guarding
-    /// those left a school's only domain impossible to remove or even disable, with no way out
-    /// of the console at all.
-    /// </summary>
-    /// <summary>
-    /// Refuses only the removal that cannot be undone from here: the console's own address.
-    ///
-    /// Taking the last address off a school's website makes that school unreachable, and this
-    /// used to refuse that too. But switching the website off, moving the domain and switching
-    /// it back on reaches exactly the same end state in three times the clicks — a guard that is
-    /// trivially walked around is not protecting anything, it is only in the way. The Domains
-    /// page already names every website left without a live address, in a warning above the
-    /// list, so the operator is told rather than stopped.
-    ///
-    /// The console is different. Its address is how anyone signs in, and losing it locks the
-    /// operator out of the very screen they would use to put it back — there is no way home
-    /// except editing the database by hand.
-    /// </summary>
-    private async Task GuardTheConsolesOwnAddressAsync(
-        Guid tenantId,
-        Guid siteId,
-        Guid excludingDomainId,
-        bool hostIsLive,
-        CancellationToken cancellationToken)
-    {
-        if (!hostIsLive)
-        {
-            return;
-        }
-
-        var site = await _repository.GetSiteAsync(tenantId, siteId, cancellationToken);
-        if (site is null || !site.IsActive || !string.Equals(site.SiteKey, "platform", StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        var remaining = (await _repository.GetDomainsAsync(tenantId, cancellationToken))
-            .Count(x => x.SiteId == siteId && x.IsActive && x.Id != excludingDomainId);
-
-        if (remaining == 0)
-        {
-            throw new ValidationAppException(
-                $"'{site.Name}' is the address you sign in on, and this is its only live one. "
-                + "Removing it would lock everyone out of this console with no way back in. "
-                + "Add another address for it first.");
-        }
     }
 
     public async Task<SiteBrandingDto> GetBrandingAsync(CancellationToken cancellationToken)
