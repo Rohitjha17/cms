@@ -1,3 +1,4 @@
+using Cms.Admin.Filters;
 using Cms.Application.DTOs.Websites;
 using Cms.Application.Interfaces;
 using Cms.Domain.Constants;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Cms.Admin.Areas.CMS.Pages.Domains;
 
-public sealed class IndexModel : PageModel
+public sealed class IndexModel : PageModel, IReloadablePage
 {
     private readonly IWebsiteService _service;
     private readonly IConfiguration _configuration;
@@ -111,6 +112,13 @@ public sealed class IndexModel : PageModel
         return RedirectToPage();
     }
 
+
+    /// <summary>
+    /// Refetches the lists when a save or a removal is refused. Without it the page comes back
+    /// with the error beside an empty table, which reads as though the refused action destroyed
+    /// everything — the opposite of what happened.
+    /// </summary>
+    public Task ReloadAsync(CancellationToken cancellationToken) => LoadAsync(cancellationToken);
     private async Task LoadAsync(CancellationToken cancellationToken)
     {
         Domains = await _service.GetDomainsAsync(cancellationToken);

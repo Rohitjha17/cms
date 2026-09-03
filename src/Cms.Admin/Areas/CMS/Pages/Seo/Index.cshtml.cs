@@ -1,3 +1,4 @@
+using Cms.Admin.Filters;
 using Cms.Application.DTOs.Content;
 using Cms.Application.Interfaces;
 using FluentValidation;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Cms.Admin.Areas.CMS.Pages.Seo;
 
-public sealed class IndexModel : PageModel
+public sealed class IndexModel : PageModel, IReloadablePage
 {
     // The lengths Google actually truncates at. Used for the counters and the audit.
     public const int TitleMin = 30;
@@ -62,6 +63,13 @@ public sealed class IndexModel : PageModel
         return RedirectToPage();
     }
 
+
+    /// <summary>
+    /// Refetches the lists when a save or a removal is refused. Without it the page comes back
+    /// with the error beside an empty table, which reads as though the refused action destroyed
+    /// everything — the opposite of what happened.
+    /// </summary>
+    public Task ReloadAsync(CancellationToken cancellationToken) => LoadContextAsync(cancellationToken);
     private async Task LoadContextAsync(CancellationToken cancellationToken)
     {
         try
