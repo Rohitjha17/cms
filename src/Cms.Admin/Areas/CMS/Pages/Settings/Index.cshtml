@@ -282,11 +282,24 @@
 
                 <label class="field full">
                     <span>Poster images</span>
-                    <span class="upload-row">
-                        <input asp-for="Input.PopupImageUrl" id="settings-popup-image" data-picker-append placeholder="/uploads/… or https://…" />
+                    <span class="upload-row upload-row--stacked">
+                        <textarea asp-for="Input.PopupImageUrl" id="settings-popup-image" data-picker-append rows="4"
+                                  placeholder="/uploads/admissions.jpg&#10;/uploads/results.jpg&#10;/uploads/open-day.jpg"></textarea>
                         <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#settings-popup-image">Browse media</button>
                     </span>
-                    <small class="hint">A tall poster works best — roughly 800×1100. Browse adds to the list; several posters are separated by <code>|</code>.</small>
+                    <small class="hint">One address per line, as many as you like. Browse adds to the list rather than replacing it.</small>
+                </label>
+
+                <label class="field">
+                    <span>Popup width (pixels)</span>
+                    <input asp-for="Input.PopupWidth" type="number" min="0" max="1400" placeholder="960" />
+                    <small class="hint">0 uses 960 with a form beside the poster, 560 without. Narrower suits a tall poster.</small>
+                </label>
+
+                <label class="field">
+                    <span>Poster height (pixels)</span>
+                    <input asp-for="Input.PopupHeight" type="number" min="0" max="1200" placeholder="0" />
+                    <small class="hint">0 lets the picture decide. This crops the poster only — the form beside it keeps the room its fields need.</small>
                 </label>
 
                 <label class="field">

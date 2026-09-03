@@ -83,6 +83,70 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
         Assert.Single(System.Text.RegularExpressions.Regex.Matches(html, "site-popup__slide is-active"));
     }
 
+    /// <summary>
+    /// Anyone pasting a handful of addresses puts one on each line. The bar still works, so
+    /// nothing saved before this reads back differently.
+    /// </summary>
+    [Theory]
+    [InlineData("/uploads/a.jpg\n/uploads/b.jpg\n/uploads/c.jpg")]
+    [InlineData("/uploads/a.jpg | /uploads/b.jpg | /uploads/c.jpg")]
+    [InlineData("/uploads/a.jpg\r\n/uploads/b.jpg | /uploads/c.jpg")]
+    public async Task PostersSeparatedEitherWay_AllReachThePage(string entered)
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["popupEnabled"] = true,
+            ["popupImageUrl"] = entered
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("/uploads/a.jpg", html);
+        Assert.Contains("/uploads/b.jpg", html);
+        Assert.Contains("/uploads/c.jpg", html);
+        Assert.Equal(3, System.Text.RegularExpressions.Regex.Matches(html, "data-popup-dot=").Count);
+    }
+
+    /// <summary>
+    /// A tall poster in a wide panel is mostly empty space, and a wide one squeezed into a
+    /// narrow panel cannot be read. Both are the school's to set, within reason.
+    /// </summary>
+    [Theory]
+    [InlineData(620, 900, "--popup-width:620px", "--popup-poster-height:900px")]
+    [InlineData(99999, 99999, "--popup-width:1400px", "--popup-poster-height:1200px")]
+    [InlineData(10, 10, "--popup-width:280px", "--popup-poster-height:160px")]
+    public async Task ThePopupSize_ReachesThePageWithinReason(
+        int width, int height, string expectedWidth, string expectedHeight)
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["popupEnabled"] = true,
+            ["popupImageUrl"] = "/uploads/a.jpg",
+            ["popupWidth"] = width,
+            ["popupHeight"] = height
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains(expectedWidth, html);
+        Assert.Contains(expectedHeight, html);
+    }
+
+    [Fact]
+    public async Task NoSizeChosen_LeavesThePopupAsItWas()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["popupEnabled"] = true,
+            ["popupImageUrl"] = "/uploads/a.jpg"
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.DoesNotContain("--popup-width", html);
+        Assert.DoesNotContain("--popup-poster-height", html);
+    }
+
     /// <summary>One poster is a poster, not a slideshow: no dots, nothing to move between.</summary>
     [Fact]
     public async Task OnePoster_HasNoControls()

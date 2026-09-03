@@ -1180,7 +1180,7 @@ body.nav-locked { overflow: hidden; }
   display: flex;
   flex-wrap: wrap;
   gap: 0;
-  width: min(960px, 100%);
+  width: min(var(--popup-width, 960px), 100%);
   max-height: 90vh;
   overflow: auto;
   border-radius: 14px;
@@ -1248,7 +1248,12 @@ body.nav-locked { overflow: hidden; }
   font-size: .9rem;
 }
 /* A poster on its own should not be stretched to a form's width. */
-.site-popup__panel:not(:has(.site-popup__form)) { width: min(560px, 100%); }
+.site-popup__panel:not(:has(.site-popup__form)) { width: min(var(--popup-width, 560px), 100%); }
+
+/* A height the school set applies to the poster, not the panel: the form beside it has to keep
+   whatever room its fields need, and cropping that would lose the last question. */
+.site-popup__poster { max-height: var(--popup-poster-height, none); overflow: hidden; }
+.site-popup__slide img { max-height: var(--popup-poster-height, none); }
 body.popup-open { overflow: hidden; }
 
 /* --- Per-section reveal styles -------------------------------------------- */

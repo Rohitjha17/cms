@@ -13,7 +13,10 @@
       state.target.value = url;
       return;
     }
-    state.target.value = state.target.value.trim().replace(/\s*\|\s*$/, "") + " | " + url;
+    // A box with room for several lines gets one address per line; a single-line field keeps
+    // the bar, so anything saved that way still reads back the same.
+    var separator = state.target.tagName === "TEXTAREA" ? "\n" : " | ";
+    state.target.value = state.target.value.trim().replace(/[\s|]+$/, "") + separator + url;
   }
 
   function ensureModal() {

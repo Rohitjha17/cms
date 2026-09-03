@@ -2126,3 +2126,8 @@ svg {
   .template-gallery { grid-template-columns: 1fr; }
   .site-template__body .btn { width: 100%; }
 }
+
+/* A list of addresses needs room to be read, so the button sits under the box rather than
+   beside it — a 4-line textarea and a button on one row leaves the button floating. */
+.upload-row--stacked { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; }
+.upload-row--stacked textarea { width: 100%; resize: vertical; }

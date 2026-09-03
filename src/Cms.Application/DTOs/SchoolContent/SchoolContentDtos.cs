@@ -368,11 +368,27 @@ public sealed class SiteSettingsDto
     /// </summary>
     public int PopupAutoCloseSeconds { get; set; }
 
-    /// <summary>The posters as a list, in the order they were entered.</summary>
+    /// <summary>
+    /// The posters as a list, in the order they were entered. One per line is what anyone
+    /// pasting a handful of addresses will do, and the bar still works for anything already
+    /// saved that way.
+    /// </summary>
     public IReadOnlyList<string> PopupImages =>
         string.IsNullOrWhiteSpace(PopupImageUrl)
             ? []
-            : PopupImageUrl.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            : PopupImageUrl.Split(
+                ['|', '\n', '\r'],
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    /// <summary>
+    /// How wide the popup may be, in pixels. A tall poster in a wide panel is mostly empty
+    /// space, and a wide one squeezed into a narrow panel cannot be read at all.
+    /// Zero keeps the standard width.
+    /// </summary>
+    public int PopupWidth { get; set; }
+
+    /// <summary>How tall the poster may be, in pixels. Zero lets the picture decide.</summary>
+    public int PopupHeight { get; set; }
     public string? PopupHeading { get; set; }
 
     /// <summary>Where the poster leads when clicked. Left empty, the poster is not a link.</summary>

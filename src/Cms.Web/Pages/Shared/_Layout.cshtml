@@ -214,6 +214,9 @@
              hidden>
             <div class="site-popup__backdrop" data-popup-close></div>
             <div class="site-popup__panel" role="dialog" aria-modal="true"
+                 style="@(string.Concat(
+                     settings.PopupWidth > 0 ? $"--popup-width:{Math.Clamp(settings.PopupWidth, 280, 1400)}px;" : "",
+                     settings.PopupHeight > 0 ? $"--popup-poster-height:{Math.Clamp(settings.PopupHeight, 160, 1200)}px;" : ""))"
                  aria-label="@(settings.PopupHeading ?? brand.Name)">
                 <button class="site-popup__close" type="button" data-popup-close aria-label="Close">&times;</button>
                 @if (settings.PopupImages.Count > 0)
