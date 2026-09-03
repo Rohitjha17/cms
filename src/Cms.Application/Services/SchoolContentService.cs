@@ -318,6 +318,8 @@ public sealed class SchoolContentService : ISchoolContentService
 
             PopupEnabled = Boolean(json, "popupEnabled"),
             PopupImageUrl = String(json, "popupImageUrl"),
+            PopupSlideSeconds = Number(json, "popupSlideSeconds") ?? 0,
+            PopupAutoCloseSeconds = Number(json, "popupAutoCloseSeconds") ?? 0,
             PopupHeading = String(json, "popupHeading"),
             PopupLinkUrl = String(json, "popupLinkUrl"),
             PopupShowEnquiryForm = Boolean(json, "popupShowEnquiryForm"),
@@ -353,6 +355,8 @@ public sealed class SchoolContentService : ISchoolContentService
 
             ["popupEnabled"] = dto.PopupEnabled,
             ["popupImageUrl"] = Clean(dto.PopupImageUrl),
+            ["popupSlideSeconds"] = dto.PopupSlideSeconds,
+            ["popupAutoCloseSeconds"] = dto.PopupAutoCloseSeconds,
             ["popupHeading"] = Clean(dto.PopupHeading),
             ["popupLinkUrl"] = Clean(dto.PopupLinkUrl),
             ["popupShowEnquiryForm"] = dto.PopupShowEnquiryForm,

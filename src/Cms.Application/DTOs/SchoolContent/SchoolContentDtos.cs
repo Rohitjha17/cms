@@ -278,7 +278,27 @@ public sealed class SiteSettingsDto
     // ------------------------------------------------------------------ Opening popup
 
     public bool PopupEnabled { get; set; }
+
+    /// <summary>
+    /// The posters, separated by a vertical bar. A school runs an admissions poster and a
+    /// results poster at the same time and wants both seen, which one image could never do.
+    /// </summary>
     public string? PopupImageUrl { get; set; }
+
+    /// <summary>Seconds each poster is shown before the next. Zero leaves the first one up.</summary>
+    public int PopupSlideSeconds { get; set; }
+
+    /// <summary>
+    /// Seconds before the popup closes itself. Zero waits for the visitor, which is right when
+    /// there is a form to fill in and wrong when there is only a poster to glance at.
+    /// </summary>
+    public int PopupAutoCloseSeconds { get; set; }
+
+    /// <summary>The posters as a list, in the order they were entered.</summary>
+    public IReadOnlyList<string> PopupImages =>
+        string.IsNullOrWhiteSpace(PopupImageUrl)
+            ? []
+            : PopupImageUrl.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     public string? PopupHeading { get; set; }
 
     /// <summary>Where the poster leads when clicked. Left empty, the poster is not a link.</summary>
@@ -293,6 +313,5 @@ public sealed class SiteSettingsDto
     public bool PopupOncePerVisit { get; set; } = true;
 
     /// <summary>Nothing to show is not the same as switched on, and an empty box helps nobody.</summary>
-    public bool HasPopup =>
-        PopupEnabled && (!string.IsNullOrWhiteSpace(PopupImageUrl) || PopupShowEnquiryForm);
+    public bool HasPopup => PopupEnabled && (PopupImages.Count > 0 || PopupShowEnquiryForm);
 }

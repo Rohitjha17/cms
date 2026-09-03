@@ -59,6 +59,63 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
     }
 
     /// <summary>
+    /// A school runs an admissions poster and a results poster at once and wants both seen. One
+    /// image could never do that, and a second popup would be worse than none.
+    /// </summary>
+    [Fact]
+    public async Task SeveralPosters_AllReachThePageWithControlsToMoveBetweenThem()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["popupEnabled"] = true,
+            ["popupImageUrl"] = "/uploads/admissions.jpg | /uploads/results.jpg | /uploads/openday.jpg",
+            ["popupSlideSeconds"] = 3
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("/uploads/admissions.jpg", html);
+        Assert.Contains("/uploads/results.jpg", html);
+        Assert.Contains("/uploads/openday.jpg", html);
+        Assert.Contains("data-popup-slide=\"3\"", html);
+        // Three posters, three dots — and only the first showing to begin with.
+        Assert.Equal(3, System.Text.RegularExpressions.Regex.Matches(html, "data-popup-dot=").Count);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(html, "site-popup__slide is-active"));
+    }
+
+    /// <summary>One poster is a poster, not a slideshow: no dots, nothing to move between.</summary>
+    [Fact]
+    public async Task OnePoster_HasNoControls()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["popupEnabled"] = true,
+            ["popupImageUrl"] = "/uploads/admissions.jpg"
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("/uploads/admissions.jpg", html);
+        Assert.DoesNotContain("data-popup-dot=", html);
+    }
+
+    [Theory]
+    [InlineData(20, "data-popup-autoclose=\"20\"")]
+    [InlineData(9999, "data-popup-autoclose=\"120\"")]
+    [InlineData(0, "data-popup-autoclose=\"0\"")]
+    public async Task TheAutoCloseDelay_ReachesThePageWithinReason(int seconds, string expected)
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["popupEnabled"] = true,
+            ["popupImageUrl"] = "/uploads/admissions.jpg",
+            ["popupAutoCloseSeconds"] = seconds
+        });
+
+        Assert.Contains(expected, await _client.GetStringAsync("/"));
+    }
+
+    /// <summary>
     /// Switched on with nothing in it would open an empty white box over the website on every
     /// visit — worse than leaving it off.
     /// </summary>

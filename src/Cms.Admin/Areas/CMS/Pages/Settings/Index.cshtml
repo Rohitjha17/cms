@@ -138,12 +138,24 @@
                 </label>
 
                 <label class="field full">
-                    <span>Poster image</span>
+                    <span>Poster images</span>
                     <span class="upload-row">
-                        <input asp-for="Input.PopupImageUrl" id="settings-popup-image" placeholder="/uploads/… or https://…" />
+                        <input asp-for="Input.PopupImageUrl" id="settings-popup-image" data-picker-append placeholder="/uploads/… or https://…" />
                         <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#settings-popup-image">Browse media</button>
                     </span>
-                    <small class="hint">A tall poster works best — roughly 800×1100. Upload it under Media first.</small>
+                    <small class="hint">A tall poster works best — roughly 800×1100. Browse jodta jayega; ek se zyada poster <code>|</code> se alag rehte hain.</small>
+                </label>
+
+                <label class="field">
+                    <span>Poster badalne ka samay (seconds)</span>
+                    <input asp-for="Input.PopupSlideSeconds" type="number" min="0" max="60" placeholder="3" />
+                    <small class="hint">0 pehla poster hi rehne deta hai. Do-teen poster ke liye 3 theek hai.</small>
+                </label>
+
+                <label class="field">
+                    <span>Apne aap band (seconds)</span>
+                    <input asp-for="Input.PopupAutoCloseSeconds" type="number" min="0" max="120" placeholder="0" />
+                    <small class="hint">0 visitor ke band karne ka intezaar karta hai. Form laga ho to ye lagu nahi hota — koi likh raha ho to band karna theek nahi.</small>
                 </label>
 
                 <label class="field"><span>Heading</span><input asp-for="Input.PopupHeading" placeholder="Admissions open 2027–28" /></label>

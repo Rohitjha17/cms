@@ -254,16 +254,28 @@
     try { window.sessionStorage.setItem(STORAGE_KEY, "1"); } catch (e) { /* not worth failing over */ }
   }
 
+  var autoCloseTimer = null;
+
   function open() {
     popup.hidden = false;
     document.body.classList.add("popup-open");
     var focusable = popup.querySelector("input, button");
     if (focusable) focusable.focus({ preventScroll: true });
+    startSlides();
+
+    // A poster is glanced at; a form is filled in. Closing on a timer while someone is typing
+    // would throw their answer away, so a popup with a form is never closed for them.
+    var seconds = parseInt(popup.getAttribute("data-popup-autoclose") || "0", 10);
+    if (seconds > 0 && !popup.querySelector(".site-popup__form")) {
+      autoCloseTimer = window.setTimeout(close, seconds * 1000);
+    }
   }
 
   function close() {
     popup.hidden = true;
     document.body.classList.remove("popup-open");
+    window.clearInterval(slideTimer);
+    window.clearTimeout(autoCloseTimer);
     remember();
   }
 
@@ -275,6 +287,33 @@
     // A beat after load, so the popup does not fight the page for attention while it paints.
     window.setTimeout(open, hasStatus ? 0 : 900);
   }
+
+  /* --- posters taking turns --------------------------------------------- */
+
+  var slides = Array.prototype.slice.call(popup.querySelectorAll(".site-popup__slide"));
+  var dots = Array.prototype.slice.call(popup.querySelectorAll("[data-popup-dot]"));
+  var slideAt = 0;
+  var slideTimer = null;
+
+  function showSlide(next) {
+    slideAt = (next + slides.length) % slides.length;
+    slides.forEach(function (slide, i) { slide.classList.toggle("is-active", i === slideAt); });
+    dots.forEach(function (dot, i) { dot.classList.toggle("is-active", i === slideAt); });
+  }
+
+  function startSlides() {
+    var seconds = parseInt(popup.getAttribute("data-popup-slide") || "0", 10);
+    if (!(seconds > 0) || slides.length < 2) return;
+    slideTimer = window.setInterval(function () { showSlide(slideAt + 1); }, seconds * 1000);
+  }
+
+  dots.forEach(function (dot) {
+    dot.addEventListener("click", function () {
+      // Taking control means the rotation stops fighting the visitor for the poster.
+      window.clearInterval(slideTimer);
+      showSlide(parseInt(dot.getAttribute("data-popup-dot"), 10));
+    });
+  });
 
   popup.addEventListener("click", function (event) {
     if (event.target.closest("[data-popup-close]")) close();

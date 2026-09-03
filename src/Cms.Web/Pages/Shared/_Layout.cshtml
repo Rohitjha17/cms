@@ -176,21 +176,39 @@
             : settings.PopupFormHeading;
         <div class="site-popup" data-site-popup
              data-popup-key="@(settings.PopupOncePerVisit ? "visit" : "always")"
+             data-popup-slide="@(settings.PopupSlideSeconds > 0 ? Math.Clamp(settings.PopupSlideSeconds, 1, 60) : 0)"
+             data-popup-autoclose="@(settings.PopupAutoCloseSeconds > 0 ? Math.Clamp(settings.PopupAutoCloseSeconds, 2, 120) : 0)"
              hidden>
             <div class="site-popup__backdrop" data-popup-close></div>
             <div class="site-popup__panel" role="dialog" aria-modal="true"
                  aria-label="@(settings.PopupHeading ?? brand.Name)">
                 <button class="site-popup__close" type="button" data-popup-close aria-label="Close">&times;</button>
-                @if (!string.IsNullOrWhiteSpace(settings.PopupImageUrl))
+                @if (settings.PopupImages.Count > 0)
                 {
+                    var posterAlt = settings.PopupHeading ?? brand.Name;
                     <div class="site-popup__poster">
-                        @if (!string.IsNullOrWhiteSpace(settings.PopupLinkUrl))
+                        @for (var i = 0; i < settings.PopupImages.Count; i++)
                         {
-                            <a href="@settings.PopupLinkUrl"><img src="@settings.PopupImageUrl" alt="@(settings.PopupHeading ?? brand.Name)" /></a>
+                            <figure class="site-popup__slide @(i == 0 ? "is-active" : null)">
+                                @if (!string.IsNullOrWhiteSpace(settings.PopupLinkUrl))
+                                {
+                                    <a href="@settings.PopupLinkUrl"><img src="@settings.PopupImages[i]" alt="@posterAlt" /></a>
+                                }
+                                else
+                                {
+                                    <img src="@settings.PopupImages[i]" alt="@posterAlt" />
+                                }
+                            </figure>
                         }
-                        else
+                        @if (settings.PopupImages.Count > 1)
                         {
-                            <img src="@settings.PopupImageUrl" alt="@(settings.PopupHeading ?? brand.Name)" />
+                            <div class="site-popup__dots">
+                                @for (var i = 0; i < settings.PopupImages.Count; i++)
+                                {
+                                    <button type="button" class="@(i == 0 ? "is-active" : null)"
+                                            data-popup-dot="@i" aria-label="Poster @(i + 1)"></button>
+                                }
+                            </div>
                         }
                     </div>
                 }

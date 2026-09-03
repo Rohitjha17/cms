@@ -5,6 +5,17 @@
     filter: "all"
   };
 
+  /// A field that holds a list — several posters, say — must gain the new choice, not lose the
+  /// ones already there. Marked with data-picker-append; every other field is replaced as before.
+  function setTarget(url) {
+    if (!state.target) return;
+    if (state.target.dataset.pickerAppend === undefined || !state.target.value.trim()) {
+      state.target.value = url;
+      return;
+    }
+    state.target.value = state.target.value.trim().replace(/\s*\|\s*$/, "") + " | " + url;
+  }
+
   function ensureModal() {
     let modal = document.getElementById("cms-media-picker");
     if (modal) return modal;
@@ -45,7 +56,7 @@
       }
       const pick = event.target.closest("[data-picker-url]");
       if (pick && state.target) {
-        state.target.value = pick.dataset.pickerUrl || "";
+        setTarget(pick.dataset.pickerUrl || "");
         state.target.dispatchEvent(new Event("input", { bubbles: true }));
         state.target.dispatchEvent(new Event("change", { bubbles: true }));
         closePicker();
@@ -80,7 +91,7 @@
         // Select what was just uploaded, so one action finishes the job.
         const newest = state.files.find((item) => item.fileName === file.name);
         if (newest && state.target) {
-          state.target.value = newest.url;
+          setTarget(newest.url);
           state.target.dispatchEvent(new Event("input", { bubbles: true }));
           state.target.dispatchEvent(new Event("change", { bubbles: true }));
           status.textContent = `${file.name} added.`;
