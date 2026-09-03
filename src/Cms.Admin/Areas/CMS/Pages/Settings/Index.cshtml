@@ -127,6 +127,28 @@
                 </label>
 
                 <label class="field">
+                    <span>Notice bar style</span>
+                    <select asp-for="Input.NoticeBarStyle">
+                        <option value="">Design ka apna</option>
+                        <option value="solid">Solid</option>
+                        <option value="gradient">Gradient</option>
+                        <option value="dark">Dark</option>
+                        <option value="outline">Outline</option>
+                    </select>
+                </label>
+
+                <label class="switch-row full">
+                    <input asp-for="Input.TopBarIcons" type="checkbox" />
+                    <span><strong>Top bar mein icons dikhaiye</strong><small>Phone aur email ke saath icon, aur Settings mein bhare hue social links bhi upar aa jayenge.</small></span>
+                </label>
+
+                <label class="field">
+                    <span>Button colour</span>
+                    <input asp-for="Input.ButtonColor" placeholder="#c0392b" />
+                    <small class="hint">Sirf buttons ka colour. Khaali chhodne par brand colour lagta hai — pehle poori site ka colour badalna padta tha.</small>
+                </label>
+
+                <label class="field">
                     <span>Button style</span>
                     <select asp-for="Input.ButtonStyle">
                         <option value="">Design ka apna</option>

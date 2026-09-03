@@ -281,6 +281,18 @@ public sealed class SiteSettingsDto
     /// </summary>
     public string? NoticeBarColor { get; set; }
 
+    /// <summary>
+    /// The buttons' own colour. Until now they took the brand colour, so a school that wanted a
+    /// louder button had to repaint the whole site to get one. Empty keeps the brand colour.
+    /// </summary>
+    public string? ButtonColor { get; set; }
+
+    /// <summary>solid · gradient · dark · outline. How the notice strip itself is painted.</summary>
+    public string? NoticeBarStyle { get; set; }
+
+    /// <summary>Draws the phone, email and social links in the top strip as icons.</summary>
+    public bool TopBarIcons { get; set; }
+
     /// <summary>solid · outline · soft · gradient. Empty is the design's own button.</summary>
     public string? ButtonStyle { get; set; }
 

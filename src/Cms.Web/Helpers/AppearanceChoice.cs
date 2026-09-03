@@ -13,11 +13,16 @@ public static class AppearanceChoice
     private static readonly string[] ButtonShapes = ["rounded", "pill", "square"];
     private static readonly string[] ButtonHovers = ["lift", "fill", "glow", "slide"];
     private static readonly string[] CardHovers = ["lift", "zoom", "glow", "tilt"];
+    private static readonly string[] NoticeStyles = ["solid", "gradient", "dark", "outline"];
 
     public static string? ButtonStyle(string? value) => Pick(value, ButtonStyles, "btn-style-");
     public static string? ButtonShape(string? value) => Pick(value, ButtonShapes, "btn-shape-");
     public static string? ButtonHover(string? value) => Pick(value, ButtonHovers, "btn-hover-");
     public static string? CardHover(string? value) => Pick(value, CardHovers, "card-hover-");
+    public static string? NoticeStyle(string? value) => Pick(value, NoticeStyles, "notice-bar--");
+
+    /// <summary>A section's own hover, applied to the cards inside it.</summary>
+    public static string? SectionHover(string? value) => Pick(value, CardHovers, "card-hover-");
 
     private static string? Pick(string? value, string[] allowed, string prefix)
     {

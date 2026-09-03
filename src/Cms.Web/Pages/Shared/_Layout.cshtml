@@ -22,6 +22,19 @@
     Cms.Application.DTOs.SchoolContent.SiteSettingsDto settings;
     try { settings = await SchoolContent.GetSettingsAsync(Context.RequestAborted); }
     catch { settings = new Cms.Application.DTOs.SchoolContent.SiteSettingsDto(); }
+
+    // Only names this application recognises become classes or colours; anything else is
+    // nothing at all rather than a value passed into the page's own markup on trust.
+    var skin = string.Join(' ', new[]
+    {
+        Cms.Web.Helpers.AppearanceChoice.ButtonStyle(settings.ButtonStyle),
+        Cms.Web.Helpers.AppearanceChoice.ButtonShape(settings.ButtonShape),
+        Cms.Web.Helpers.AppearanceChoice.ButtonHover(settings.ButtonHover),
+        Cms.Web.Helpers.AppearanceChoice.CardHover(settings.CardHover)
+    }.Where(x => x is not null));
+    var noticeColor = Cms.Web.Helpers.AppearanceChoice.Color(settings.NoticeBarColor);
+    var noticeStyle = Cms.Web.Helpers.AppearanceChoice.NoticeStyle(settings.NoticeBarStyle);
+    var buttonColor = Cms.Web.Helpers.AppearanceChoice.Color(settings.ButtonColor);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -64,19 +77,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")}</style>
+    <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")@(buttonColor is null ? "" : $"--btn-color:{buttonColor};")}</style>
 </head>
-@{
-    // Only names this application recognises become classes; anything else is nothing at all.
-    var skin = string.Join(' ', new[]
-    {
-        Cms.Web.Helpers.AppearanceChoice.ButtonStyle(settings.ButtonStyle),
-        Cms.Web.Helpers.AppearanceChoice.ButtonShape(settings.ButtonShape),
-        Cms.Web.Helpers.AppearanceChoice.ButtonHover(settings.ButtonHover),
-        Cms.Web.Helpers.AppearanceChoice.CardHover(settings.CardHover)
-    }.Where(x => x is not null));
-    var noticeColor = Cms.Web.Helpers.AppearanceChoice.Color(settings.NoticeBarColor);
-}
 <body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant() @skin" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
     @if (!string.IsNullOrWhiteSpace(settings.NoticeTicker))
     {
@@ -88,7 +90,7 @@
             // so the field takes several separated by a vertical bar.
             var notices = settings.NoticeTicker
                 .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            <div class="notice-bar notice-bar--scrolling" style="@(noticeColor is null ? null : $"background:{noticeColor}")">
+            <div class="notice-bar notice-bar--scrolling @noticeStyle" style="@(noticeColor is null ? null : $"background:{noticeColor}")">
                 <div class="notice-marquee" data-notice-marquee
                      style="@(settings.NoticeTickerSeconds > 0 ? $"--notice-speed:{Math.Clamp(settings.NoticeTickerSeconds, 5, 120)}s" : null)">
                     <div class="notice-marquee__set">
@@ -99,15 +101,31 @@
         }
         else
         {
-            <div class="notice-bar" style="@(noticeColor is null ? null : $"background:{noticeColor}")"><div class="shell"><span>@settings.NoticeTicker.Replace(" | ", " · ").Replace("|", " · ")</span></div></div>
+            <div class="notice-bar @noticeStyle" style="@(noticeColor is null ? null : $"background:{noticeColor}")"><div class="shell"><span>@settings.NoticeTicker.Replace(" | ", " · ").Replace("|", " · ")</span></div></div>
         }
     }
-    <div class="top-meta">
+    <div class="top-meta @(settings.TopBarIcons ? "top-meta--icons" : null)">
         <div class="shell">
             <span>@(brand.Tagline ?? "Admissions open · Visit campus · Enquire today")</span>
-            <span>
-                @if (!string.IsNullOrWhiteSpace(brand.Phone)) { <a href="tel:@brand.Phone">@brand.Phone</a> }
-                @if (!string.IsNullOrWhiteSpace(brand.Email)) { <text> · <a href="mailto:@brand.Email">@brand.Email</a></text> }
+            <span class="top-meta__links">
+                @if (!string.IsNullOrWhiteSpace(brand.Phone))
+                {
+                    <a href="tel:@brand.Phone">@if (settings.TopBarIcons) { <partial name="_Icon" model="@("phone")" /> }<span>@brand.Phone</span></a>
+                }
+                @if (!string.IsNullOrWhiteSpace(brand.Email))
+                {
+                    <a href="mailto:@brand.Email">@if (settings.TopBarIcons) { <partial name="_Icon" model="@("mail")" /> }<span>@brand.Email</span></a>
+                }
+                @if (settings.TopBarIcons && settings.HasSocialLinks)
+                {
+                    <span class="top-meta__social">
+                        @if (!string.IsNullOrWhiteSpace(settings.Facebook)) { <a href="@settings.Facebook" target="_blank" rel="noopener" aria-label="Facebook"><partial name="_Icon" model="@("facebook")" /></a> }
+                        @if (!string.IsNullOrWhiteSpace(settings.Instagram)) { <a href="@settings.Instagram" target="_blank" rel="noopener" aria-label="Instagram"><partial name="_Icon" model="@("instagram")" /></a> }
+                        @if (!string.IsNullOrWhiteSpace(settings.YouTube)) { <a href="@settings.YouTube" target="_blank" rel="noopener" aria-label="YouTube"><partial name="_Icon" model="@("youtube")" /></a> }
+                        @if (!string.IsNullOrWhiteSpace(settings.Twitter)) { <a href="@settings.Twitter" target="_blank" rel="noopener" aria-label="X"><partial name="_Icon" model="@("twitter")" /></a> }
+                        @if (!string.IsNullOrWhiteSpace(settings.LinkedIn)) { <a href="@settings.LinkedIn" target="_blank" rel="noopener" aria-label="LinkedIn"><partial name="_Icon" model="@("linkedin")" /></a> }
+                    </span>
+                }
             </span>
         </div>
     </div>

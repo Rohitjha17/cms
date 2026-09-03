@@ -1591,3 +1591,50 @@ body[data-scroll-animations="off"] [data-section]::after { animation: none !impo
     transform: none;
   }
 }
+
+/* --- Notice strip treatments ---------------------------------------------- */
+
+.notice-bar--gradient { background: linear-gradient(100deg, var(--brand), var(--accent)); }
+.notice-bar--dark { background: #10192b; }
+.notice-bar--outline {
+  color: var(--brand);
+  background: transparent;
+  border-block: 1px solid currentColor;
+}
+
+/* --- Icons in the top strip ----------------------------------------------- */
+
+.top-meta__links { display: inline-flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.top-meta--icons .top-meta__links a { display: inline-flex; align-items: center; gap: .35rem; }
+.top-meta .icon { flex: none; opacity: .8; }
+.top-meta__social { display: inline-flex; align-items: center; gap: .55rem; }
+.top-meta__social a { padding: .1rem; border-radius: 4px; }
+.top-meta__social a:hover .icon { opacity: 1; }
+.top-meta__social a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* --- Buttons take the school's own colour --------------------------------- */
+
+.btn-style-solid .btn { background: var(--btn-color, var(--brand)); }
+.btn-style-outline .btn { color: var(--btn-color, var(--brand)); }
+.btn-style-soft .btn {
+  color: var(--btn-color, var(--brand));
+  background: color-mix(in srgb, var(--btn-color, var(--brand)) 14%, transparent);
+}
+.btn-style-gradient .btn {
+  background: linear-gradient(120deg, var(--btn-color, var(--brand)), var(--accent));
+}
+.btn-hover-fill .btn::before { background: var(--btn-color, var(--brand)); }
+
+/* A colour chosen for the buttons applies even when no style was picked. */
+body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent)); }
+
+/* A section's own hover beats the site-wide one: it is on the section, so it is nearer. */
+[data-section].card-hover-lift :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover {
+  transform: translateY(-6px);
+}
+[data-section].card-hover-zoom :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover {
+  transform: scale(1.025);
+}
+[data-section].card-hover-tilt :is(.people-card, .news-item, .event-card, .card-grid > article, .gallery-grid figure):hover {
+  transform: perspective(700px) rotateX(3deg) rotateY(-3deg) translateY(-4px);
+}

@@ -251,6 +251,82 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
         Assert.Contains(expected, await _client.GetStringAsync("/"));
     }
 
+    /// <summary>
+    /// Buttons took the brand colour, so a school that wanted a louder button had to repaint the
+    /// whole site to get one.
+    /// </summary>
+    [Fact]
+    public async Task AButtonColour_AppliesWithoutRepaintingTheSite()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?> { ["buttonColor"] = "#c0392b" });
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("--btn-color:#c0392b", html);
+        // The brand colour itself is untouched: only the buttons were asked about.
+        Assert.DoesNotContain("--brand:#c0392b", html);
+    }
+
+    [Fact]
+    public async Task TheChosenTreatments_BecomeClassesOnThePage()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["buttonStyle"] = "gradient",
+            ["buttonShape"] = "pill",
+            ["buttonHover"] = "slide",
+            ["cardHover"] = "tilt",
+            ["noticeBarStyle"] = "dark",
+            ["noticeTicker"] = "Admissions are open"
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("btn-style-gradient", html);
+        Assert.Contains("btn-shape-pill", html);
+        Assert.Contains("btn-hover-slide", html);
+        Assert.Contains("card-hover-tilt", html);
+        Assert.Contains("notice-bar--dark", html);
+    }
+
+    /// <summary>
+    /// These become class names in the page's own markup, so a value that is not one of ours
+    /// must become nothing at all rather than be written into it.
+    /// </summary>
+    [Fact]
+    public async Task AnInventedTreatment_ReachesThePageAsNothing()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["buttonStyle"] = "neon\" onload=\"alert(1)",
+            ["noticeBarColor"] = "red;background-image:url(http://x/y)",
+            ["noticeTicker"] = "Admissions are open"
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.DoesNotContain("onload=", html);
+        Assert.DoesNotContain("background-image:url(http://x/y)", html);
+    }
+
+    [Fact]
+    public async Task TopBarIcons_AppearOnlyWhenAskedFor()
+    {
+        await SaveSettingsAsync(new Dictionary<string, object?>());
+        Assert.DoesNotContain("top-meta--icons", await _client.GetStringAsync("/"));
+
+        await SaveSettingsAsync(new Dictionary<string, object?>
+        {
+            ["topBarIcons"] = true,
+            ["facebook"] = "https://facebook.com/school"
+        });
+
+        var html = await _client.GetStringAsync("/");
+        Assert.Contains("top-meta--icons", html);
+        Assert.Contains("aria-label=\"Facebook\"", html);
+        // Drawn inline: an icon font is a request and a flash of nothing for shapes that never change.
+        Assert.Contains("<svg class=\"icon\"", html);
+    }
+
     [Fact]
     public async Task AnimationsSwitchedOff_AreSaidSoOnThePage()
     {

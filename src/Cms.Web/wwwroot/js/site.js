@@ -108,6 +108,14 @@
     if (host && sectionAnimations[key]) host.setAttribute("data-animate", sectionAnimations[key]);
   });
 
+  // A section can answer the pointer its own way. The class carries the rules already, so the
+  // section only has to wear it — and it beats the site-wide choice because it is nearer.
+  var sectionHovers = window.cmsSectionHovers || {};
+  Object.keys(sectionHovers).forEach(function (key) {
+    var host = document.querySelector('[data-section="' + key + '"]');
+    if (host && sectionHovers[key]) host.classList.add(sectionHovers[key]);
+  });
+
   if (animationsOn && !prefersReducedMotion && "IntersectionObserver" in window) {
     // Anything already on screen is left untouched: animating it would mean hiding
     // content the visitor can already see, then fading it back in.

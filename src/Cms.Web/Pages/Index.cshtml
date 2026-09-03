@@ -16,11 +16,28 @@
         })
         .Where(x => !string.IsNullOrWhiteSpace(x.Animation))
         .ToDictionary(x => x.SectionKey, x => x.Animation!);
+
+    // A section can also answer the pointer its own way, rather than the whole site sharing one
+    // hover. Only names this application recognises survive.
+    var hovers = Model.Website.HomeSections
+        .Select(section => new
+        {
+            section.SectionKey,
+            Hover = AppearanceChoice.SectionHover(
+                SectionJson.GetString(SectionJson.Parse(section.JsonData), "hover"))
+        })
+        .Where(x => x.Hover is not null)
+        .ToDictionary(x => x.SectionKey, x => x.Hover!);
 }
 
 @if (animations.Count > 0)
 {
     <script>window.cmsSectionAnimations = @Html.Raw(JsonSerializer.Serialize(animations));</script>
+}
+
+@if (hovers.Count > 0)
+{
+    <script>window.cmsSectionHovers = @Html.Raw(JsonSerializer.Serialize(hovers));</script>
 }
 
 @{

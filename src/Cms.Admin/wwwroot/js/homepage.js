@@ -304,6 +304,14 @@
       ["none", "No animation"]
     ];
 
+    const hoverChoices = [
+      ["", "Site ka jo hai wahi"],
+      ["lift", "Lift"],
+      ["zoom", "Zoom"],
+      ["glow", "Glow"],
+      ["tilt", "Tilt"]
+    ];
+
     const backdropChoices = [
       ["", "None"],
       ["dots", "Dots"],
@@ -364,6 +372,9 @@
         appendChoiceField(builder, "background", "Background pattern",
           "Drawn on the page — costs nothing to load. Sits behind this section's text.",
           backdropChoices);
+        appendChoiceField(builder, "hover", "Card hover in this section",
+          "Is section ke cards par lagega. Site ki setting se upar rahega.",
+          hoverChoices);
       } else {
         schema.forEach(([key, label, type, help]) => {
           const field = document.createElement("label");
@@ -383,6 +394,9 @@
         appendChoiceField(builder, "background", "Background pattern",
           "Drawn on the page — costs nothing to load. Sits behind this section's text.",
           backdropChoices);
+        appendChoiceField(builder, "hover", "Card hover in this section",
+          "Is section ke cards par lagega. Site ki setting se upar rahega.",
+          hoverChoices);
 
         if (collectionSchema) {
           const collection = document.createElement("div");
