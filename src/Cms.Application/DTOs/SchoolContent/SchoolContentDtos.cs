@@ -391,6 +391,21 @@ public sealed class SiteSettingsDto
     public string? PopupFormHeading { get; set; }
 
     /// <summary>
+    /// The kinds of enquiry a school takes, one per line. A contact form that cannot tell an
+    /// admissions question from a job application sends both to the same person, who then has
+    /// to sort the inbox by reading it. Empty offers no choice, as before.
+    /// </summary>
+    public string? EnquiryTypes { get; set; }
+
+    /// <summary>The enquiry types as a list, in the order the school entered them.</summary>
+    public IReadOnlyList<string> EnquiryTypeList =>
+        string.IsNullOrWhiteSpace(EnquiryTypes)
+            ? []
+            : EnquiryTypes.Split(
+                ['|', '\n', '\r'],
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    /// <summary>
     /// Shows the popup once per visit rather than on every page. Off by default: a school runs
     /// a popup to be seen, and a visitor who reloads to look again should find it there.
     /// </summary>

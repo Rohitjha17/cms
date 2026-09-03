@@ -12,13 +12,24 @@ namespace Cms.Web.Pages;
 public sealed class ContentModel : PageModel
 {
     private readonly IWebsiteService _websiteService;
+    private readonly ISchoolContentService _schoolContent;
     private readonly IValidator<SubmitContactDto> _contactValidator;
 
-    public ContentModel(IWebsiteService websiteService, IValidator<SubmitContactDto> contactValidator)
+    public ContentModel(
+        IWebsiteService websiteService,
+        ISchoolContentService schoolContent,
+        IValidator<SubmitContactDto> contactValidator)
     {
         _websiteService = websiteService;
+        _schoolContent = schoolContent;
         _contactValidator = contactValidator;
     }
+
+    /// <summary>
+    /// The school's own settings, for the enquiry types the contact form offers. Read here so a
+    /// settings record that cannot be loaded leaves the form usable rather than throwing.
+    /// </summary>
+    public Cms.Application.DTOs.SchoolContent.SiteSettingsDto Settings { get; private set; } = new();
 
     public PublicWebsiteDto Website { get; private set; } = new();
     public PublicPageDto ContentPage { get; private set; } = new();
@@ -35,6 +46,7 @@ public sealed class ContentModel : PageModel
         {
             Website = await _websiteService.GetPublicWebsiteAsync(cancellationToken);
             ContentPage = await _websiteService.GetPublicPageAsync(slug, cancellationToken);
+            Settings = await LoadSettingsAsync(cancellationToken);
         }
         catch (NotFoundException)
         {
@@ -46,10 +58,18 @@ public sealed class ContentModel : PageModel
         return Page();
     }
 
+    private async Task<Cms.Application.DTOs.SchoolContent.SiteSettingsDto> LoadSettingsAsync(
+        CancellationToken cancellationToken)
+    {
+        try { return await _schoolContent.GetSettingsAsync(cancellationToken); }
+        catch { return new Cms.Application.DTOs.SchoolContent.SiteSettingsDto(); }
+    }
+
     public async Task<IActionResult> OnPostContactAsync(string slug, CancellationToken cancellationToken)
     {
         Website = await _websiteService.GetPublicWebsiteAsync(cancellationToken);
         ContentPage = await _websiteService.GetPublicPageAsync(slug, cancellationToken);
+        Settings = await LoadSettingsAsync(cancellationToken);
         ViewData["Website"] = Website;
         ViewData["Title"] = ContentPage.Title;
 

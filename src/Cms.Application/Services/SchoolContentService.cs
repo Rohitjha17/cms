@@ -340,6 +340,7 @@ public sealed class SchoolContentService : ISchoolContentService
             PopupLinkUrl = String(json, "popupLinkUrl"),
             PopupShowEnquiryForm = Boolean(json, "popupShowEnquiryForm"),
             PopupFormHeading = String(json, "popupFormHeading"),
+            EnquiryTypes = String(json, "enquiryTypes"),
             PopupOncePerVisit = Boolean(json, "popupOncePerVisit")
         };
     }
@@ -393,6 +394,7 @@ public sealed class SchoolContentService : ISchoolContentService
             ["popupLinkUrl"] = Clean(dto.PopupLinkUrl),
             ["popupShowEnquiryForm"] = dto.PopupShowEnquiryForm,
             ["popupFormHeading"] = Clean(dto.PopupFormHeading),
+            ["enquiryTypes"] = Clean(dto.EnquiryTypes),
             ["popupOncePerVisit"] = dto.PopupOncePerVisit
         };
 

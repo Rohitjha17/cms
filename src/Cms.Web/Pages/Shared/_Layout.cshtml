@@ -267,6 +267,19 @@
                             <label><span>Name</span><input name="Input.Name" required autocomplete="name" /></label>
                             <label><span>Email</span><input name="Input.Email" type="email" required autocomplete="email" /></label>
                             <label><span>Phone</span><input name="Input.Phone" autocomplete="tel" /></label>
+                            @if (settings.EnquiryTypeList.Count > 0)
+                            {
+                                <label>
+                                    <span>Enquiry type</span>
+                                    <select name="Input.Subject" required>
+                                        <option value="">Please choose</option>
+                                        @foreach (var kind in settings.EnquiryTypeList)
+                                        {
+                                            <option value="@kind">@kind</option>
+                                        }
+                                    </select>
+                                </label>
+                            }
                             <label><span>Message</span><textarea name="Input.Message" rows="3" required></textarea></label>
                             <button type="submit">Send enquiry</button>
                         </form>

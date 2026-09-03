@@ -194,6 +194,18 @@
       ["posterUrl", "Poster image URL", "url", "Preview image before playback"],
       ["caption", "Video caption", "text", "Accessible supporting caption"]
     ],
+    timings: [
+      ["firstTerm", "First term label", "text", "e.g. Summer"],
+      ["secondTerm", "Second term label", "text", "e.g. Winter"],
+      ["intro", "Note above the table", "text", "e.g. Timings may change by notice"]
+    ],
+    crest: [
+      ["intro", "Motto", "text", "The line under the heading"]
+    ],
+    founder: [
+      ["name", "Founder's name", "text", "Shown under the portrait"],
+      ["lifespan", "Dates", "text", "e.g. 1898 – 1971"]
+    ],
     admission_cta: [
       ["heading", "CTA heading", "text", "Admissions campaign headline"],
       ["supportingText", "Supporting text", "text", "One-line call to action"],
@@ -244,7 +256,14 @@
     gallery: [["title", "Image title"], ["imageUrl", "Image URL"], ["alt", "Image description"]],
     testimonials: [["name", "Person name"], ["role", "Role / relation"], ["quote", "Testimonial"], ["imageUrl", "Portrait URL"]],
     achievements: [["title", "Achievement"], ["year", "Year"], ["description", "Description"], ["imageUrl", "Image URL"]],
-    partners: [["name", "Partner name"], ["logoUrl", "Logo URL"], ["url", "Website URL"]]
+    partners: [["name", "Partner name"], ["logoUrl", "Logo URL"], ["url", "Website URL"]],
+    timings: [["wing", "Wing or class range"], ["summer", "First term hours"], ["winter", "Second term hours"]],
+    crest: [["symbol", "Symbol"], ["meaning", "What it stands for"]],
+    alumni: [["name", "Name"], ["role", "What they do now"], ["batch", "Class of"], ["imageUrl", "Portrait URL"]],
+    staff_list: [["name", "Name"], ["designation", "Designation"], ["qualification", "Qualification"]],
+    facilities: [["title", "Facility"], ["description", "Description"], ["imageUrl", "Photograph URL"]],
+    founder: [["year", "Year"], ["title", "What happened"], ["description", "Detail"]],
+    downloads: [["title", "Document"], ["fileUrl", "File URL"], ["format", "Format"], ["size", "Size"]]
   };
 
   window.initHomePageEditor = function (options) {

@@ -29,6 +29,27 @@ public static class HomePageSectionKeys
     public const string Partners = "partners";
     public const string FooterCta = "footer_cta";
 
+    /// <summary>School hours, by term and by wing — the single most looked-up fact on a school site.</summary>
+    public const string Timings = "timings";
+
+    /// <summary>The crest read symbol by symbol, which is how a school explains what it stands for.</summary>
+    public const string Crest = "crest";
+
+    /// <summary>Former students by name, with what they went on to do.</summary>
+    public const string Alumni = "alumni";
+
+    /// <summary>The full staff list as a table: forty rows nobody wants as forty cards.</summary>
+    public const string StaffList = "staff_list";
+
+    /// <summary>Laboratories, library and grounds, each named and described.</summary>
+    public const string Facilities = "facilities";
+
+    /// <summary>The founder, and the school's own history as a dated sequence.</summary>
+    public const string Founder = "founder";
+
+    /// <summary>Circulars, timetables and forms as a table with format and size.</summary>
+    public const string Downloads = "downloads";
+
     public static readonly IReadOnlyList<(string Key, string DisplayName, int Order)> All =
     [
         (Hero, "Hero Banner", 1),
@@ -53,7 +74,14 @@ public static class HomePageSectionKeys
         (DownloadBrochure, "Download Brochure", 20),
         (Contact, "Contact Section", 21),
         (Partners, "Partners", 22),
-        (FooterCta, "Footer CTA", 23)
+        (FooterCta, "Footer CTA", 23),
+        (Timings, "School Timings", 24),
+        (Crest, "Crest & Motto", 25),
+        (Alumni, "Notable Alumni", 26),
+        (StaffList, "Staff List", 27),
+        (Facilities, "Facilities", 28),
+        (Founder, "Founder & History", 29),
+        (Downloads, "Downloads", 30)
     ];
 
     public static bool IsKnown(string sectionKey) =>

@@ -312,6 +312,12 @@
 
                 <label class="field full"><span>Form heading</span><input asp-for="Input.PopupFormHeading" placeholder="Request a callback" /></label>
 
+                <label class="field full">
+                    <span>Enquiry types</span>
+                    <textarea asp-for="Input.EnquiryTypes" rows="4" placeholder="Admission enquiry&#10;General enquiry&#10;Job application&#10;Feedback"></textarea>
+                    <small class="hint">One per line. Adds a chooser to the contact form and this popup, and the choice is saved with the enquiry. Leave blank for a plain subject box.</small>
+                </label>
+
                 <label class="switch-row full">
                     <input asp-for="Input.PopupOncePerVisit" type="checkbox" />
                     <span><strong>Show once per visit</strong><small>Off — the default — opens it on every page load, so a visitor who reloads finds it there. On shows it once and then leaves them alone.</small></span>
