@@ -7,13 +7,18 @@ namespace Cms.Infrastructure.Storage;
 ///
 /// The folders used to be the tenant's and the website's ids, so a bucket looked like
 /// <c>11111111-1111-…/22222222-2222-…/media/</c> and nobody opening it could tell whose
-/// content it was, or which of two schools they were about to delete. The names are used
-/// instead: the tenant's code, which is unique across the platform, and the website's key,
-/// which is unique within that tenant — so <c>demo/school/media/</c> is both readable and
-/// still cannot collide with another school's.
+/// content it was, or which of two schools they were about to delete.
 ///
-/// A name that is missing or unusable falls back to the id, because a folder nobody can read
-/// is better than two schools sharing one.
+/// They are named now: the tenant's code, which is unique across the whole platform, and then
+/// the school's own name — <c>demo/cambridge-high-school/media/</c>. The website's key was
+/// tried first and is guaranteed unique, but a key like "school" or "college" says nothing
+/// about which school it is, which was the point of the exercise.
+///
+/// The cost of using the name is that two websites in one tenant named exactly the same would
+/// share a folder. That is an administrator naming two schools identically, which already
+/// makes them indistinguishable in the console's own list, and it mixes files rather than
+/// losing them. Where a name is missing the key is used, and where both are missing the id —
+/// a folder nobody can read still beats two schools sharing one by accident.
 /// </summary>
 public static class MediaFolder
 {
@@ -23,7 +28,12 @@ public static class MediaFolder
     public static string For(ITenantContext tenant, ISiteContext site, string folder)
     {
         var tenantSegment = Segment(tenant.TenantCode, tenant.TenantId);
-        var siteSegment = Segment(site.SiteKey, site.SiteId);
+
+        // The school's name first, because that is what somebody opening the bucket is looking
+        // for; the key behind it, because a school may have no name set but always has a key.
+        var siteSegment = Segment(site.SiteName, null) is { Length: > 0 } named && named != "unknown"
+            ? named
+            : Segment(site.SiteKey, site.SiteId);
 
         return $"{tenantSegment}/{siteSegment}/{Segment(folder, null)}";
     }

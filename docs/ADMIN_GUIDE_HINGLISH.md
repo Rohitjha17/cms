@@ -578,6 +578,8 @@ dikhe, use dabao aur yahan se chuno.
 - doosri site ki photo bina bataye gayab ho sakti hai
 - apni upload ki hui photo tez khulti hai aur hamesha rehti hai
 
+Bucket me files school ke apne naam wale folder me jati hain — `demo/cambridge-high-school/media/` — to ek nazar me pata chal jata hai kis school ki kitni images hain.
+
 **Sahi size:**
 
 | Kahan | Size |

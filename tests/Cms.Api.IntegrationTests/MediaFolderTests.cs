@@ -70,4 +70,64 @@ public sealed class MediaFolderTests
 
         Assert.Equal(60, segment.Length);
     }
+
+    /// <summary>
+    /// The school's name is what somebody opening the bucket is looking for. Its key is
+    /// guaranteed unique but says nothing — "school" and "college" name no school at all.
+    /// </summary>
+    [Fact]
+    public void TheFolderIsNamedAfterTheSchool_NotItsKey()
+    {
+        var folder = MediaFolder.For(
+            new FakeTenant("demo", Guid.NewGuid()),
+            new FakeSite("school", "Cambridge High School", Guid.NewGuid()),
+            "media");
+
+        Assert.Equal("demo/cambridge-high-school/media", folder);
+    }
+
+    /// <summary>A website with no name still has a key, and a key always works.</summary>
+    [Fact]
+    public void WithNoName_TheKeyIsUsed()
+    {
+        var folder = MediaFolder.For(
+            new FakeTenant("demo", Guid.NewGuid()),
+            new FakeSite("junior-wing", "   ", Guid.NewGuid()),
+            "media");
+
+        Assert.Equal("demo/junior-wing/media", folder);
+    }
+
+    /// <summary>And with neither, the id — unreadable, but never another school's folder.</summary>
+    [Fact]
+    public void WithNeither_TheIdIsUsed()
+    {
+        var id = Guid.NewGuid();
+
+        var folder = MediaFolder.For(
+            new FakeTenant("demo", Guid.NewGuid()),
+            new FakeSite("", null, id),
+            "media");
+
+        Assert.Equal($"demo/{id}/media", folder);
+    }
+
+    private sealed record FakeTenant(string? Code, Guid Id) : Cms.Application.Interfaces.ITenantContext
+    {
+        public Guid? TenantId => Id;
+        public string? TenantCode => Code;
+        public string? TenantName => Code;
+        public bool IsResolved => true;
+        public void Set(Guid tenantId, string code, string name) { }
+    }
+
+    private sealed record FakeSite(string? Key, string? Name, Guid Id) : Cms.Application.Interfaces.ISiteContext
+    {
+        public Guid? SiteId => Id;
+        public string? SiteKey => Key;
+        public string? SiteName => Name;
+        public string BasePath => string.Empty;
+        public bool IsResolved => true;
+        public void Set(Guid siteId, string siteKey, string siteName, string basePath = "") { }
+    }
 }

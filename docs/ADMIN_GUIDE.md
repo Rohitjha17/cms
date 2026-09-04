@@ -593,6 +593,8 @@ web address, because:
 - pictures hosted on someone else's site can vanish without warning
 - your own uploads load faster and are always available
 
+Uploads are filed in the bucket under the school's own name — `demo/cambridge-high-school/media/` — so you can tell at a glance whose pictures are whose, and how many each school has.
+
 **Sensible sizes:**
 
 | Where | Suggested size |
