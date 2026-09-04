@@ -18,6 +18,13 @@ public class Page : BaseEntity, ITenantEntity, ISiteEntity
     public string? Excerpt { get; set; }
     public string? Content { get; set; }
     public string? JsonData { get; set; }
+
+    /// <summary>
+    /// The page is whatever the school wrote in the HTML box, and nothing else: no built-in
+    /// layout underneath it, and the whole width of the page to work in. Off by default, so
+    /// every page that exists keeps the layout it has.
+    /// </summary>
+    public bool UseCustomHtml { get; set; }
     public string? FeaturedImageUrl { get; set; }
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }

@@ -607,9 +607,13 @@ p:last-child { margin-bottom: 0; }
    see. Whatever an administrator uploads, in whatever shape, it lands square with the rest. */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  /* Four across on a full-width screen, so the cells stay a sensible shape rather than
+     stretching wide and shallow. Fewer as the screen narrows, down to one on a phone. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: 1.25rem;
 }
+@media (min-width: 1024px) { .gallery-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 700px) and (max-width: 1023px) { .gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .gallery-grid figure {
   margin: 0;
   overflow: hidden;
@@ -2687,3 +2691,11 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 .title-medium .page-hero h1 { font-size: clamp(1.75rem, 3vw,   2.5rem); }
 .title-large  .page-hero h1 { font-size: clamp(2rem,    3.6vw, 3rem); }
 .title-xlarge .page-hero h1 { font-size: clamp(2.4rem,  4.8vw, 4rem); }
+
+/* A page the school has written itself. It gets the width of the band and no styling of its
+   own beyond what the page already provides, because anything imposed here would fight the
+   markup they wrote. Wide things inside it scroll rather than pushing the page sideways. */
+.custom-html { max-width: none; }
+.custom-html img { max-width: 100%; height: auto; }
+.custom-html table { display: block; overflow-x: auto; max-width: 100%; }
+.custom-html iframe { max-width: 100%; }

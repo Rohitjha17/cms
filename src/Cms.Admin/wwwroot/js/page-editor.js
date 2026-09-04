@@ -342,3 +342,23 @@
 
   document.addEventListener("DOMContentLoaded", init);
 })();
+
+/* The two ways of building a page are alternatives, so only one set of fields is shown at a
+   time. Without this the guided fields sit under a switch that says they are not being used,
+   which reads as though something is broken. */
+(function () {
+  "use strict";
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var toggle = document.querySelector("[data-custom-html]");
+    var block = document.querySelector("[data-structured-block]");
+    if (!toggle || !block) return;
+
+    function apply() {
+      block.hidden = toggle.checked;
+    }
+
+    toggle.addEventListener("change", apply);
+    apply();
+  });
+})();

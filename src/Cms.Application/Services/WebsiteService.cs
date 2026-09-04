@@ -1011,6 +1011,7 @@ public sealed class WebsiteService : IWebsiteService
             Excerpt = page.Excerpt,
             Content = page.Content,
             JsonData = page.JsonData,
+            UseCustomHtml = page.UseCustomHtml,
             FeaturedImageUrl = page.FeaturedImageUrl,
             MetaTitle = page.MetaTitle,
             MetaDescription = page.MetaDescription

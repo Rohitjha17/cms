@@ -12,6 +12,10 @@ public sealed class PageDto
     public string? Excerpt { get; set; }
     public string? Content { get; set; }
     public string? JsonData { get; set; }
+
+    /// <summary>The page is the school's own HTML and nothing else. See <see cref="Domain.Entities.Page.UseCustomHtml"/>.</summary>
+    public bool UseCustomHtml { get; set; }
+
     public string? FeaturedImageUrl { get; set; }
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
@@ -31,6 +35,10 @@ public sealed class SavePageDto
     public string? Excerpt { get; set; }
     public string? Content { get; set; }
     public string? JsonData { get; set; }
+
+    /// <summary>The page is the school's own HTML and nothing else. See <see cref="Domain.Entities.Page.UseCustomHtml"/>.</summary>
+    public bool UseCustomHtml { get; set; }
+
     public string? FeaturedImageUrl { get; set; }
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }

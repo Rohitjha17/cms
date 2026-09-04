@@ -109,6 +109,7 @@ public sealed class SiteContentService : ISiteContentService
         page.Excerpt = dto.Excerpt?.Trim();
         page.Content = Sanitize(dto.Content);
         page.JsonData = dto.JsonData;
+        page.UseCustomHtml = dto.UseCustomHtml;
         page.FeaturedImageUrl = dto.FeaturedImageUrl?.Trim();
         page.MetaTitle = dto.MetaTitle?.Trim();
         page.MetaDescription = dto.MetaDescription?.Trim();
@@ -385,7 +386,8 @@ public sealed class SiteContentService : ISiteContentService
     {
         Id = x.Id, PageType = x.PageType, TemplateKey = x.TemplateKey,
         Title = x.Title, Slug = x.Slug, Excerpt = x.Excerpt, Content = x.Content,
-        JsonData = x.JsonData, FeaturedImageUrl = x.FeaturedImageUrl, MetaTitle = x.MetaTitle,
+        JsonData = x.JsonData, UseCustomHtml = x.UseCustomHtml,
+        FeaturedImageUrl = x.FeaturedImageUrl, MetaTitle = x.MetaTitle,
         MetaDescription = x.MetaDescription, ShowInMenu = x.ShowInMenu, MenuOrder = x.MenuOrder,
         IsActive = x.IsActive, CreatedDate = x.CreatedDate, UpdatedDate = x.UpdatedDate
     };

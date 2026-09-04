@@ -38,6 +38,15 @@
             <div class="notice">@Model.StatusMessage</div>
         }
 
+        @if (content.UseCustomHtml)
+        {
+            @* The school has taken the page over. Its own markup, the full width of the page,
+               and none of the built-in blocks underneath — otherwise a school that wrote its
+               own gallery would get ours printed under it as well. *@
+            <div class="custom-html">@Html.Raw(content.Content)</div>
+        }
+        else
+        {
         @if (!string.IsNullOrWhiteSpace(content.Content))
         {
             <div class="rich-text">@Html.Raw(content.Content)</div>
@@ -402,6 +411,7 @@
                     <iframe class="map" src="@campusMap" loading="lazy" title="Campus map"></iframe>
                 }
             </section>
+        }
         }
     </div>
 </article>

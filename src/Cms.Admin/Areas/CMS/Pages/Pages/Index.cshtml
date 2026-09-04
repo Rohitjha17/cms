@@ -58,7 +58,15 @@
                 <label class="field full"><span>Excerpt</span><textarea asp-for="Input.Excerpt" rows="2"></textarea></label>
                 <label class="field full"><span>Page content (HTML)</span><textarea asp-for="Input.Content" rows="6"></textarea></label>
 
-                <div class="full">
+                <label class="switch-row full">
+                    <input asp-for="Input.UseCustomHtml" type="checkbox" data-custom-html />
+                    <span>
+                        <strong>Build this page myself, in HTML</strong>
+                        <small>The page becomes whatever is in the HTML box above, across the full width, with none of the built-in layout under it. Leave off to use the guided fields below.</small>
+                    </span>
+                </label>
+
+                <div class="full" data-structured-block>
                     <strong>Structured page content</strong>
                     <small>School-friendly fields for this page type. Saves as structured data for the public website.</small>
                     <div class="config-builder" data-typed-editor style="margin-top:1rem"></div>

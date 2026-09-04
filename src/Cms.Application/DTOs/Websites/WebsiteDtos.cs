@@ -176,6 +176,10 @@ public sealed class PublicPageDto
     public string? Excerpt { get; set; }
     public string? Content { get; set; }
     public string? JsonData { get; set; }
+
+    /// <summary>The page is the school's own HTML, with none of the built-in layout under it.</summary>
+    public bool UseCustomHtml { get; set; }
+
     public string? FeaturedImageUrl { get; set; }
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
