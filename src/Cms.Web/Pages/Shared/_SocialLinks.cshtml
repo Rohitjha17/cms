@@ -1,0 +1,31 @@
+@model Cms.Application.DTOs.SchoolContent.SiteSettingsDto
+@*
+    One list of a school's social accounts, drawn once and used wherever they belong — the strip
+    above the header, the footer, the contact page. Written out three times it drifted: a school
+    that added LinkedIn got it in one place and not the others.
+*@
+@if (Model.HasSocialLinks)
+{
+    <p class="social-links">
+        @if (!string.IsNullOrWhiteSpace(Model.Facebook))
+        {
+            <a href="@Model.Facebook" target="_blank" rel="noopener" aria-label="Facebook"><partial name="_Icon" model="@("facebook")" /></a>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Instagram))
+        {
+            <a href="@Model.Instagram" target="_blank" rel="noopener" aria-label="Instagram"><partial name="_Icon" model="@("instagram")" /></a>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.YouTube))
+        {
+            <a href="@Model.YouTube" target="_blank" rel="noopener" aria-label="YouTube"><partial name="_Icon" model="@("youtube")" /></a>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Twitter))
+        {
+            <a href="@Model.Twitter" target="_blank" rel="noopener" aria-label="X"><partial name="_Icon" model="@("twitter")" /></a>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.LinkedIn))
+        {
+            <a href="@Model.LinkedIn" target="_blank" rel="noopener" aria-label="LinkedIn"><partial name="_Icon" model="@("linkedin")" /></a>
+        }
+    </p>
+}

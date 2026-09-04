@@ -66,7 +66,18 @@ img, iframe { display: block; max-width: 100%; border: 0; }
   border-radius: 4px;
 }
 
-.shell { width: min(1200px, calc(100% - var(--gutter) * 2)); margin-inline: auto; }
+/* The content band. It held at 1200px however wide the screen was, so on a large monitor the
+   whole site ran down the middle third with the notice strip and the banner going edge to edge
+   either side of it — the header, the menu and every section boxed into a strip while the
+   picture above them filled the glass.
+ 
+   It now grows with the window past about 1540px, up to 1520px. Below that nothing moves, so
+   laptops are unchanged; and the cap keeps a line of text a readable length on a very wide
+   display. Body copy has its own narrower measure regardless. */
+.shell {
+  width: min(clamp(1200px, 88vw, 1520px), calc(100% - var(--gutter) * 2));
+  margin-inline: auto;
+}
 
 /* Typography --------------------------------------------------------------- */
 
@@ -395,7 +406,7 @@ p:last-child { margin-bottom: 0; }
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
-  width: min(1200px, calc(100% - var(--gutter) * 2));
+  width: min(clamp(1200px, 88vw, 1520px), calc(100% - var(--gutter) * 2));
   margin: -2.75rem auto 0;
   overflow: hidden;
   background: var(--line);
@@ -470,7 +481,7 @@ p:last-child { margin-bottom: 0; }
 }
 .campus-panels, .academic-columns, .prestige-row, .split-cards {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  width: min(1200px, calc(100% - var(--gutter) * 2));
+  width: min(clamp(1200px, 88vw, 1520px), calc(100% - var(--gutter) * 2));
   margin: 2rem auto;
 }
 
@@ -534,7 +545,7 @@ p:last-child { margin-bottom: 0; }
 /* Call-to-action band ------------------------------------------------------ */
 
 .cta-band {
-  width: min(1200px, calc(100% - var(--gutter) * 2));
+  width: min(clamp(1200px, 88vw, 1520px), calc(100% - var(--gutter) * 2));
   margin: 1rem auto 2.5rem;
   padding: clamp(2rem, 4vw, 3.25rem);
   overflow: hidden;
@@ -2494,3 +2505,40 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
   .header-contact { display: flex; gap: 1.75rem; }
   .variant-atrium .header-contact { gap: 1.75rem; }
 }
+
+/* --- Ways to reach the school ----------------------------------------------
+   The contact page listed an address, a phone number and an email as three
+   unlabelled lines of text. Each row now says what it is and links to the
+   thing it names, so a parent on a phone taps the number instead of copying
+   it out. */
+
+.contact-meta li {
+  display: grid;
+  grid-template-columns: auto minmax(6.5rem, auto) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0 .75rem;
+}
+/* Rows with no icon still line their label up with the ones that have one. */
+.contact-meta li > .contact-meta__label:first-child { grid-column: 2; }
+.contact-meta .icon { width: 18px; height: 18px; color: var(--accent); align-self: center; }
+.contact-meta__label {
+  color: var(--muted);
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+@media (max-width: 560px) {
+  .contact-meta li { grid-template-columns: auto minmax(0, 1fr); }
+  .contact-meta li > * { grid-column: 2; }
+  .contact-meta .icon { grid-column: 1; grid-row: 1 / span 2; }
+}
+
+.contact-social { display: grid; gap: .5rem; margin-bottom: 1.75rem; }
+
+/* Icons in the strip and the footer, words nowhere — one set of shapes, so a school that adds
+   an account gets it in both places. */
+.social-links a { display: inline-flex; }
+.social-links .icon { width: 20px; height: 20px; }
+.site-footer .social-links { margin-top: .9rem; gap: 1rem; }
+.site-footer .social-links .icon { width: 22px; height: 22px; }

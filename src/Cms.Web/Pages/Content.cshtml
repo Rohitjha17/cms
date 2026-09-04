@@ -257,11 +257,57 @@
                     {
                         <p class="lede">@intro.GetString()</p>
                     }
+                    @{ var reach = Model.Website.Branding; }
+                    @* Three plain lines of text were all this page said about how to reach the
+                       school. A phone number a parent cannot tap, an email they cannot click and
+                       an address with nothing saying it is one. Each is labelled and each is a
+                       link to the thing it names. *@
                     <ul class="contact-meta">
-                        @if (!string.IsNullOrWhiteSpace(Model.Website.Branding.Address)) { <li>@Model.Website.Branding.Address</li> }
-                        @if (!string.IsNullOrWhiteSpace(Model.Website.Branding.Phone)) { <li>@Model.Website.Branding.Phone</li> }
-                        @if (!string.IsNullOrWhiteSpace(Model.Website.Branding.Email)) { <li>@Model.Website.Branding.Email</li> }
+                        @if (!string.IsNullOrWhiteSpace(reach.Address))
+                        {
+                            <li>
+                                <span class="contact-meta__label">Address</span>
+                                <span>@reach.Address</span>
+                            </li>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(reach.Phone))
+                        {
+                            <li>
+                                <partial name="_Icon" model="@("phone")" />
+                                <span class="contact-meta__label">Phone</span>
+                                <a href="tel:@reach.Phone">@reach.Phone</a>
+                            </li>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(reach.Email))
+                        {
+                            <li>
+                                <partial name="_Icon" model="@("mail")" />
+                                <span class="contact-meta__label">Email</span>
+                                <a href="mailto:@reach.Email">@reach.Email</a>
+                            </li>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.Settings.WhatsAppNumber))
+                        {
+                            <li>
+                                <span class="contact-meta__label">WhatsApp</span>
+                                <a href="https://wa.me/@Model.Settings.WhatsAppNumber.Trim('+', ' ')" target="_blank" rel="noopener">@Model.Settings.WhatsAppNumber</a>
+                            </li>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.Settings.OfficeHours))
+                        {
+                            <li>
+                                <span class="contact-meta__label">Office hours</span>
+                                <span>@Model.Settings.OfficeHours</span>
+                            </li>
+                        }
                     </ul>
+                    @if (Model.Settings.HasSocialLinks)
+                    {
+                        <div class="contact-social">
+                            <span class="contact-meta__label">Follow the school</span>
+                            <partial name="_SocialLinks" model="Model.Settings" />
+                        </div>
+                    }
                     <form method="post" asp-page-handler="Contact" class="contact-form">
                         <div asp-validation-summary="All" class="validation-summary"></div>
                         <label><span>Name</span><input asp-for="ContactInput.Name" required /></label>

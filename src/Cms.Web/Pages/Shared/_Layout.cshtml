@@ -118,9 +118,16 @@
         // The tagline was printed here and again under the school's name, so a site with no
         // portals and no phone number showed an empty grey band with one line repeated in it.
         // The strip is for links; with no links there is no strip.
+        // The header carries the phone and email as "Call us" and "Mail us" when that is turned
+        // on, and printing them again one line above is the same two lines of text twice on the
+        // same screen. The strip keeps the links and the social icons; the header keeps the
+        // contact details. Only one of them says a thing.
+        var stripContact = !settings.HeaderContact;
+        // The social accounts are on the contact page and in the footer; a third copy of the
+        // same five icons at the top of every page is the same row said three times.
         var hasStrip = utility.Count > 0
-            || !string.IsNullOrWhiteSpace(brand.Phone)
-            || !string.IsNullOrWhiteSpace(brand.Email);
+            || (stripContact && (!string.IsNullOrWhiteSpace(brand.Phone)
+                || !string.IsNullOrWhiteSpace(brand.Email)));
     }
     @if (hasStrip)
     {
@@ -139,24 +146,15 @@
                 </nav>
             }
             <span class="top-meta__links">
-                @if (!string.IsNullOrWhiteSpace(brand.Phone))
+                @if (stripContact && !string.IsNullOrWhiteSpace(brand.Phone))
                 {
                     <a href="tel:@brand.Phone">@if (settings.TopBarIcons) { <partial name="_Icon" model="@("phone")" /> }<span>@brand.Phone</span></a>
                 }
-                @if (!string.IsNullOrWhiteSpace(brand.Email))
+                @if (stripContact && !string.IsNullOrWhiteSpace(brand.Email))
                 {
                     <a href="mailto:@brand.Email">@if (settings.TopBarIcons) { <partial name="_Icon" model="@("mail")" /> }<span>@brand.Email</span></a>
                 }
-                @if (settings.TopBarIcons && settings.HasSocialLinks)
-                {
-                    <span class="top-meta__social">
-                        @if (!string.IsNullOrWhiteSpace(settings.Facebook)) { <a href="@settings.Facebook" target="_blank" rel="noopener" aria-label="Facebook"><partial name="_Icon" model="@("facebook")" /></a> }
-                        @if (!string.IsNullOrWhiteSpace(settings.Instagram)) { <a href="@settings.Instagram" target="_blank" rel="noopener" aria-label="Instagram"><partial name="_Icon" model="@("instagram")" /></a> }
-                        @if (!string.IsNullOrWhiteSpace(settings.YouTube)) { <a href="@settings.YouTube" target="_blank" rel="noopener" aria-label="YouTube"><partial name="_Icon" model="@("youtube")" /></a> }
-                        @if (!string.IsNullOrWhiteSpace(settings.Twitter)) { <a href="@settings.Twitter" target="_blank" rel="noopener" aria-label="X"><partial name="_Icon" model="@("twitter")" /></a> }
-                        @if (!string.IsNullOrWhiteSpace(settings.LinkedIn)) { <a href="@settings.LinkedIn" target="_blank" rel="noopener" aria-label="LinkedIn"><partial name="_Icon" model="@("linkedin")" /></a> }
-                    </span>
-                }
+
             </span>
         </div>
     </div>
@@ -228,21 +226,19 @@
             <div>
                 <strong>Visit</strong>
                 @if (!string.IsNullOrWhiteSpace(brand.Address)) { <p>@brand.Address</p> }
-                @if (!string.IsNullOrWhiteSpace(brand.Phone)) { <p>@brand.Phone</p> }
+                @if (!string.IsNullOrWhiteSpace(settings.OfficeHours)) { <p class="muted">@settings.OfficeHours</p> }
             </div>
             <div>
-                <strong>Connect</strong>
+                <strong>Reach us</strong>
+                @* Written as links rather than as text: on a phone this is the one place a
+                   parent will tap to call, and the footer is where they scroll to find it. *@
+                @if (!string.IsNullOrWhiteSpace(brand.Phone)) { <p><a href="tel:@brand.Phone">@brand.Phone</a></p> }
                 @if (!string.IsNullOrWhiteSpace(brand.Email)) { <p><a href="mailto:@brand.Email">@brand.Email</a></p> }
-                @if (settings.HasSocialLinks)
+                @if (!string.IsNullOrWhiteSpace(settings.WhatsAppNumber))
                 {
-                    <p class="social-links">
-                        @if (!string.IsNullOrWhiteSpace(settings.Facebook)) { <a href="@settings.Facebook" target="_blank" rel="noopener">Facebook</a> }
-                        @if (!string.IsNullOrWhiteSpace(settings.Instagram)) { <a href="@settings.Instagram" target="_blank" rel="noopener">Instagram</a> }
-                        @if (!string.IsNullOrWhiteSpace(settings.YouTube)) { <a href="@settings.YouTube" target="_blank" rel="noopener">YouTube</a> }
-                        @if (!string.IsNullOrWhiteSpace(settings.Twitter)) { <a href="@settings.Twitter" target="_blank" rel="noopener">X</a> }
-                        @if (!string.IsNullOrWhiteSpace(settings.LinkedIn)) { <a href="@settings.LinkedIn" target="_blank" rel="noopener">LinkedIn</a> }
-                    </p>
+                    <p><a href="https://wa.me/@settings.WhatsAppNumber.Trim('+', ' ')" target="_blank" rel="noopener">WhatsApp</a></p>
                 }
+                <partial name="_SocialLinks" model="settings" />
                 @if (quickLinks.Count > 0)
                 {
                     <p>

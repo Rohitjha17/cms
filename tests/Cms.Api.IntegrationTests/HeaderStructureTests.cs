@@ -252,6 +252,44 @@ public sealed class HeaderStructureTests : IClassFixture<PublicWebFactory>
         Assert.Empty(bulletin.HeroImages.Intersect(prospectus.HeroImages));
     }
 
+    /// <summary>
+    /// With the header showing "Call us" and "Mail us", the strip one line above must not print
+    /// the same phone number and the same email again. Two lines of identical text, one under
+    /// the other, is what a visitor notices first.
+    /// </summary>
+    [Fact]
+    public async Task TheStripAndTheHeader_DoNotBothPrintTheContactDetails()
+    {
+        await SaveSettingsAsync(new()
+        {
+            ["headerContact"] = true,
+            ["topBarLinks"] = "Alumni|/alumni"
+        });
+
+        var html = await _client.GetStringAsync("/");
+        var strip = StripMarkup(html);
+
+        Assert.Contains("header-contact", html);
+        Assert.Contains("/alumni", strip);
+        Assert.DoesNotContain("tel:", strip);
+        Assert.DoesNotContain("mailto:", strip);
+    }
+
+    /// <summary>
+    /// With the header not showing them, the strip is the only place they appear, so it keeps
+    /// them. Suppressing them in both would lose the phone number from the top of the page.
+    /// </summary>
+    [Fact]
+    public async Task WithoutTheHeaderBlocks_TheStripStillCarriesThem()
+    {
+        await SaveSettingsAsync([]);
+
+        var strip = StripMarkup(await _client.GetStringAsync("/"));
+
+        Assert.Contains("tel:", strip);
+        Assert.Contains("mailto:", strip);
+    }
+
     /// <summary>The markup of the strip above the header, on its own.</summary>
     private static string StripMarkup(string html)
     {
