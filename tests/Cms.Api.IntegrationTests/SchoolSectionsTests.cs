@@ -257,9 +257,15 @@ public sealed class SchoolSectionsTests : IClassFixture<PublicWebFactory>
 
         var html = await _client.GetStringAsync("/");
 
-        Assert.DoesNotContain("<iframe", html);
+        // The address is on the page — as a button's attribute, so the click can use it — but
+        // no frame is built around it. Checked for the video's own frame rather than for any
+        // frame at all: the contact section draws a map in one, which is not a player and does
+        // not fetch anything from YouTube.
         Assert.Contains("data-video-embed", html);
         Assert.Contains("youtube-nocookie.com/embed/dQw4w9WgXcQ", html);
+        Assert.DoesNotContain("<iframe class=\"video", html);
+        Assert.DoesNotContain("<iframe src=\"https://www.youtube", html);
+        Assert.DoesNotContain("youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0&autoplay", html);
     }
 
     /// <summary>A link the application cannot play is skipped, not rendered as a broken frame.</summary>
