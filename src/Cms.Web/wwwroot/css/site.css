@@ -589,22 +589,31 @@ p:last-child { margin-bottom: 0; }
 /* Gallery ------------------------------------------------------------------ */
 
 .gallery-block { margin-bottom: 2.5rem; }
-.gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+/* Photographs at the size they were taken.
+   Every picture used to be cut to a 220px-tall box, so a tall photograph lost its top and
+   bottom and a group photograph lost the people at the edges — and each one sat inside a
+   ruled grey box that read as a frame around it. Columns instead: each photograph keeps its
+   own proportions, nothing is trimmed, and the pictures are the only thing on the page. */
+.gallery-grid {
+  columns: 3 250px;
+  column-gap: 1rem;
+}
 .gallery-grid figure {
-  margin: 0;
+  break-inside: avoid;
+  margin: 0 0 1rem;
   overflow: hidden;
-  background: var(--surface-soft);
-  border: 1px solid var(--line);
   border-radius: var(--r-md);
 }
 .gallery-grid img {
+  display: block;
   width: 100%;
-  height: 220px;
-  object-fit: cover;
+  height: auto;
   transition: transform .4s var(--ease);
 }
 .gallery-grid figure:hover img { transform: scale(1.045); }
-.gallery-grid iframe { width: 100%; aspect-ratio: 16 / 9; }
+/* A film has no natural height in a column, so it keeps the shape films come in. */
+.gallery-grid iframe,
+.gallery-grid video { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; }
 .gallery-grid figcaption {
   padding: .7rem .9rem;
   color: var(--muted);
@@ -1001,8 +1010,7 @@ body.nav-locked { overflow: hidden; }
 @media (max-width: 880px) {
   .stats-grid { border-radius: var(--r-md); }
   .people-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-  .gallery-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-  .gallery-grid img { height: 175px; }
+  .gallery-grid { columns: 2 150px; }
   .cta-band { padding: 1.75rem; }
 }
 
@@ -1937,13 +1945,12 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 
 .atrium-wall { padding-block: clamp(3rem, 7vw, 6rem) 0; }
 .atrium-wall__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 2px;
+  columns: 3 260px;
+  column-gap: 2px;
   margin-top: 2rem;
 }
-.atrium-wall figure { margin: 0; overflow: hidden; }
-.atrium-wall img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.atrium-wall figure { break-inside: avoid; margin: 0 0 2px; overflow: hidden; }
+.atrium-wall img { display: block; width: 100%; height: auto; }
 
 /* ===========================================================================
    Sections a school actually needs, and no design had.
