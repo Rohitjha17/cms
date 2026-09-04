@@ -525,9 +525,28 @@ public static class SiteTemplateCatalog
                 "Numbered pillars, one argument per row, rather than a grid of tiles",
                 "Edge-to-edge photograph wall"
             ],
-            HeroImageUrl = "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1800&q=80",
+            HeroImageUrl = "https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2025/07/ad-1920x1080-1.jpg",
+            HeroImages =
+            [
+                "https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2025/07/ad-1920x1080-1.jpg",
+                "https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2025/09/Neutral-Modern-Top-Dishes-Must-Try-When-Visiting-Certain-Country-Youtube-Thumbnail.jpg",
+                "https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/1.jpg"
+            ],
+            HeroAutoplaySeconds = 6,
             Settings = new Dictionary<string, object?>
             {
+                ["heroPlainImages"] = true,
+                ["popupEnabled"] = true,
+                // Two posters, shown whole. The reference site opens on exactly these.
+                ["popupImageUrl"] = string.Join('|',
+                    "https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2026/06/Nursery-Admission-Open-2027-2028.jpeg",
+                    "https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2026/07/WhatsApp-Image-2026-07-02-at-10.40.22-AM.jpeg"),
+                ["popupHeading"] = "Admission Open 2027-2028",
+                ["popupSlideSeconds"] = 3,
+                ["popupOncePerVisit"] = false,
+                ["noticeTicker"] = string.Join('|',
+                    "Admission Open 2027-2028 — apply online.",
+                    "Syllabus and datesheets for 2026-27 are on the Downloads page."),
                 ["noticeLabel"] = "LATEST",
                 ["headerContact"] = true,
                 ["noticeTickerScrolls"] = true,
@@ -542,10 +561,25 @@ public static class SiteTemplateCatalog
                     "Parent Portal|/parent-portal",
                     "Mandatory Disclosure|/disclosure")
             },
-            HeroHeading = "A school that moves with the world your children will inherit",
-            HeroDescription = "Founded in 1931, and still asking what an education is for.",
-            Statistics = new StatisticsSample(2100, 140, 96, 94),
-            WhyIntro = "Four things that shape how a child spends their day here.",
+            HomeSections =
+            [
+                new SectionSample("why_choose_us", "What Makes Our School Special", null, null,
+                    @"{""intro"": ""What makes our school special."", ""items"": [{""title"": ""Activity-Based Learning"", ""description"": ""We encourage our students to experiment and go beyond the normal learning methodologies, and promote personal learning experience through practical activities and real-time problem-solving drills.""}, {""title"": ""Varying Teaching Modalities"", ""description"": ""We have practically shifted from blackboard to digital board, with the aim of staying up to date with ever-changing teaching styles to give our students the best of all.""}, {""title"": ""Academic Brilliance"", ""description"": ""We encourage our students to thrive towards academic excellence by offering seamless guidance and motivation. Their progress is tracked by weekly assessments and tests that also help us focus on individual shortcomings.""}, {""title"": ""All-Round Development"", ""description"": ""Development is not limited to academic progress; it involves physical and psychological growth. The school offers a wide horizon of opportunities to help children unfurl their true selves and develop to their full potential.""}]}"),
+                new SectionSample("crest", "We Learn To Serve", null,
+                    "https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/02/we-learn-icon.png",
+                    @"{""intro"": ""Our motto — 'We learn to serve' — reflects concern about others, the resolve to listen and to help."", ""items"": [{""symbol"": ""The book"", ""meaning"": ""Signifies learning""}, {""symbol"": ""The star"", ""meaning"": ""Signifies the aspiration to excel""}, {""symbol"": ""The torch"", ""meaning"": ""Signifies the flame of courage and leadership""}, {""symbol"": ""The tree"", ""meaning"": ""Signifies rootedness in integrity and the development of empathy with the surroundings""}]}"),
+                new SectionSample("principal", "Principal's Message", null,
+                    "https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2026/06/SurabhiBhargav-1024x683.jpeg",
+                    @"{""name"": ""Ms. Surabhi Bhargav"", ""designation"": ""Principal"", ""quote"": ""True education nurtures the whole person — mind, body and character — by embracing experiences that challenge and refine us."", ""message"": ""We believe that true learning stems from experience. Young minds grow and evolve not only through academic knowledge but through the experiences that shape their values and character. We are committed to providing a nurturing environment where every student is encouraged to explore, reflect, and make thoughtful choices that reflect their personal beliefs.""}"),
+                new SectionSample("alumni", "Eminent Cambridgians", null, null,
+                    @"{""intro"": ""Eminent Cambridgians."", ""items"": [{""name"": ""Salman Khan"", ""role"": ""Actor"", ""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/03/salman-khan.jpg""}, {""name"": ""Saurabh Sen Sharma"", ""role"": ""Alumnus"", ""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/03/saurabh-sen-verma.jpg""}, {""name"": ""Namrata Tomar"", ""role"": ""Alumna"", ""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/03/namrata.jpg""}]}"),
+                new SectionSample("gallery", "Life @@ Cambridge", null, null,
+                    @"{""items"": [{""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/32.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/14.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/8.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/1.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/86.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/112.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/110.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/74.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/88.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/85.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/22-2.jpg"", ""caption"": ""Life on campus""}, {""imageUrl"": ""https://noida.cambridgeschool.edu.in/wp-content/uploads/sites/12/2023/06/16.jpg"", ""caption"": ""Life on campus""}]}")
+            ],
+            HeroHeading = "We learn to serve",
+            HeroDescription = "Established in 1981, and one of the oldest and most prestigious schools in the city — state-of-the-art infrastructure, experienced faculty, and teaching built around critical thinking and creativity.",
+            Statistics = new StatisticsSample(2100, 140, 96, 45),
+            WhyIntro = "What makes our school special.",
             PageContent = new Dictionary<string, string>
             {
                 ["about"] = """
@@ -669,10 +703,25 @@ public sealed class SiteTemplate
     public IReadOnlyDictionary<string, object?> Settings { get; init; } =
         new Dictionary<string, object?>();
 
+    /// <summary>
+    /// Whole homepage sections the template fills in — the crest read symbol by symbol, the
+    /// principal's portrait and words, the photographs, the alumni.
+    ///
+    /// Hero and statistics have their own fields because every template sets them. This is for
+    /// the sections that make one school's homepage that school's: a template that ships colours
+    /// and type but leaves every section empty produces a site nobody can be shown.
+    /// </summary>
+    public IReadOnlyList<SectionSample> HomeSections { get; init; } = [];
+
     /// <summary>Every template ships the full starter page set from the page gallery.</summary>
     public IReadOnlyList<string> PageTemplateKeys => PageTemplateKeys_;
     private static readonly string[] PageTemplateKeys_ = Domain.Constants.PageTemplateKeys.StarterPages;
 }
+
+/// <param name="Key">A key from <see cref="Domain.Constants.HomePageSectionKeys"/>.</param>
+/// <param name="Json">The section's own payload, in the shape its renderer reads.</param>
+public sealed record SectionSample(
+    string Key, string? Title, string? SubTitle, string? ImageUrl, string Json);
 
 public sealed record StatisticsSample(int Students, int Teachers, int Placements, int Years);
 

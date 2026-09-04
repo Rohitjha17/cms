@@ -620,6 +620,21 @@ public sealed class WebsiteService : IWebsiteService
                     break;
             }
 
+            // Sections the template fills in wholesale. Written after the switch so a template
+            // that supplies its own hero or statistics overrides the generic handling above
+            // rather than being quietly overwritten by it.
+            var supplied = template.HomeSections.FirstOrDefault(x =>
+                string.Equals(x.Key, section.SectionKey, StringComparison.OrdinalIgnoreCase));
+
+            if (supplied is not null)
+            {
+                section.Title = supplied.Title ?? section.Title;
+                section.SubTitle = supplied.SubTitle ?? section.SubTitle;
+                section.ImageUrl = supplied.ImageUrl ?? section.ImageUrl;
+                section.JsonData = supplied.Json;
+                section.IsActive = true;
+            }
+
             section.UpdatedDate = DateTime.UtcNow;
             section.UpdatedBy = Actor;
         }

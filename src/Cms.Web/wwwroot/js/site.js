@@ -246,6 +246,7 @@
   var popup = document.querySelector("[data-site-popup]");
   if (!popup) return;
 
+
   // Shown once per visit by default. Anything that cannot be remembered — a private window,
   // storage switched off — must still show the popup rather than throw and leave the page
   // half-initialised, so every read and write is guarded.
@@ -303,11 +304,56 @@
   var slideAt = 0;
   var slideTimer = null;
 
+  var poster = popup.querySelector(".site-popup__poster");
+
+  // The frame takes the size of whichever poster is showing.
+  //
+  // A school's posters are not all one size — a portrait admissions notice, a landscape results
+  // card — so one fixed frame leaves whichever it was not built for sitting inside white bands.
+  // Shaping the frame to the poster removes them, but a tall poster shaped to its own
+  // proportions at full width runs past the bottom of the window and the panel clips it, which
+  // is the crop this was meant to avoid arriving by another route.
+  //
+  // So the poster is scaled to fit inside both limits at once: 640px wide, the size the
+  // reference site opens at, and most of the window's height. It is never enlarged past its own
+  // pixels, never trimmed, and never padded.
+  var POSTER_WIDTH = 640;
+
+  function fitPoster(image) {
+    if (!poster || !image || !(image.naturalWidth > 0) || !(image.naturalHeight > 0)) return;
+
+    var room = Math.min(POSTER_WIDTH, document.documentElement.clientWidth - 32);
+    var scale = Math.min(
+      room / image.naturalWidth,
+      (window.innerHeight * 0.82) / image.naturalHeight,
+      1);
+
+    poster.style.width = Math.round(image.naturalWidth * scale) + "px";
+    poster.style.height = Math.round(image.naturalHeight * scale) + "px";
+  }
+
+  var framed = null;
+
+  function frameSlide(image) {
+    if (!image) return;
+    framed = image;
+
+    if (image.complete) fitPoster(image);
+    else image.addEventListener("load", function () { if (framed === image) fitPoster(image); }, { once: true });
+  }
+
+  // A window resized while the popup is open would otherwise keep a size measured against the
+  // window it was opened in.
+  window.addEventListener("resize", function () { fitPoster(framed); });
+
   function showSlide(next) {
     slideAt = (next + slides.length) % slides.length;
     slides.forEach(function (slide, i) { slide.classList.toggle("is-active", i === slideAt); });
     dots.forEach(function (dot, i) { dot.classList.toggle("is-active", i === slideAt); });
+    frameSlide(slides[slideAt] && slides[slideAt].querySelector("img"));
   }
+
+  frameSlide(slides[0] && slides[0].querySelector("img"));
 
   function startSlides() {
     var seconds = parseInt(popup.getAttribute("data-popup-slide") || "0", 10);

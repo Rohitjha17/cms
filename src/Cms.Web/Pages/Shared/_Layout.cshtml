@@ -86,7 +86,7 @@
        These strings come from DesignIdentity, not from anything a school can type. *@
 --font-display:@Html.Raw(typeface.Display);--font-body:@Html.Raw(typeface.Body);}</style>
 </head>
-<body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant() @skin" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
+<body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant() @skin @(settings.HeroPlainImages ? "hero-plain" : null)" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
     @if (!string.IsNullOrWhiteSpace(settings.NoticeTicker))
     {
         if (settings.NoticeTickerScrolls)
@@ -113,10 +113,19 @@
             <div class="notice-bar @noticeStyle" style="@(noticeColor is null ? null : $"background:{noticeColor}")"><div class="shell">@if (!string.IsNullOrWhiteSpace(settings.NoticeLabel)) { <span class="notice-bar__tag">@settings.NoticeLabel</span> }<span>@settings.NoticeTicker.Replace(" | ", " · ").Replace("|", " · ")</span></div></div>
         }
     }
+    @{
+        var utility = settings.TopBarLinkList;
+        // The tagline was printed here and again under the school's name, so a site with no
+        // portals and no phone number showed an empty grey band with one line repeated in it.
+        // The strip is for links; with no links there is no strip.
+        var hasStrip = utility.Count > 0
+            || !string.IsNullOrWhiteSpace(brand.Phone)
+            || !string.IsNullOrWhiteSpace(brand.Email);
+    }
+    @if (hasStrip)
+    {
     <div class="top-meta @(settings.TopBarIcons ? "top-meta--icons" : null)">
         <div class="shell">
-            <span>@(brand.Tagline ?? "Admissions open · Visit campus · Enquire today")</span>
-            @{ var utility = settings.TopBarLinkList; }
             @if (utility.Count > 0)
             {
                 @* The strip above the header is where a school parks the pages that are not part
@@ -151,6 +160,7 @@
             </span>
         </div>
     </div>
+    }
     <header class="site-header">
         <div class="shell">
             <a class="brand" href="@homeUrl">

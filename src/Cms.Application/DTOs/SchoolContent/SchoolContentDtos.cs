@@ -293,6 +293,14 @@ public sealed class SiteSettingsDto
     /// Named links for the strip above the header — the portals and standing pages a school
     /// keeps one click away: alumni, parent portal, disclosures. One per line, "Label|/url".
     /// </summary>
+    /// <summary>
+    /// The banner pictures are finished artwork — a school's admissions poster with its own
+    /// headline, dates and button drawn into it. With this on, the hero shows each one whole
+    /// and prints nothing over it: a heading laid across artwork that already has a heading is
+    /// two headings on top of one another, and the scrim that makes ours legible dims theirs.
+    /// </summary>
+    public bool HeroPlainImages { get; set; }
+
     public string? TopBarLinks { get; set; }
 
     /// <summary>

@@ -195,6 +195,150 @@ public sealed class HeaderStructureTests : IClassFixture<PublicWebFactory>
         }
     }
 
+    /// <summary>
+    /// The tagline was printed on the strip above the header and again under the school's name.
+    /// With no portals and no phone number the strip was an empty band with one line repeated
+    /// in it, which is what a school looking at its own site kept asking about.
+    /// </summary>
+    [Fact]
+    public async Task WithNothingToPutOnIt_ThereIsNoStrip()
+    {
+        await SaveSettingsAsync([]);
+
+        // Restored before the assertion runs, so a failure here cannot leave the phone number
+        // missing for whichever test happens to run next against the same site.
+        var html = await WithoutContactDetailsAsync(() => _client.GetStringAsync("/"));
+
+        Assert.DoesNotContain("top-meta", html);
+    }
+
+    /// <summary>
+    /// The tagline still belongs under the school's name. What it must not do is appear on the
+    /// strip as well, which is the repetition that made the strip look like a mistake.
+    /// </summary>
+    [Fact]
+    public async Task TheStrip_DoesNotRepeatTheTagline()
+    {
+        await SaveSettingsAsync(new() { ["topBarLinks"] = "Alumni|/alumni" });
+
+        var html = await _client.GetStringAsync("/");
+        var tagline = await TaglineAsync();
+
+        Assert.Contains("top-meta", html);
+        Assert.False(string.IsNullOrWhiteSpace(tagline), "the fixture's site needs a tagline to test");
+        Assert.DoesNotContain(tagline, StripMarkup(html));
+        // It is still under the school's name, where it belongs.
+        Assert.Contains(tagline, html);
+    }
+
+    /// <summary>The markup of the strip above the header, on its own.</summary>
+    private static string StripMarkup(string html)
+    {
+        var opens = html.IndexOf("<div class=\"top-meta", StringComparison.Ordinal);
+        if (opens < 0) return string.Empty;
+
+        var closes = html.IndexOf("<header", opens, StringComparison.Ordinal);
+        return closes < 0 ? html[opens..] : html[opens..closes];
+    }
+
+    /// <summary>
+    /// A banner that is finished artwork already carries its own headline and button. Ours laid
+    /// over the top gives the frame two of each, and the scrim that keeps ours readable dims
+    /// theirs. Off by default, so no existing site changes.
+    /// </summary>
+    [Fact]
+    public async Task ABannerCarryingItsOwnText_IsLeftAlone()
+    {
+        await SaveSettingsAsync(new() { ["heroPlainImages"] = true });
+
+        Assert.Contains("hero-plain", await _client.GetStringAsync("/"));
+    }
+
+    [Fact]
+    public async Task ByDefault_TheHeroKeepsItsOwnWords()
+    {
+        await SaveSettingsAsync([]);
+
+        Assert.DoesNotContain("hero-plain", await _client.GetStringAsync("/"));
+    }
+
+    /// <summary>
+    /// The template's sections are the school's own words and pictures. A template that ships
+    /// colours and type but leaves every section empty produces a site nobody can be shown.
+    /// </summary>
+    [Fact]
+    public void TheProspectusTemplate_ShipsItsSectionsFilledIn()
+    {
+        var template = Cms.Application.Templates.SiteTemplateCatalog.Find("campus-prospectus")!;
+
+        var keys = template.HomeSections.Select(x => x.Key).ToList();
+        Assert.Contains("crest", keys);
+        Assert.Contains("principal", keys);
+        Assert.Contains("alumni", keys);
+        Assert.Contains("gallery", keys);
+        Assert.Contains("why_choose_us", keys);
+
+        // Every payload must parse, or the section renders nothing at all.
+        foreach (var section in template.HomeSections)
+        {
+            var parsed = System.Text.Json.Nodes.JsonNode.Parse(section.Json);
+            Assert.NotNull(parsed);
+        }
+
+        var crest = template.HomeSections.First(x => x.Key == "crest");
+        Assert.Contains("The torch", crest.Json);
+        Assert.False(string.IsNullOrWhiteSpace(crest.ImageUrl));
+
+        var photographs = template.HomeSections.First(x => x.Key == "gallery");
+        Assert.True(
+            System.Text.Json.Nodes.JsonNode.Parse(photographs.Json)!["items"]!.AsArray().Count >= 8,
+            "the photograph wall needs enough pictures to be a wall");
+
+        // The banner pictures are finished artwork, so the hero prints nothing over them.
+        Assert.True((bool)template.Settings["heroPlainImages"]!);
+        Assert.True(template.HeroImages.Count > 1);
+    }
+
+    private async Task<string> TaglineAsync()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
+        return site.Tagline ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Runs <paramref name="work"/> with the site's phone and email cleared, and puts them back
+    /// afterwards however it ends. These tests share one site, so a test that took the phone
+    /// number away and left it that way would fail the next test to look for it.
+    /// </summary>
+    private async Task<string> WithoutContactDetailsAsync(Func<Task<string>> work)
+    {
+        string? phone, email;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
+            (phone, email) = (site.Phone, site.Email);
+            (site.Phone, site.Email) = (null, null);
+            await db.SaveChangesAsync();
+        }
+
+        try
+        {
+            return await work();
+        }
+        finally
+        {
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
+            (site.Phone, site.Email) = (phone, email);
+            await db.SaveChangesAsync();
+        }
+    }
+
     private async Task SaveSettingsAsync(Dictionary<string, object?> values)
     {
         using var scope = _factory.Services.CreateScope();

@@ -87,7 +87,11 @@ p { margin: 0 0 1rem; color: var(--ink-soft); line-height: 1.7; }
 p:last-child { margin-bottom: 0; }
 
 .eyebrow {
-  display: flex;
+  /* Inline, not block: a flex box fills its container and then ignores the text-align that
+     centres everything around it, which left the eyebrow hard against the left margin of every
+     centred section while its own heading sat in the middle. As an inline box it goes wherever
+     the surrounding text is aligned, and is unchanged in left-aligned sections. */
+  display: inline-flex;
   align-items: center;
   gap: .6rem;
   margin: 0 0 .85rem;
@@ -1248,7 +1252,6 @@ body.nav-locked { overflow: hidden; }
   font-size: .9rem;
 }
 /* A poster on its own should not be stretched to a form's width. */
-.site-popup__panel:not(:has(.site-popup__form)) { width: min(560px, 100%); }
 
 body.popup-open { overflow: hidden; }
 
@@ -1938,6 +1941,14 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   font-size: 1.6rem;
   color: var(--accent);
 }
+/* The number is the first grid item and takes the narrow column; without saying so, the
+   heading lands beside it and the description falls to the next row's narrow column, where it
+   sets one word per line and the section runs for several screens. Both belong in the wide
+   column, under one another. */
+.atrium-pillars li > * { grid-column: 2; }
+.atrium-pillars li::before { grid-column: 1; grid-row: 1; }
+.atrium-pillars li { row-gap: .4rem; }
+
 .atrium-pillars h3 { margin: 0 0 .4rem; font-family: var(--font-display); font-size: 1.4rem; font-weight: 500; }
 .atrium-pillars p { margin: 0; max-width: 60ch; color: var(--muted); }
 
@@ -2374,3 +2385,83 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   opacity: .35;
 }
 @media (max-width: 860px) { .top-meta__utility { display: none; } }
+
+/* --- The opening poster, shown whole ---------------------------------------
+   A school designs an admissions poster as a whole picture: the dates are at
+   the bottom and the phone number is in a corner, so cropping it to fill a box
+   is how the useful part gets cut off. The frame takes the poster's own shape
+   and the picture is fitted inside it, never trimmed.
+
+   640x480 is the size the reference site opens at, and it is what the frame
+   falls back to until the first poster reports its own proportions. */
+
+/* The frame's own size is measured against the poster and the window, in script; until that
+   runs it is 640x480, the size the reference site opens at. The transition is so a change of
+   poster shape reads as the next poster arriving rather than as the popup breaking. */
+.site-popup__poster {
+  flex: 0 0 auto;
+  width: min(640px, 100%);
+  aspect-ratio: 4 / 3;
+  background: #eef0f3;
+  transition: width .35s var(--ease, ease), height .35s var(--ease, ease);
+}
+/* Once script has measured it, the box has both dimensions and the fallback shape must not
+   fight them. */
+.site-popup__poster[style*="height"] { aspect-ratio: auto; }
+.site-popup__slide img { object-fit: contain; }
+/* A poster alone: the panel is whatever the poster measured, so a tall narrow poster is not
+   left sitting against a white margin the width of a landscape one. With an enquiry form
+   beside it the panel takes a settled width instead, because a form that changes width as the
+   posters change shape is unreadable. */
+.site-popup__panel:not(:has(.site-popup__form)) { width: auto; max-width: min(640px, 100%); }
+.site-popup__panel { align-items: stretch; }
+.site-popup__panel:has(.site-popup__form) { width: min(1040px, 100%); max-width: 100%; }
+.site-popup__form { flex: 1 1 340px; align-self: center; }
+
+@media (max-width: 720px) {
+  /* Stacked, the poster keeps its measured shape and the form follows underneath. */
+  .site-popup__panel { flex-direction: column; align-items: center; }
+}
+
+/* --- Banners that carry their own text -------------------------------------
+   A school's banner is often a finished poster: headline, dates and a button
+   already drawn into the picture. Laying our heading across it gives the frame
+   two headlines, and the scrim that keeps ours readable dims theirs. Here the
+   picture is the whole hero — shown entire, nothing over it, nothing cut off. */
+
+body.hero-plain .hero {
+  min-height: 0;
+  padding: 0;
+  color: inherit;
+  background: #0b1220;
+}
+body.hero-plain .hero::after { display: none; }
+body.hero-plain .hero-copy,
+body.hero-plain .hero > .shell { display: none; }
+
+body.hero-plain .hero-slides { position: relative; inset: auto; aspect-ratio: 16 / 9; }
+body.hero-plain .hero-slides::after { display: none; }
+body.hero-plain .hero-slides__item {
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform: none;
+  transition: opacity .9s ease;
+}
+body.hero-plain .hero-slides__item.is-active { transform: none; }
+
+/* A banner is a picture, so it gets a picture's proportions rather than a band's. Past a
+   point that is more than a screenful, and the page below it stops being findable. */
+@media (min-width: 900px) {
+  body.hero-plain .hero-slides { max-height: 76vh; }
+}
+
+/* --- Centred section heads sit centred -------------------------------------
+   The head is capped at 42rem so a heading and its intro do not run the full
+   width of a wide screen. In the designs that centre their headings, that cap
+   left the box pinned to the left margin with its text centred inside it — so
+   the heading read as off to one side of the content beneath it. Centring the
+   text means centring the box it is in. */
+
+.variant-atrium .section-head,
+.variant-campus .section-head,
+.variant-prestige .section-head { margin-inline: auto; }
