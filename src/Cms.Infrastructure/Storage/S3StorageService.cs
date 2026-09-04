@@ -48,7 +48,8 @@ public class S3StorageService : IFileStorageService
         }
 
         var storedName = $"{Guid.NewGuid():N}{extension}";
-        var key = Key(_options, $"{tenantId}/{siteId}/{folder}/{storedName}");
+        var path = $"{tenantId}/{siteId}/{folder}/{storedName}";
+        var key = Key(_options, path);
 
         var request = new PutObjectRequest
         {
@@ -65,7 +66,7 @@ public class S3StorageService : IFileStorageService
         // stay valid no matter what the bucket's own permissions are set to later. Only a CDN or
         // a bucket that is deliberately public gets linked directly; otherwise the file is
         // served through this application, which is the one thing that always has the key.
-        var url = PublicUrl(_options, key);
+        var url = PublicUrl(_options, key, path);
 
         _logger.LogInformation("Uploaded file to S3 key {Key}", key);
         return new StoredFileResult(url, key, storedName);
@@ -82,16 +83,28 @@ public class S3StorageService : IFileStorageService
         return string.IsNullOrEmpty(prefix) ? path : $"{prefix}/{path}";
     }
 
-    public static string PublicUrl(AwsOptions options, string key)
+    /// <param name="key">The object's full name in the bucket, folder prefix and all.</param>
+    /// <param name="path">The same thing without the prefix — tenant, site, folder, file.</param>
+    public static string PublicUrl(AwsOptions options, string key, string path)
     {
+        // A CDN or a public bucket is addressed directly, so it needs the real object name.
         if (!string.IsNullOrWhiteSpace(options.PublicBaseUrl))
         {
             return $"{options.PublicBaseUrl.TrimEnd('/')}/{key}";
         }
 
-        return options.PublicBucket
-            ? $"https://{options.BucketName}.s3.{options.Region}.amazonaws.com/{key}"
-            : $"{S3MediaProxyMiddleware.PathPrefix}/{key}";
+        if (options.PublicBucket)
+        {
+            return $"https://{options.BucketName}.s3.{options.Region}.amazonaws.com/{key}";
+        }
+
+        // Served through this application, so the address does not need to name the bucket
+        // folder — and must not. This URL is written into the database beside the file and
+        // outlives the configuration that produced it: with the folder baked in, changing
+        // FolderPath, or moving a site between local storage and S3, silently broke every
+        // picture already uploaded. Without it, the address is the same one local storage
+        // gives, and the folder is applied when the object is fetched.
+        return $"{S3MediaProxyMiddleware.PathPrefix}/{path}";
     }
 
     public async Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default)

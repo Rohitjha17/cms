@@ -29,6 +29,7 @@ public sealed class S3MediaProxyMiddleware
 
     private readonly RequestDelegate _next;
     private readonly string _bucket;
+    private readonly string? _folder;
     private readonly int _cacheSeconds;
     private readonly ILogger<S3MediaProxyMiddleware> _logger;
 
@@ -39,6 +40,7 @@ public sealed class S3MediaProxyMiddleware
     {
         _next = next;
         _bucket = options.Value.BucketName;
+        _folder = options.Value.FolderPath;
         // Uploaded files are immutable — the name carries a fresh GUID — so they can be cached
         // hard. Without this every page view would fetch every photograph from S3 again.
         _cacheSeconds = 31536000;
@@ -54,7 +56,7 @@ public sealed class S3MediaProxyMiddleware
             return;
         }
 
-        var key = Key(remainder.Value);
+        var key = Key(remainder.Value, _folder);
         if (key is null)
         {
             await _next(context);
@@ -98,7 +100,13 @@ public sealed class S3MediaProxyMiddleware
     /// Turns the request path into an object key, refusing anything that could escape the
     /// prefix the application itself writes under.
     /// </summary>
-    public static string? Key(string? remainder)
+    /// <param name="folderPath">
+    /// The prefix everything is stored under when the bucket is shared. It is applied here
+    /// rather than being written into the stored address, so a change to it does not break
+    /// pictures uploaded before the change. An address that already carries it — every one
+    /// stored before this — is used as it is.
+    /// </param>
+    public static string? Key(string? remainder, string? folderPath = null)
     {
         var trimmed = remainder?.Trim('/');
         if (string.IsNullOrEmpty(trimmed) || trimmed.Length > 1024)
@@ -106,10 +114,19 @@ public sealed class S3MediaProxyMiddleware
             return null;
         }
 
-        return trimmed.Contains("..", StringComparison.Ordinal)
+        if (trimmed.Contains("..", StringComparison.Ordinal)
             || trimmed.Contains("//", StringComparison.Ordinal)
-            || trimmed.Contains('\\', StringComparison.Ordinal)
-            ? null
-            : trimmed;
+            || trimmed.Contains('\\', StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var prefix = folderPath?.Trim().Trim('/');
+        if (string.IsNullOrEmpty(prefix) || trimmed.StartsWith(prefix + "/", StringComparison.Ordinal))
+        {
+            return trimmed;
+        }
+
+        return $"{prefix}/{trimmed}";
     }
 }
