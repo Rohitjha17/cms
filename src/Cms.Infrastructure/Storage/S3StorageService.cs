@@ -41,14 +41,14 @@ public class S3StorageService : IFileStorageService
             "video/webm" => ".webm",
             _ => throw new InvalidOperationException("Unsupported media content type.")
         };
-        if (_tenantContext.TenantId is not Guid tenantId || _siteContext.SiteId is not Guid siteId)
+        if (_tenantContext.TenantId is null || _siteContext.SiteId is null)
         {
             // Without both, every tenant would share one folder — fail instead of leaking.
             throw new InvalidOperationException("Cannot store media before the tenant and website are resolved.");
         }
 
         var storedName = $"{Guid.NewGuid():N}{extension}";
-        var path = $"{tenantId}/{siteId}/{folder}/{storedName}";
+        var path = $"{MediaFolder.For(_tenantContext, _siteContext, folder)}/{storedName}";
         var key = Key(_options, path);
 
         var request = new PutObjectRequest

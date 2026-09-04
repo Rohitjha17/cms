@@ -31,10 +31,11 @@ public class LocalFileStorageService : IFileStorageService
     {
         var extension = ExtensionFor(contentType);
         var storedName = $"{Guid.NewGuid():N}{extension}";
-        var relativeFolder = Path.Combine(
-            _tenantContext.TenantId?.ToString() ?? "unknown",
-            _siteContext.SiteId?.ToString() ?? "unknown",
-            folder);
+        // The same readable folders S3 uses, so a site can be moved between the two providers
+        // and the addresses already stored keep pointing at the same place.
+        var relativeFolder = MediaFolder
+            .For(_tenantContext, _siteContext, folder)
+            .Replace('/', Path.DirectorySeparatorChar);
 
         var root = LocalStorageApplicationBuilderExtensions.ResolveRoot(
             _env.ContentRootPath, _options.LocalRootPath);
