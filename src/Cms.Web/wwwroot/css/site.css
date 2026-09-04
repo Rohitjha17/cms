@@ -309,18 +309,23 @@ p:last-child { margin-bottom: 0; }
   padding: 7rem 0 5rem;
   overflow: hidden;
   color: #fff;
-  /* Two scrims: one lifts the whole frame, one anchors the copy in the lower left
-     so headings stay legible over bright photography. */
+  /* One shade, low and behind the copy only.
+     There used to be two, each covering the whole frame — a dark wash from the bottom and a
+     second from the left — and together they greyed out the entire banner. Since the slideshow
+     started working they were painted over the pictures as well, so a school's own banner
+     arrived on the page dimmed end to end. The top three fifths are untouched now, and the
+     shade only deepens where the heading and the buttons actually sit. */
   background:
-    linear-gradient(to top, rgba(7, 16, 33, .88) 0%, rgba(7, 16, 33, .5) 32%, rgba(7, 16, 33, .12) 62%),
-    linear-gradient(100deg, rgba(7, 16, 33, .72) 0%, rgba(7, 16, 33, .3) 46%, rgba(7, 16, 33, .05) 78%),
+    linear-gradient(to top, rgba(7, 16, 33, .72) 0%, rgba(7, 16, 33, .34) 22%, transparent 58%),
     var(--hero) center / cover no-repeat;
 }
 /* There used to be a 70px band across the bottom of the hero, meant to fade the picture into
    the page. --canvas is not opaque, so the two stops resolved to the same translucent white and
    it painted as a flat grey bar over the bottom of the banner instead of fading anything. The
    banner ends where it ends. */
-.hero h1 { text-shadow: 0 2px 24px rgba(7, 16, 33, .35); }
+/* The heading carries its own contrast now that the picture behind it is not dimmed. */
+.hero h1 { text-shadow: 0 2px 10px rgba(7, 16, 33, .55), 0 1px 32px rgba(7, 16, 33, .45); }
+.hero-copy p, .hero .shell p { text-shadow: 0 1px 8px rgba(7, 16, 33, .6); }
 .hero-copy, .hero .shell { position: relative; z-index: 1; max-width: 46rem; }
 .hero h1 { color: #fff; }
 .hero p { color: rgba(255, 255, 255, .88); font-size: clamp(1.05rem, 1.4vw, 1.2rem); }
@@ -1039,13 +1044,14 @@ body.nav-locked { overflow: hidden; }
   transition: opacity .9s ease, transform 7s ease;
 }
 .hero-slides__item.is-active { opacity: 1; transform: scale(1); }
+/* The same shade as the hero's own, because the slides cover the hero's background and would
+   otherwise leave the copy standing on bare photograph. Confined to the bottom for the same
+   reason: the picture is the point of the section. */
 .hero-slides::after {
   position: absolute;
   inset: 0;
   content: "";
-  background:
-    linear-gradient(to top, rgba(7, 16, 33, .88) 0%, rgba(7, 16, 33, .5) 32%, rgba(7, 16, 33, .12) 62%),
-    linear-gradient(100deg, rgba(7, 16, 33, .72) 0%, rgba(7, 16, 33, .3) 46%, rgba(7, 16, 33, .05) 78%);
+  background: linear-gradient(to top, rgba(7, 16, 33, .72) 0%, rgba(7, 16, 33, .34) 22%, transparent 58%);
 }
 /* Direct children only: with a space this also matched the arrows and dots inside the
    slideshow, turning them relative and dropping them into the top-left corner. */
