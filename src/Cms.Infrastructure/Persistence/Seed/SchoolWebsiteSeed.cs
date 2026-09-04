@@ -52,15 +52,20 @@ public static class SchoolWebsiteSeed
         var existingPages = await db.Pages.IgnoreQueryFilters()
             .Where(x => x.TenantId == tenantId && x.SiteId == siteId)
             .ToListAsync(cancellationToken);
-        var existingSlugs = existingPages.Select(x => x.Slug).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // Starter pages are given to a website once, when it has none. They used to be topped
+        // up on every start: any starter page missing from the list was added back. That meant
+        // a page an administrator had deliberately deleted returned the next time the
+        // application restarted, and its link with it — so deleting a page looked like it had
+        // simply not worked. A site that already has pages owns its own page list.
+        if (existingPages.Count > 0)
+        {
+            return;
+        }
 
         var order = 1;
         foreach (var template in templates)
         {
-            if (existingSlugs.Contains(template.DefaultSlug))
-            {
-                continue;
-            }
 
             db.Pages.Add(new Page
             {
