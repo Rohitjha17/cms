@@ -899,10 +899,20 @@ A page with no menu item exists but is very hard to find. Always do step 4.
 
 ### 14.6 Put your campus on the map
 
-1. Go to Google Maps and find your school
-2. **Share → Embed a map → Copy HTML**
-3. From that HTML, copy only the address inside `src="…"`
-4. Paste into Branding → Map embed URL
+**Branding → Map embed URL.** Paste any of these — all of them work:
+
+- the link from your browser's address bar while looking at the school on
+  Google Maps
+- the whole `<iframe …>` tag from **Share → Embed a map → Copy HTML**
+- just the address inside that tag
+- or simply type the school's address as text
+
+**And if you leave the field empty**, the map is built from **Branding →
+Address**, so a school that never touches this field still gets a map.
+
+The one thing that does not work is the **short link** from the Share button
+(`maps.app.goo.gl/…`). Nothing can expand it without asking Google, so the
+address is used instead.
 
 ### 14.7 Change the school's colours
 

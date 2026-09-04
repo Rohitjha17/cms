@@ -351,9 +351,11 @@
                         <button type="submit">Send message</button>
                     </form>
                 </div>
-                @if (!string.IsNullOrWhiteSpace(Model.Website.Branding.MapEmbedUrl))
+                @* Whatever was typed in the map field, turned into a map that draws — and if
+                   it holds nothing usable, the school's own address is looked up instead. *@
+                @if (MapEmbed.Read(Model.Website.Branding.MapEmbedUrl, Model.Website.Branding.Address) is { Length: > 0 } campusMap)
                 {
-                    <iframe class="map" src="@Model.Website.Branding.MapEmbedUrl" loading="lazy" title="Campus map"></iframe>
+                    <iframe class="map" src="@campusMap" loading="lazy" title="Campus map"></iframe>
                 }
             </section>
         }

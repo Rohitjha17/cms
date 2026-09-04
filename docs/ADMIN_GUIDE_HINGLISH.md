@@ -943,15 +943,19 @@ aur browser se copy kiya hua normal YouTube link paste kar do. `watch?v=...`,
 
 ### 13.8 Contact page par map lagana
 
-1. **Google Maps** kholo, apna school dhoondho
-2. **Share** dabao
-3. **Embed a map** tab par jao
-4. **COPY HTML** dabao
-5. Jo copy hua usme se **sirf `src="..."` ke andar ka address** chahiye
-   - poora: `<iframe src="https://www.google.com/maps/embed?pb=..." ...>`
-   - aapko chahiye: `https://www.google.com/maps/embed?pb=...`
-6. **School website → Branding → Map embed URL** me paste karo
-7. **Save** dabao
+**Branding → Map embed URL** me in me se kuch bhi paste kar do — sab chalega:
+
+- Google Maps par school dekhte waqt **address bar** ka link
+- **Share → Embed a map → COPY HTML** se copy kiya poora `<iframe ...>` tag
+- ya us tag ke andar wala sirf address
+- ya seedha school ka **address text** likh do
+
+**Aur agar ye field khaali chhod doge**, to map **Branding → Address** se ban
+jayega — matlab is field ko haath lagaye bina bhi map dikhega.
+
+Sirf ek cheez nahi chalti: Share button ka **short link**
+(`maps.app.goo.gl/...`). Use kholna Google se poochhe bina mumkin nahi, isliye
+uski jagah address use ho jata hai.
 
 ---
 

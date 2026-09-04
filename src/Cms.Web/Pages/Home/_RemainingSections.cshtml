@@ -156,7 +156,9 @@
             var contactAddress = SectionJson.GetString(json, "address") ?? Model.Branding.Address;
             var contactPhone = SectionJson.GetString(json, "phone") ?? Model.Branding.Phone;
             var contactEmail = SectionJson.GetString(json, "email") ?? Model.Branding.Email;
-            var contactMap = SectionJson.GetString(json, "mapEmbedUrl") ?? Model.Branding.MapEmbedUrl;
+            var contactMap = MapEmbed.Read(
+                SectionJson.GetString(json, "mapEmbedUrl") ?? Model.Branding.MapEmbedUrl,
+                contactAddress);
 
             <section data-section="@block.SectionKey" class="shell section contact-block">
                 <div>
@@ -191,7 +193,7 @@
                         <a class="btn" href="@(block.ButtonLink ?? basePath + "/contact")">@block.ButtonText</a>
                     }
                 </div>
-                @if (!string.IsNullOrWhiteSpace(contactMap))
+                @if (contactMap is { Length: > 0 })
                 {
                     <iframe class="map" src="@contactMap" loading="lazy" title="Campus map"></iframe>
                 }
