@@ -56,6 +56,15 @@
       ]
     },
     Gallery: {
+      fields: [
+        { key: "intro", label: "Line under the heading", type: "textarea" },
+        {
+          key: "showBuiltIn",
+          label: "Show the built-in gallery below (turn this off to lay the page out yourself in Page content)",
+          type: "checkbox",
+          default: true
+        }
+      ],
       collections: [
         {
           key: "items",
@@ -70,6 +79,18 @@
       ]
     },
     Disclosure: {
+      fields: [
+        { key: "intro", label: "Line under the heading", type: "textarea" },
+        { key: "affiliationNumber", label: "Affiliation number", type: "text" },
+        { key: "schoolCode", label: "School code", type: "text" },
+        { key: "updatedOn", label: "Last updated", type: "text" },
+        {
+          key: "showBuiltIn",
+          label: "Show the built-in document table below (turn this off to lay the page out yourself in Page content)",
+          type: "checkbox",
+          default: true
+        }
+      ],
       collections: [
         {
           key: "documents",
@@ -77,6 +98,7 @@
           itemFields: [
             { key: "title", label: "Document title", type: "text" },
             { key: "category", label: "Category", type: "text" },
+            { key: "description", label: "Note (optional)", type: "text" },
             { key: "fileUrl", label: "PDF URL", type: "media", media: "Document" }
           ]
         }
@@ -114,7 +136,11 @@
       return `<label class="field full"><span>${field.label}</span><textarea data-typed-path="${path}" id="${id}" rows="3">${value ?? ""}</textarea></label>`;
     }
     if (field.type === "checkbox") {
-      return `<label class="switch-row full"><input type="checkbox" data-typed-path="${path}" ${value ? "checked" : ""} /><span><strong>${field.label}</strong></span></label>`;
+      // A page saved before this switch existed has no value for it. Falling back to unchecked
+      // would turn the built-in block off for every page already published, which is the
+      // opposite of leaving things as they were.
+      const on = value === undefined || value === null ? field.default === true : Boolean(value);
+      return `<label class="switch-row full"><input type="checkbox" data-typed-path="${path}" ${on ? "checked" : ""} /><span><strong>${field.label}</strong></span></label>`;
     }
     if (field.type === "select") {
       const options = (field.options || []).map((option) =>

@@ -184,7 +184,8 @@ public sealed class WebsiteService : IWebsiteService
     /// this did — silently discarded every edit made on the Navigation screen the next time
     /// anyone saved any page, which made that screen pointless.
     /// </summary>
-    public async Task SyncHeaderMenuAsync(CancellationToken cancellationToken)
+    public async Task SyncHeaderMenuAsync(
+        CancellationToken cancellationToken, string? removedPageSlug = null)
     {
         var (tenantId, siteId) = RequireContext();
         var allPages = await _repository.GetPagesAsync(tenantId, siteId, activeOnly: false, cancellationToken);
@@ -219,6 +220,16 @@ public sealed class WebsiteService : IWebsiteService
             .Select(p => "/" + p.Slug)
             .Where(url => !wanted.Contains(url))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // A page that has just been deleted is not in allPages any more, so the rule above can
+        // never reach it: after the row is gone its link is indistinguishable from one somebody
+        // typed in themselves. Left alone, deleting a page removed it from the site and left it
+        // in the top bar pointing at a 404 — with no way to take it out except editing the menu
+        // by hand, which is what "delete does not work" looked like. The caller tells us.
+        if (!string.IsNullOrWhiteSpace(removedPageSlug))
+        {
+            hiddenPageUrls.Add("/" + removedPageSlug.Trim().Trim('/'));
+        }
 
         var stale = menu.Items.Where(item => hiddenPageUrls.Contains(item.Url)).ToList();
         if (stale.Count > 0)

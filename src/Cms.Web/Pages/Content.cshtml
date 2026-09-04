@@ -161,8 +161,18 @@
                 </section>
             }
         }
-        else if (content.PageType == PageType.Gallery && hasJson)
+        else if (content.PageType == PageType.Gallery && hasJson && ShowsBuiltIn(data))
         {
+            @* The Page content field above is rendered for every page type, so a school that
+               wants to lay this page out itself writes the HTML there and turns the built-in
+               grid off. A page saved before the switch existed has no value for it, and must
+               keep the grid it has always had — so only an explicit "off" hides it. *@
+            if (data.TryGetProperty("intro", out var galleryIntro)
+                && !string.IsNullOrWhiteSpace(galleryIntro.GetString()))
+            {
+                <p class="lede">@galleryIntro.GetString()</p>
+            }
+
             var albumGroups = new List<(string Title, List<JsonElement> Media)>();
             if (data.TryGetProperty("items", out var flatItems) && flatItems.ValueKind == JsonValueKind.Array)
             {
@@ -224,8 +234,35 @@
                 </section>
             }
         }
-        else if (content.PageType == PageType.Disclosure && hasJson && data.TryGetProperty("documents", out var disclosureDocs))
+        else if (content.PageType == PageType.Disclosure && hasJson && ShowsBuiltIn(data)
+            && data.TryGetProperty("documents", out var disclosureDocs))
         {
+            if (data.TryGetProperty("intro", out var discIntro)
+                && !string.IsNullOrWhiteSpace(discIntro.GetString()))
+            {
+                <p class="lede">@discIntro.GetString()</p>
+            }
+
+            @* The board requires the affiliation number and the school code to be stated on
+               this page, and they were the one thing it had no field for. *@
+            <ul class="disclosure-facts">
+                @if (data.TryGetProperty("affiliationNumber", out var affiliation)
+                    && !string.IsNullOrWhiteSpace(affiliation.GetString()))
+                {
+                    <li><span>Affiliation number</span><strong>@affiliation.GetString()</strong></li>
+                }
+                @if (data.TryGetProperty("schoolCode", out var schoolCode)
+                    && !string.IsNullOrWhiteSpace(schoolCode.GetString()))
+                {
+                    <li><span>School code</span><strong>@schoolCode.GetString()</strong></li>
+                }
+                @if (data.TryGetProperty("updatedOn", out var updatedOn)
+                    && !string.IsNullOrWhiteSpace(updatedOn.GetString()))
+                {
+                    <li><span>Last updated</span><strong>@updatedOn.GetString()</strong></li>
+                }
+            </ul>
+
             <section class="disclosure-table">
                 <table>
                     <thead><tr><th>Title</th><th>Category</th><th>Document</th></tr></thead>
@@ -234,7 +271,14 @@
                     {
                         var fileUrl = item.TryGetProperty("fileUrl", out var fu) ? fu.GetString() : "";
                         <tr>
-                            <td>@(item.TryGetProperty("title", out var dt) ? dt.GetString() : "")</td>
+                            <td>
+                                @(item.TryGetProperty("title", out var dt) ? dt.GetString() : "")
+                                @if (item.TryGetProperty("description", out var dnote)
+                                    && !string.IsNullOrWhiteSpace(dnote.GetString()))
+                                {
+                                    <small class="muted">@dnote.GetString()</small>
+                                }
+                            </td>
                             <td>@(item.TryGetProperty("category", out var cat) ? cat.GetString() : "")</td>
                             <td>
                                 @if (!string.IsNullOrWhiteSpace(fileUrl))
@@ -361,3 +405,16 @@
         }
     </div>
 </article>
+
+@functions {
+    /// <summary>
+    /// Whether a page still wants the layout the application draws for its type.
+    ///
+    /// Only an explicit "off" hides it. A page saved before the switch existed carries no value
+    /// for it, and must keep the block it has always had — reading a missing value as "off"
+    /// would empty every gallery and every disclosure table already published.
+    /// </summary>
+    private static bool ShowsBuiltIn(JsonElement data) =>
+        !data.TryGetProperty("showBuiltIn", out var value)
+        || value.ValueKind != JsonValueKind.False;
+}

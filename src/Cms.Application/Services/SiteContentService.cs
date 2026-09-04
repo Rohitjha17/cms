@@ -125,9 +125,13 @@ public sealed class SiteContentService : ISiteContentService
         var (tenantId, siteId) = RequireContext();
         var page = await _repository.GetPageAsync(tenantId, siteId, id, cancellationToken)
             ?? throw new NotFoundException("Page was not found.");
+
+        // Read before the row goes: afterwards there is nothing left to say which link was its.
+        var slug = page.Slug;
+
         _repository.DeletePage(page);
         await _repository.SaveChangesAsync(cancellationToken);
-        await _websiteService.SyncHeaderMenuAsync(cancellationToken);
+        await _websiteService.SyncHeaderMenuAsync(cancellationToken, slug);
     }
 
     public async Task<IReadOnlyList<MenuDto>> GetMenusAsync(bool includeInactive, CancellationToken cancellationToken)

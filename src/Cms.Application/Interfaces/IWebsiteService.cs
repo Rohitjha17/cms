@@ -16,7 +16,11 @@ public interface IWebsiteService
     Task<SiteDomainDto> SaveDomainAsync(Guid? id, SaveSiteDomainDto dto, CancellationToken cancellationToken);
     Task DeleteDomainAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<PublicPageDto>> AssignTemplatesAsync(AssignTemplatesDto dto, CancellationToken cancellationToken);
-    Task SyncHeaderMenuAsync(CancellationToken cancellationToken);
+    /// <param name="removedPageSlug">
+    /// The slug of a page being deleted, when one is. Its link cannot be identified afterwards:
+    /// once the page is gone it looks exactly like a link somebody added by hand.
+    /// </param>
+    Task SyncHeaderMenuAsync(CancellationToken cancellationToken, string? removedPageSlug = null);
     Task<SiteBrandingDto> GetBrandingAsync(CancellationToken cancellationToken);
     Task<SiteBrandingDto> SaveBrandingAsync(SiteBrandingDto dto, CancellationToken cancellationToken);
     Task<PublicWebsiteDto> GetPublicWebsiteAsync(CancellationToken cancellationToken);
