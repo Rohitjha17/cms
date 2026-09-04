@@ -24,6 +24,12 @@
     var description = SectionJson.GetString(heroJson, "description")
         ?? RichText.ToPlainText(hero?.Description) ?? brand.Tagline;
 
+    // Every other design, and the field in the console, call this "personName". Reading "name"
+    // here meant a principal's name typed into Site content never appeared on this template.
+    // Both are read so a site that already has the old key keeps working.
+    var principalName = SectionJson.GetString(principalJson, "personName")
+        ?? SectionJson.GetString(principalJson, "name");
+
     var pillars = SectionJson.GetArray(whyJson, "items").Take(4).ToList();
     var photographs = SectionJson.GetArray(galleryJson, "items").Take(8).ToList();
 
@@ -68,13 +74,13 @@
         <div class="shell">
             @if (!string.IsNullOrWhiteSpace(principal.ImageUrl))
             {
-                <figure><img src="@principal.ImageUrl" alt="@(SectionJson.GetString(principalJson, "name") ?? "Principal")" loading="lazy" /></figure>
+                <figure><img src="@principal.ImageUrl" alt="@(principalName ?? "Principal")" loading="lazy" /></figure>
             }
             <div>
                 <p class="eyebrow">@(principal.Title ?? "Principal's message")</p>
                 <blockquote>@(SectionJson.GetString(principalJson, "quote") ?? RichText.ToPlainText(principal.Description))</blockquote>
                 <p class="atrium-message__by">
-                    <strong>@SectionJson.GetString(principalJson, "name")</strong>
+                    <strong>@principalName</strong>
                     @if (SectionJson.GetString(principalJson, "designation") is { Length: > 0 } role)
                     {
                         <span>@role</span>

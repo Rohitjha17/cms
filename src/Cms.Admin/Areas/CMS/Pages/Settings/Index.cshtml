@@ -154,6 +154,16 @@
                     </select>
                 </label>
 
+                <label class="field">
+                    <span>Crest shape</span>
+                    <select asp-for="Input.LogoShape">
+                        <option value="rounded">Rounded — the crest on a circle</option>
+                        <option value="square">Square — the crest in a rounded panel</option>
+                        <option value="original">Original — the artwork on its own, nothing behind it</option>
+                    </select>
+                    <small class="hint">Rounded and square carry the header's colour down over the banner. Choose original for a crest that already has its own outline.</small>
+                </label>
+
                 <label class="switch-row full">
                     <input asp-for="Input.HeroPlainImages" type="checkbox" />
                     <span><strong>Banner pictures carry their own text</strong><small>Shows each banner whole, with no heading, buttons or shading printed over it. Use this when your banners are finished artwork.</small></span>

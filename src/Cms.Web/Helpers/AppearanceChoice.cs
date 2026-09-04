@@ -16,6 +16,7 @@ public static class AppearanceChoice
     private static readonly string[] NoticeStyles = ["solid", "gradient", "dark", "outline"];
     private static readonly string[] ImageHovers = ["zoom", "lift", "tint"];
     private static readonly string[] LinkHovers = ["underline", "color"];
+    private static readonly string[] LogoShapes = ["original", "rounded", "square"];
 
     public static string? ButtonStyle(string? value) => Pick(value, ButtonStyles, "btn-style-");
     public static string? ButtonShape(string? value) => Pick(value, ButtonShapes, "btn-shape-");
@@ -24,6 +25,13 @@ public static class AppearanceChoice
     public static string? NoticeStyle(string? value) => Pick(value, NoticeStyles, "notice-bar--");
     public static string? ImageHover(string? value) => Pick(value, ImageHovers, "img-hover-");
     public static string? LinkHover(string? value) => Pick(value, LinkHovers, "link-hover-");
+
+    /// <summary>
+    /// How the crest is cut. "original" leaves the artwork exactly as the school drew it, with
+    /// no disc behind it — the right answer for a crest that already has its own shape, and the
+    /// wrong one to have imposed on every school without asking.
+    /// </summary>
+    public static string? LogoShape(string? value) => Pick(value, LogoShapes, "logo-");
 
     /// <summary>A section's own hover, applied to the cards inside it.</summary>
     public static string? SectionHover(string? value) => Pick(value, CardHovers, "card-hover-");

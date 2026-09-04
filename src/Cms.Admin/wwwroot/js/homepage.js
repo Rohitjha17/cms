@@ -190,9 +190,10 @@
       ["mapEmbedUrl", "Map embed URL", "url", "Google Maps embed URL"]
     ],
     video: [
-      ["videoUrl", "Video URL", "url", "YouTube, Vimeo or hosted video"],
-      ["posterUrl", "Poster image URL", "url", "Preview image before playback"],
-      ["caption", "Video caption", "text", "Accessible supporting caption"]
+      ["intro", "Line under the heading", "text", "Optional"],
+      ["videoUrl", "Video URL", "url", "YouTube, Vimeo or an uploaded file. Add more below"],
+      ["posterUrl", "Poster image URL", "url", "Shown before it plays. YouTube supplies its own"],
+      ["caption", "Caption", "text", "Shown under the single video"]
     ],
     timings: [
       ["firstTerm", "First term label", "text", "e.g. Summer"],
@@ -234,6 +235,18 @@
       ["designation", "Designation", "text", "Official role"],
       ["quote", "Featured quote", "text", "Short highlighted message"]
     ],
+    // The website renders these two exactly as it renders the principal and the chairman. They
+    // had no fields here at all, so the only way to fill them in was to write the JSON by hand.
+    director: [
+      ["personName", "Director name", "text", "Full name"],
+      ["designation", "Designation", "text", "Official role"],
+      ["quote", "Featured quote", "text", "Short highlighted message"]
+    ],
+    manager: [
+      ["personName", "Manager name", "text", "Full name"],
+      ["designation", "Designation", "text", "Official role"],
+      ["quote", "Featured quote", "text", "Short highlighted message"]
+    ],
     why_choose_us: [
       ["intro", "Section introduction", "text", "Why families should choose you"],
       ["columns", "Desktop columns", "number", "Recommended: 3 or 4"]
@@ -251,7 +264,9 @@
     departments: [["title", "Department"], ["description", "Description"], ["url", "Page URL"], ["imageUrl", "Image URL"]],
     why_choose_us: [["title", "Reason"], ["description", "Description"], ["icon", "Icon name"]],
     announcements: [["title", "Announcement"], ["date", "Date"], ["url", "Link"], ["summary", "Summary"]],
-    latest_news: [["title", "News title"], ["date", "Date"], ["url", "Link"], ["imageUrl", "Image URL"]],
+    // The paragraph under each headline is "summary". Without it here the only way to write one
+    // was the JSON box, and every card rendered as a heading over an empty line.
+    latest_news: [["title", "News title"], ["summary", "Summary"], ["date", "Date"], ["url", "Link"], ["imageUrl", "Image URL"]],
     upcoming_events: [["title", "Event title"], ["date", "Date"], ["url", "Link"], ["location", "Location"]],
     gallery: [["title", "Image title"], ["imageUrl", "Image URL"], ["alt", "Image description"]],
     testimonials: [["name", "Person name"], ["role", "Role / relation"], ["quote", "Testimonial"], ["imageUrl", "Portrait URL"]],
@@ -263,7 +278,9 @@
     staff_list: [["name", "Name"], ["designation", "Designation"], ["qualification", "Qualification"]],
     facilities: [["title", "Facility"], ["description", "Description"], ["imageUrl", "Photograph URL"]],
     founder: [["year", "Year"], ["title", "What happened"], ["description", "Detail"]],
-    downloads: [["title", "Document"], ["fileUrl", "File URL"], ["format", "Format"], ["size", "Size"]]
+    downloads: [["title", "Document"], ["fileUrl", "File URL"], ["format", "Format"], ["size", "Size"]],
+    // More than one film. With any row here the single fields above are ignored.
+    video: [["title", "Caption"], ["videoUrl", "YouTube, Vimeo or file URL"], ["posterUrl", "Poster image URL"]]
   };
 
   window.initHomePageEditor = function (options) {

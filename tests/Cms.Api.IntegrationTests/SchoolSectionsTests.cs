@@ -216,6 +216,94 @@ public sealed class SchoolSectionsTests : IClassFixture<PublicWebFactory>
         Assert.DoesNotContain("Enquiry type", await _client.GetStringAsync("/"));
     }
 
+    /// <summary>
+    /// The video section had a key, a place in the section list and fields in the console, and
+    /// no renderer at all — everything a school typed into it went nowhere. This is the test
+    /// that would have caught that.
+    /// </summary>
+    [Fact]
+    public async Task TheVideoSection_ActuallyAppears()
+    {
+        await SaveSectionAsync(HomePageSectionKeys.Video, "Watch", new
+        {
+            intro = "A few minutes on the campus.",
+            items = new[]
+            {
+                new { title = "Annual day", videoUrl = "https://youtu.be/dQw4w9WgXcQ" },
+                new { title = "Science fair", videoUrl = "https://vimeo.com/76979871" }
+            }
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("video-grid", html);
+        Assert.Contains("Annual day", html);
+        Assert.Contains("Science fair", html);
+        Assert.Contains("A few minutes on the campus.", html);
+    }
+
+    /// <summary>
+    /// Nothing is fetched from YouTube until a visitor asks for it: the page carries a poster
+    /// and the address, and the player is built on the click. Three films embedded on load are
+    /// three of somebody else's pages running inside the school's.
+    /// </summary>
+    [Fact]
+    public async Task NoPlayerIsLoadedUntilSomebodyPressesPlay()
+    {
+        await SaveSectionAsync(HomePageSectionKeys.Video, "Watch", new
+        {
+            items = new[] { new { title = "Annual day", videoUrl = "https://youtu.be/dQw4w9WgXcQ" } }
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.DoesNotContain("<iframe", html);
+        Assert.Contains("data-video-embed", html);
+        Assert.Contains("youtube-nocookie.com/embed/dQw4w9WgXcQ", html);
+    }
+
+    /// <summary>A link the application cannot play is skipped, not rendered as a broken frame.</summary>
+    [Fact]
+    public async Task ALinkThatIsNotAVideo_IsLeftOut()
+    {
+        await SaveSectionAsync(HomePageSectionKeys.Video, "Watch", new
+        {
+            items = new[]
+            {
+                new { title = "Real one", videoUrl = "https://youtu.be/dQw4w9WgXcQ" },
+                new { title = "Somebody's blog", videoUrl = "https://example.org/post.html" }
+            }
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("Real one", html);
+        Assert.DoesNotContain("Somebody&#x27;s blog", html);
+        Assert.DoesNotContain("example.org/post.html", html);
+    }
+
+    /// <summary>
+    /// Director and Manager render exactly as Principal and Chairman do, but had no fields in
+    /// the console at all — the only way to fill them in was to write the JSON by hand.
+    /// </summary>
+    [Theory]
+    [InlineData(HomePageSectionKeys.Director)]
+    [InlineData(HomePageSectionKeys.Manager)]
+    public async Task TheDirectorAndTheManager_RenderTheFieldsTheConsoleNowOffers(string key)
+    {
+        await SaveSectionAsync(key, "A message", new
+        {
+            personName = "Mrs. Neelam Malhotra",
+            designation = "Director",
+            quote = "Every child is taught to think for themselves."
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("Mrs. Neelam Malhotra", html);
+        Assert.Contains("Every child is taught to think for themselves.", html);
+    }
+
     // ---------------------------------------------------------------- helpers
 
     private async Task SaveSectionAsync(string key, string title, object json)

@@ -720,3 +720,28 @@
 
   window.addEventListener("resize", place);
 })();
+
+/* --------------------------------------------------------------------- Video */
+
+/* The player is built when the poster is clicked, and not before. Three films embedded on load
+   are three of somebody else's pages running inside the school's, and every visitor counted by
+   them for a film none of them watched. */
+(function () {
+  "use strict";
+
+  document.addEventListener("click", function (event) {
+    var play = event.target.closest("[data-video-embed]");
+    if (!play) return;
+
+    var src = play.getAttribute("data-video-embed");
+    if (!src) return;
+
+    var frame = document.createElement("iframe");
+    frame.src = src + (src.indexOf("?") < 0 ? "?" : "&") + "autoplay=1";
+    frame.title = play.getAttribute("aria-label") || "Video";
+    frame.allow = "accelerometer; autoplay; encrypted-media; picture-in-picture";
+    frame.setAttribute("allowfullscreen", "");
+    frame.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+    play.replaceWith(frame);
+  });
+})();

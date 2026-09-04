@@ -147,6 +147,69 @@
             }
             break;
 
+        case "video":
+            @* The section existed as a key, had fields in the console, and rendered nothing at
+               all — whatever a school typed in went nowhere. A school has more than one film to
+               show, so this takes a list; a single link in the section's own field is read as
+               the first of them.
+
+               Nothing loads from YouTube or Vimeo until somebody asks for it: the poster is a
+               picture and a button, and the player is only built when it is clicked. A page
+               that opens with three embedded players is three third-party pages loading, and
+               every visitor tracked by them for a film nobody watched. *@
+            var films = items.Count > 0
+                ? items.Select(x => (
+                    Title: SectionJson.Item(x, "title"),
+                    Source: VideoEmbed.Read(SectionJson.Item(x, "videoUrl")),
+                    Poster: SectionJson.Item(x, "posterUrl")))
+                    .Where(x => x.Source is not null).ToList()
+                : [(
+                    Title: SectionJson.GetString(json, "caption"),
+                    Source: VideoEmbed.Read(SectionJson.GetString(json, "videoUrl")),
+                    Poster: SectionJson.GetString(json, "posterUrl"))];
+            films = films.Where(x => x.Source is not null).ToList();
+
+            @if (films.Count > 0)
+            {
+                <section data-section="@block.SectionKey" class="shell section">
+                    <div class="section-head">
+                        <h2>@(block.Title ?? "Watch")</h2>
+                        @if (!string.IsNullOrWhiteSpace(intro)) { <p>@intro</p> }
+                    </div>
+                    <div class="video-grid @(films.Count == 1 ? "video-grid--single" : null)">
+                        @foreach (var film in films)
+                        {
+                            var poster = film.Poster ?? film.Source!.PosterUrl;
+                            <figure class="video-card">
+                                @if (film.Source!.FileUrl is { Length: > 0 } file)
+                                {
+                                    <video controls preload="none" poster="@poster"><source src="@file" /></video>
+                                }
+                                else
+                                {
+                                    <button class="video-card__play" type="button"
+                                            data-video-embed="@film.Source.EmbedUrl"
+                                            aria-label="@("Play " + (film.Title ?? block.Title ?? "video"))">
+                                        @if (!string.IsNullOrWhiteSpace(poster))
+                                        {
+                                            <img src="@poster" alt="" loading="lazy" />
+                                        }
+                                        <span class="video-card__icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" /></svg>
+                                        </span>
+                                    </button>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(film.Title))
+                                {
+                                    <figcaption>@film.Title</figcaption>
+                                }
+                            </figure>
+                        }
+                    </div>
+                </section>
+            }
+            break;
+
         case "statistics":
             <section data-section="@block.SectionKey" class="shell stats-grid">
                 <div class="stat"><strong>@(SectionJson.GetString(json, "students") ?? "—")</strong><span>Students</span></div>

@@ -298,6 +298,12 @@ public sealed class SiteSettingsDto
     public bool HeroPlainImages { get; set; }
 
     /// <summary>
+    /// original · rounded · square. How the crest in the header is cut. Empty is "rounded",
+    /// which is what every site had before this was a choice.
+    /// </summary>
+    public string? LogoShape { get; set; }
+
+    /// <summary>
     /// Height of the header logo in pixels. Schools send crests of wildly different proportions
     /// and one fixed size flatters none of them, so the size is theirs to set. Zero keeps the
     /// design's own default.

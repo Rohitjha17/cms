@@ -2493,17 +2493,26 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
    was not. And because nothing in the header resizes on scroll, the crest is
    in the same place on a page halfway read as on one just opened. */
 
-.brand img {
+.brand img { position: relative; z-index: 2; }
+
+/* A crest on a disc, a crest in a panel, or the artwork on its own — the school chooses. The
+   first two carry the header's colour down over the banner; "original" leaves the drawing
+   exactly as it was made, which is right for a crest that already has its own outline. */
+.logo-rounded .brand img,
+.logo-square .brand img {
   padding: .7rem;
   background: var(--surface);
-  border-radius: 50%;
   box-shadow: 0 14px 30px -14px rgba(8, 17, 31, .5);
-  position: relative;
-  z-index: 2;
+}
+.logo-rounded .brand img { border-radius: 50%; }
+.logo-square .brand img { border-radius: var(--r-sm, 10px); }
+@media (max-width: 700px) {
+  .logo-rounded .brand img,
+  .logo-square .brand img { box-shadow: none; padding: 0; border-radius: 0; }
 }
 @media (max-width: 700px) {
   /* Too little header to hang from, and a crest over the banner on a phone covers the banner. */
-  .brand img { transform: none; box-shadow: none; padding: 0; border-radius: 0; }
+  .brand img { transform: none; }
 }
 
 /* The name reads as the school's, in its own colour, with whatever follows it — the campus,
@@ -2521,4 +2530,53 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 @media (min-width: 760px) {
   .variant-bulletin .site-header nav { padding-left: calc(var(--crest-space, 0px) + 1.25rem); }
   .variant-atrium .site-header nav { padding-inline: calc(var(--crest-space, 0px) + 1.25rem); }
+}
+
+/* --- Video ------------------------------------------------------------------
+   A poster and a play button. The player itself is built only when somebody
+   asks for it, so a page with three films on it is not three third-party pages
+   loading before anyone has pressed anything. */
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+.video-grid--single { grid-template-columns: minmax(0, min(880px, 100%)); justify-content: center; }
+
+.video-card { margin: 0; }
+.video-card video,
+.video-card iframe,
+.video-card__play {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--r-md, 14px);
+  background: #0b1220;
+  overflow: hidden;
+}
+.video-card__play { position: relative; padding: 0; cursor: pointer; }
+.video-card__play img { width: 100%; height: 100%; object-fit: cover; }
+.video-card__icon {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 12px 30px -10px rgba(8, 17, 31, .6);
+  transition: transform .2s var(--ease, ease);
+}
+.video-card__icon svg { width: 30px; height: 30px; fill: #fff; }
+.video-card__play:hover .video-card__icon,
+.video-card__play:focus-visible .video-card__icon { transform: scale(1.08); }
+.video-card figcaption { margin-top: .75rem; color: var(--ink-soft); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  .video-card__icon { transition: none; }
 }
