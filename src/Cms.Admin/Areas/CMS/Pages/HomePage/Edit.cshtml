@@ -88,7 +88,7 @@
                 <div class="config-builder" id="config-builder"></div>
                 <details class="advanced-config">
                     <summary>Advanced JSON configuration</summary>
-                    <textarea asp-for="Input.JsonData" id="json-config" rows="9" class="code" spellcheck="false" placeholder="{}"></textarea>
+                    <textarea asp-for="Input.JsonData" id="json-config" rows="9" class="code" spellcheck="false" placeholder="{}" aria-label="Advanced JSON configuration"></textarea>
                     <span asp-validation-for="Input.JsonData" class="error"></span>
                 </details>
             </div>
@@ -109,7 +109,7 @@
                             <small>Recommended 1600 × 900 px</small>
                         </span>
                     </label>
-                    <input asp-for="Input.ImageUrl" id="image-url" placeholder="Or paste an image URL" />
+                    <input asp-for="Input.ImageUrl" id="image-url" placeholder="Or paste an image URL" aria-label="Primary image URL" />
                 </div>
                 <div class="field">
                     <label>Background image <small>Optional</small></label>
@@ -121,7 +121,7 @@
                             <small>Use a wide, low-contrast image</small>
                         </span>
                     </label>
-                    <input asp-for="Input.BackgroundImageUrl" id="bg-image-url" placeholder="Or paste a background URL" />
+                    <input asp-for="Input.BackgroundImageUrl" id="bg-image-url" placeholder="Or paste a background URL" aria-label="Background image URL" />
                 </div>
                 <div class="media-preview" @(!string.IsNullOrWhiteSpace(Model.Input.ImageUrl) ? null : "hidden")>
                     <img id="image-preview" src="@(Model.Input.ImageUrl ?? "")" alt="Primary image preview" />
