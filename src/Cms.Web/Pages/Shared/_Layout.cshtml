@@ -33,7 +33,8 @@
         Cms.Web.Helpers.AppearanceChoice.CardHover(settings.CardHover),
         Cms.Web.Helpers.AppearanceChoice.ImageHover(settings.ImageHover),
         Cms.Web.Helpers.AppearanceChoice.LinkHover(settings.LinkHover),
-        Cms.Web.Helpers.AppearanceChoice.LogoShape(settings.LogoShape) ?? "logo-rounded"
+        Cms.Web.Helpers.AppearanceChoice.LogoShape(settings.LogoShape) ?? "logo-rounded",
+        Cms.Web.Helpers.AppearanceChoice.TitleSize(settings.PageTitleSize) ?? "title-large"
     }.Where(x => x is not null));
     var noticeColor = Cms.Web.Helpers.AppearanceChoice.Color(settings.NoticeBarColor);
     var noticeStyle = Cms.Web.Helpers.AppearanceChoice.NoticeStyle(settings.NoticeBarStyle);

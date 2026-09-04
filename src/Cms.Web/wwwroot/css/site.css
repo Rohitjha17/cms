@@ -2677,3 +2677,13 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 @media (max-width: 700px) {
   .staff-table, .timings-table, .downloads-table { display: block; overflow-x: auto; max-width: 100%; }
 }
+
+/* --- How large an inner page's heading is set -------------------------------
+   A school's own choice. Each stays a clamp rather than one fixed size, so a
+   heading that fits a desktop still fits a phone: the choice moves the whole
+   range, it does not pin the heading to a number. */
+
+.title-small  .page-hero h1 { font-size: clamp(1.5rem,  2.4vw, 2rem); }
+.title-medium .page-hero h1 { font-size: clamp(1.75rem, 3vw,   2.5rem); }
+.title-large  .page-hero h1 { font-size: clamp(2rem,    3.6vw, 3rem); }
+.title-xlarge .page-hero h1 { font-size: clamp(2.4rem,  4.8vw, 4rem); }

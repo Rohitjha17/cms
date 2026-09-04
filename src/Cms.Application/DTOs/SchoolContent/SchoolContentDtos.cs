@@ -304,6 +304,12 @@ public sealed class SiteSettingsDto
     public string? LogoShape { get; set; }
 
     /// <summary>
+    /// small · medium · large · xlarge. The size of the heading at the top of an inner page.
+    /// Empty is "large", which is what every page had before this was a choice.
+    /// </summary>
+    public string? PageTitleSize { get; set; }
+
+    /// <summary>
     /// Height of the header logo in pixels. Schools send crests of wildly different proportions
     /// and one fixed size flatters none of them, so the size is theirs to set. Zero keeps the
     /// design's own default.

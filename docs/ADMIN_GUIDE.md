@@ -688,6 +688,7 @@ full address of your page. Leave blank for any you do not use.
 | Setting | What it does |
 |---|---|
 | **Logo height (pixels)** | Between 28 and 160. A bigger crest hangs below the header over the banner; the header does not get taller. |
+| **Page heading size** | Small, Medium, Large or Extra large — the heading at the top of pages like About, Gallery and Contact. Every choice still shrinks to fit a phone. |
 | **Crest shape** | **Rounded** (a circle behind it), **Square** (a rounded panel), or **Original** (the artwork alone, nothing behind it). Choose Original if your crest already has its own outline. |
 | **Button colour / style / shape / hover** | How every button looks and behaves |
 | **Card hover / Picture hover / Link hover** | What happens when the mouse passes over |

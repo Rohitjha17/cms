@@ -155,6 +155,17 @@
                 </label>
 
                 <label class="field">
+                    <span>Page heading size</span>
+                    <select asp-for="Input.PageTitleSize">
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                        <option value="xlarge">Extra large</option>
+                    </select>
+                    <small class="hint">The heading at the top of pages like About, Gallery and Contact. Every choice still shrinks to fit a phone.</small>
+                </label>
+
+                <label class="field">
                     <span>Crest shape</span>
                     <select asp-for="Input.LogoShape">
                         <option value="rounded">Rounded — the crest on a circle</option>

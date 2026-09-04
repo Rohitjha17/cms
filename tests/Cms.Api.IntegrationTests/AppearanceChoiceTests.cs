@@ -48,4 +48,22 @@ public sealed class AppearanceChoiceTests
     [InlineData(null)]
     public void AnythingThatIsNotAHexColour_IsRefused(string? value)
         => Assert.Null(AppearanceChoice.Color(value));
+
+    /// <summary>
+    /// The size of an inner page's heading is the school's choice. Like every other choice
+    /// here, a name this does not know becomes nothing rather than reaching the page.
+    /// </summary>
+    [Theory]
+    [InlineData("small", "title-small")]
+    [InlineData("medium", "title-medium")]
+    [InlineData("large", "title-large")]
+    [InlineData("xlarge", "title-xlarge")]
+    [InlineData("XLARGE", "title-xlarge")]
+    [InlineData("  large  ", "title-large")]
+    [InlineData("huge", null)]
+    [InlineData("large; font-size: 900px", null)]
+    [InlineData("", null)]
+    [InlineData(null, null)]
+    public void TheHeadingSize_IsOnlyEverOneThisKnows(string? value, string? expected)
+        => Assert.Equal(expected, AppearanceChoice.TitleSize(value));
 }

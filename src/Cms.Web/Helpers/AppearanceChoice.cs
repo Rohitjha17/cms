@@ -17,6 +17,7 @@ public static class AppearanceChoice
     private static readonly string[] ImageHovers = ["zoom", "lift", "tint"];
     private static readonly string[] LinkHovers = ["underline", "color"];
     private static readonly string[] LogoShapes = ["original", "rounded", "square"];
+    private static readonly string[] TitleSizes = ["small", "medium", "large", "xlarge"];
 
     public static string? ButtonStyle(string? value) => Pick(value, ButtonStyles, "btn-style-");
     public static string? ButtonShape(string? value) => Pick(value, ButtonShapes, "btn-shape-");
@@ -32,6 +33,12 @@ public static class AppearanceChoice
     /// wrong one to have imposed on every school without asking.
     /// </summary>
     public static string? LogoShape(string? value) => Pick(value, LogoShapes, "logo-");
+
+    /// <summary>
+    /// How large the heading at the top of an inner page is set — About, Gallery, Contact. It
+    /// stays a clamp rather than a fixed size, so each choice still shrinks on a phone.
+    /// </summary>
+    public static string? TitleSize(string? value) => Pick(value, TitleSizes, "title-");
 
     /// <summary>A section's own hover, applied to the cards inside it.</summary>
     public static string? SectionHover(string? value) => Pick(value, CardHovers, "card-hover-");
