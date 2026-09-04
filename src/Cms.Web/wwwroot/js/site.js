@@ -712,7 +712,10 @@
     var clear = bar.top + 8 - badge.top;
 
     crest.style.transform = "translateY(" + Math.round(Math.max(hang, clear)) + "px)";
-    header.style.setProperty("--crest-space", Math.round(crest.offsetWidth) + "px");
+    // The width of the crest plus a gap, so a menu row that starts after it clears it rather
+    // than touching it. Published as one number because the gap belongs to the measurement,
+    // not to whichever rule happens to use it.
+    header.style.setProperty("--crest-space", Math.round(crest.offsetWidth) + 16 + "px");
   }
 
   if (crest.complete) place();

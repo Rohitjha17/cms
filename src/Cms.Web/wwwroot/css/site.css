@@ -316,14 +316,10 @@ p:last-child { margin-bottom: 0; }
     linear-gradient(100deg, rgba(7, 16, 33, .72) 0%, rgba(7, 16, 33, .3) 46%, rgba(7, 16, 33, .05) 78%),
     var(--hero) center / cover no-repeat;
 }
-.hero::after {
-  position: absolute;
-  inset: auto 0 0;
-  height: 70px;
-  background: linear-gradient(180deg, transparent, var(--canvas));
-  pointer-events: none;
-  content: "";
-}
+/* There used to be a 70px band across the bottom of the hero, meant to fade the picture into
+   the page. --canvas is not opaque, so the two stops resolved to the same translucent white and
+   it painted as a flat grey bar over the bottom of the banner instead of fading anything. The
+   banner ends where it ends. */
 .hero h1 { text-shadow: 0 2px 24px rgba(7, 16, 33, .35); }
 .hero-copy, .hero .shell { position: relative; z-index: 1; max-width: 46rem; }
 .hero h1 { color: #fff; }
@@ -2528,8 +2524,12 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
    hangs straight through the first item. The header measures the crest and publishes its width;
    Atrium's menu is centred, so it is held off on both sides and stays centred. */
 @media (min-width: 760px) {
-  .variant-bulletin .site-header nav { padding-left: calc(var(--crest-space, 0px) + 1.25rem); }
-  .variant-atrium .site-header nav { padding-inline: calc(var(--crest-space, 0px) + 1.25rem); }
+  /* The pill begins to the right of the crest rather than running underneath it: padding moved
+     the links but left the coloured shape passing behind the crest, which is what made the two
+     look like they had collided. Atrium's menu has no shape behind it and is centred, so it is
+     held off on both sides instead. */
+  .variant-bulletin .site-header nav { margin-left: var(--crest-space, 0px); }
+  .variant-atrium .site-header nav { padding-inline: var(--crest-space, 0px); }
 }
 
 /* --- Video ------------------------------------------------------------------
