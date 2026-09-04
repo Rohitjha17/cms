@@ -2131,3 +2131,85 @@ svg {
    beside it — a 4-line textarea and a button on one row leaves the button floating. */
 .upload-row--stacked { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; }
 .upload-row--stacked textarea { width: 100%; resize: vertical; }
+
+/* --- Search the console ------------------------------------------------------
+   Everything in the console is one keystroke away, so nobody has to remember
+   which page a thing lives on. */
+
+.topbar__search {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  min-width: 0;
+  max-width: 320px;
+  flex: 1 1 200px;
+  margin-inline: 1rem;
+  padding: .5rem .75rem;
+  color: var(--muted, #6b7280);
+  background: var(--surface-2, #f3f4f6);
+  border: 1px solid var(--line, #e5e7eb);
+  border-radius: 10px;
+  font: inherit;
+  font-size: .88rem;
+  text-align: left;
+  cursor: pointer;
+}
+.topbar__search:hover { border-color: var(--line-strong, #d1d5db); }
+.topbar__search svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; }
+.topbar__search span { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar__search kbd {
+  flex: none;
+  padding: .1rem .4rem;
+  background: #fff;
+  border: 1px solid var(--line, #e5e7eb);
+  border-radius: 5px;
+  font: inherit;
+  font-size: .75rem;
+}
+@media (max-width: 700px) {
+  .topbar__search span, .topbar__search kbd { display: none; }
+  .topbar__search { flex: none; max-width: none; padding: .5rem; }
+}
+
+.command-palette { position: fixed; inset: 0; z-index: 120; display: grid; }
+.command-palette[hidden] { display: none; }
+.command-palette__scrim { position: absolute; inset: 0; background: rgba(9, 18, 36, .45); }
+.command-palette__box {
+  position: relative;
+  width: min(620px, calc(100% - 2rem));
+  margin: min(12vh, 120px) auto auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 30px 80px rgba(8, 17, 31, .35);
+  overflow: hidden;
+}
+.command-palette__field { display: flex; align-items: center; gap: .7rem; padding: .9rem 1rem; border-bottom: 1px solid var(--line, #e5e7eb); }
+.command-palette__field svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; color: var(--muted, #6b7280); }
+.command-palette__field input { flex: 1 1 auto; min-width: 0; border: 0; outline: 0; font: inherit; font-size: 1rem; background: none; }
+
+.command-palette__results { max-height: min(52vh, 420px); margin: 0; padding: .4rem; overflow-y: auto; list-style: none; }
+.command-palette__results a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .6rem .75rem;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+.command-palette__results a.is-active,
+.command-palette__results a:hover { background: var(--surface-2, #f3f4f6); }
+.command-palette__results strong { font-weight: 600; }
+.command-palette__results span { flex: none; color: var(--muted, #6b7280); font-size: .8rem; }
+.command-palette__empty { margin: 0; padding: 1.25rem; color: var(--muted, #6b7280); text-align: center; }
+
+body.is-searching { overflow: hidden; }
+
+/* Whatever the search jumped to, marked briefly so the eye lands on it. */
+.is-found { animation: found 2.2s ease; }
+@keyframes found {
+  0%, 70% { box-shadow: 0 0 0 3px rgba(37, 99, 235, .45); }
+  100% { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .is-found { animation: none; outline: 3px solid rgba(37, 99, 235, .45); } }

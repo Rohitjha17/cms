@@ -1,0 +1,69 @@
+@using System.Text.Json
+@using Cms.Domain.Constants
+@{
+    // Everything in the console, in one list, so nobody has to remember which page a thing is
+    // on. The sections come from HomePageSectionKeys itself rather than being typed out again:
+    // a section added to the website is findable here the same day, not the day somebody
+    // remembers to update a second list.
+    var url = Url;
+    var entries = new List<object>();
+
+    void Add(string label, string where, string href, string keywords) =>
+        entries.Add(new { label, where, href, keywords });
+
+    Add("Overview", "Dashboard", url.Page("/Index", new { area = "" })!, "home dashboard start");
+    Add("Branding", "School website", url.Page("/Branding/Index", new { area = "CMS" })!, "logo crest name colours colors tagline favicon address phone email");
+    Add("Home page sections", "School website", url.Page("/HomePage/Index", new { area = "CMS" })!, "sections order home");
+    Add("Pages", "School website", url.Page("/Pages/Index", new { area = "CMS" })!, "pages about admission contact content");
+    Add("Contact enquiries", "School website", url.Page("/Contacts/Index", new { area = "CMS" })!, "enquiries messages inbox form submissions leads");
+    Add("Navigation menu", "School website", url.Page("/Navigation/Index", new { area = "CMS" })!, "menu links nav header order");
+    Add("Media library", "Content", url.Page("/Media/Index", new { area = "CMS" })!, "images photos uploads files pictures gallery video file");
+    Add("News", "Content", url.Page("/News/Index", new { area = "CMS" })!, "news articles notices announcements");
+    Add("Events", "Content", url.Page("/Events/Index", new { area = "CMS" })!, "events calendar dates");
+    Add("Departments", "Content", url.Page("/Departments/Index", new { area = "CMS" })!, "departments courses subjects");
+    Add("People", "Content", url.Page("/People/Index", new { area = "CMS" })!, "staff teachers faculty principal management");
+    Add("Site settings", "Configuration", url.Page("/Settings/Index", new { area = "CMS" })!, "settings configuration options");
+    Add("SEO", "Configuration", url.Page("/Seo/Index", new { area = "CMS" })!, "seo meta title description keywords google search");
+    Add("Websites", "Platform", url.Page("/Websites/Index", new { area = "CMS" })!, "sites websites provision new school template");
+    Add("Templates", "Platform", url.Page("/Templates/Index", new { area = "CMS" })!, "templates designs themes look");
+    Add("Domains", "Platform", url.Page("/Domains/Index", new { area = "CMS" })!, "domain dns hostname url address serve");
+    Add("Page gallery", "Platform", url.Page("/PageGallery/Index", new { area = "CMS" })!, "page templates starter gallery");
+    Add("Users", "Platform", url.Page("/Users/Index", new { area = "CMS" })!, "users accounts staff login password roles");
+
+    var settings = url.Page("/Settings/Index", new { area = "CMS" })!;
+    Add("Announcement bar", "Site settings", settings + "#announcement-bar", "notice ticker scrolling marquee label top strip");
+    Add("Admissions", "Site settings", settings + "#admissions", "admission enquiry phone email brochure prospectus office hours");
+    Add("Social and messaging", "Site settings", settings + "#social", "facebook instagram youtube twitter x linkedin whatsapp social");
+    Add("Appearance and motion", "Site settings", settings + "#appearance", "colours colors buttons hover animation crest shape logo rounded square original banner header contact");
+    Add("Opening popup", "Site settings", settings + "#popup", "popup poster banner opening enquiry form modal");
+    Add("Hero slideshow", "Site settings", settings + "#hero-slideshow", "hero slideshow banner slides arrows dots seconds");
+
+    foreach (var (key, name, _) in HomePageSectionKeys.All)
+    {
+        Add(name, "Home page section",
+            url.Page("/HomePage/Edit", new { area = "CMS", sectionKey = key })!,
+            key.Replace('_', ' '));
+    }
+}
+
+<button class="topbar__search" type="button" data-search-open aria-label="Search the console">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <span>Search…</span>
+    <kbd>/</kbd>
+</button>
+
+<div class="command-palette" data-search-panel hidden>
+    <div class="command-palette__scrim" data-search-close></div>
+    <div class="command-palette__box" role="dialog" aria-modal="true" aria-label="Search the console">
+        <div class="command-palette__field">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" data-search-input placeholder="Search pages, sections and settings…"
+                   autocomplete="off" spellcheck="false" aria-controls="command-results" />
+            <button class="icon-button" type="button" data-search-close aria-label="Close">&times;</button>
+        </div>
+        <ul class="command-palette__results" id="command-results" data-search-results role="listbox"></ul>
+        <p class="command-palette__empty" data-search-empty hidden>Nothing here by that name.</p>
+    </div>
+</div>
+
+<script type="application/json" data-search-index>@Html.Raw(JsonSerializer.Serialize(entries))</script>

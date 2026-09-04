@@ -169,6 +169,11 @@
                     Poster: SectionJson.GetString(json, "posterUrl"))];
             films = films.Where(x => x.Source is not null).ToList();
 
+            // With no link this application can play there is nothing to build a player from,
+            // but the section is still a heading and a paragraph a school wrote. It falls
+            // through to the ordinary rendering rather than vanishing.
+            if (films.Count == 0) { goto default; }
+
             @if (films.Count > 0)
             {
                 <section data-section="@block.SectionKey" class="shell section">
