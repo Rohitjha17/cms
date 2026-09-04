@@ -146,9 +146,11 @@ p:last-child { margin-bottom: 0; }
   position: sticky;
   top: 0;
   z-index: 30;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: saturate(180%) blur(14px);
-  border-bottom: 1px solid var(--line);
+  /* Solid, and with no rule under it.
+     It used to be 88% opaque over a blur, which let the banner underneath show through as a
+     milky ghost with a hairline drawn across the bottom of it — a bar over the top of the
+     picture, and the one thing keeping the header and the banner from reading as one piece. */
+  background: var(--surface);
 }
 .site-header .shell {
   display: flex;
@@ -933,8 +935,8 @@ img { opacity: 1; }
 
 .site-header { transition: box-shadow .25s var(--ease), background .25s var(--ease); }
 .site-header.is-scrolled {
-  background: color-mix(in srgb, var(--surface) 96%, transparent);
-  box-shadow: 0 1px 0 var(--line), var(--shadow-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 /* The bar keeps its height and the crest keeps its size and its place, whatever the page is
    doing. Shrinking both on scroll moved the crest and the name a few pixels down and left the
@@ -1104,7 +1106,7 @@ body.nav-locked { overflow: hidden; }
   transition: box-shadow .28s ease, background-color .28s ease;
 }
 .site-header.is-condensed {
-  background: color-mix(in srgb, var(--surface) 97%, transparent);
+  background: var(--surface);
   box-shadow: 0 10px 30px -22px rgba(9, 18, 36, .7);
 }
 
