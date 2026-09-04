@@ -18,6 +18,7 @@ public static class AppearanceChoice
     private static readonly string[] LinkHovers = ["underline", "color"];
     private static readonly string[] LogoShapes = ["original", "rounded", "square"];
     private static readonly string[] TitleSizes = ["small", "medium", "large", "xlarge"];
+    private static readonly string[] TitleAligns = ["left", "center", "right"];
 
     public static string? ButtonStyle(string? value) => Pick(value, ButtonStyles, "btn-style-");
     public static string? ButtonShape(string? value) => Pick(value, ButtonShapes, "btn-shape-");
@@ -39,6 +40,13 @@ public static class AppearanceChoice
     /// stays a clamp rather than a fixed size, so each choice still shrinks on a phone.
     /// </summary>
     public static string? TitleSize(string? value) => Pick(value, TitleSizes, "title-");
+
+    /// <summary>
+    /// Which way the heading at the top of an inner page is ranged. It used to be left on every
+    /// page except the gallery, which was centred by a rule written for that one page — so the
+    /// site disagreed with itself and nobody could change either half.
+    /// </summary>
+    public static string? TitleAlign(string? value) => Pick(value, TitleAligns, "title-align-");
 
     /// <summary>A section's own hover, applied to the cards inside it.</summary>
     public static string? SectionHover(string? value) => Pick(value, CardHovers, "card-hover-");

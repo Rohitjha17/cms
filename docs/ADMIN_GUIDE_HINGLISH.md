@@ -665,6 +665,7 @@ karo. Jo nahi use karte woh khaali chhodo.
 |---|---|
 | **Logo height (pixels)** | 28 se 160 ke beech. Bada crest header se neeche latak kar banner ke upar aata hai, **header bada nahi hota** |
 | **Page heading size** | Small, Medium, Large ya Extra large — About, Gallery, Contact jaise pages ke upar wali badi heading. Har choice phone par apne aap chhoti ho jati hai. |
+| **Page heading alignment** | Left, Centre ya Right. Har page ki heading par lagta hai — About, Gallery, Messages sab — taaki sab ek jaise dikhein. |
 | **Crest shape** | **Rounded** (gol), **Square** (gol-kinaare wala box), **Original** (sirf artwork, peeche kuch nahi). Agar crest ka apna shape hai to Original chuno |
 | **Button colour / style / shape / hover** | Button kaise dikhein aur behave karein |
 | **Card hover / Picture hover / Link hover** | Mouse le jaane par kya ho |

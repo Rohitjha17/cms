@@ -2668,10 +2668,9 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
    centred on the page, so ranging them left leaves the words hanging off to
    one side of everything they belong to. */
 
-.page-shell:has(.gallery-block) .page-hero { text-align: center; }
-.page-shell:has(.gallery-block) .page-hero .eyebrow { justify-content: center; }
-.page-shell:has(.gallery-block) .page-hero .lede { margin-inline: auto; }
-.gallery-block > .section-head { text-align: center; margin-inline: auto; }
+/* The gallery used to be centred by a rule written for the gallery alone, so it disagreed with
+   every other page and neither half could be changed. The choice below governs all of them. */
+.gallery-block > .section-head { margin-inline: auto; }
 
 /* A table cannot be made narrower than its content, so on a phone it has to scroll inside its
    own box rather than pushing the whole page sideways with it. */
@@ -2699,3 +2698,18 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 .custom-html img { max-width: 100%; height: auto; }
 .custom-html table { display: block; overflow-x: auto; max-width: 100%; }
 .custom-html iframe { max-width: 100%; }
+
+/* --- Which way page headings are ranged ------------------------------------
+   One choice for the whole site, so About, Gallery, Messages and the rest
+   agree with each other. The eyebrow is a flex row and the intro line has a
+   reading measure, so both need telling as well as the text itself. */
+
+.title-align-left   .page-hero, .title-align-left   .gallery-block > .section-head { text-align: left; }
+.title-align-center .page-hero, .title-align-center .gallery-block > .section-head { text-align: center; }
+.title-align-right  .page-hero, .title-align-right  .gallery-block > .section-head { text-align: right; }
+
+.title-align-center .page-hero .eyebrow { justify-content: center; }
+.title-align-right  .page-hero .eyebrow { justify-content: flex-end; }
+
+.title-align-center .page-hero .lede { margin-inline: auto; }
+.title-align-right  .page-hero .lede { margin-inline: auto 0; }

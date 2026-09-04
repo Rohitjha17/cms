@@ -66,4 +66,22 @@ public sealed class AppearanceChoiceTests
     [InlineData(null, null)]
     public void TheHeadingSize_IsOnlyEverOneThisKnows(string? value, string? expected)
         => Assert.Equal(expected, AppearanceChoice.TitleSize(value));
+
+    /// <summary>
+    /// Which way page headings are ranged. The gallery used to be centred by a rule written for
+    /// it alone while every other page was left — the site disagreed with itself, and neither
+    /// half could be changed by the school. One choice governs all of them now.
+    /// </summary>
+    [Theory]
+    [InlineData("left", "title-align-left")]
+    [InlineData("center", "title-align-center")]
+    [InlineData("right", "title-align-right")]
+    [InlineData("CENTER", "title-align-center")]
+    [InlineData("centre", null)]
+    [InlineData("justify", null)]
+    [InlineData("left;position:fixed", null)]
+    [InlineData("", null)]
+    [InlineData(null, null)]
+    public void TheHeadingAlignment_IsOnlyEverOneThisKnows(string? value, string? expected)
+        => Assert.Equal(expected, AppearanceChoice.TitleAlign(value));
 }

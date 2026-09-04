@@ -310,6 +310,11 @@ public sealed class SiteSettingsDto
     public string? PageTitleSize { get; set; }
 
     /// <summary>
+    /// left · center · right. Which way page headings are ranged. Empty is "left".
+    /// </summary>
+    public string? PageTitleAlign { get; set; }
+
+    /// <summary>
     /// Height of the header logo in pixels. Schools send crests of wildly different proportions
     /// and one fixed size flatters none of them, so the size is theirs to set. Zero keeps the
     /// design's own default.
