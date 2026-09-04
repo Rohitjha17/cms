@@ -816,7 +816,27 @@ Ab poster poora, bina kate, bina kisi heading ke dikhega.
 
 ---
 
-### 13.3 Gallery me photos add karna
+### 13.3 Gallery **page** me photos add karna
+
+Ye menu wala alag Gallery page hai, home page ki strip nahi.
+
+1. **Content → Media library** kholo → apni photos **Upload** karo
+2. **School website → Pages** kholo → list me **Gallery** dhoondho → **Edit**
+3. Neeche **Structured page content** tak scroll karo
+4. Har photo ke liye **Add** dabao aur row bharo:
+   - **Album name** — ek hi naam wali photos ek heading ke neeche group ho
+     jati hain, jaise `Annual Day`, `Sports Day`. Khaali chhodoge to sab
+     "Gallery" naam ke ek hi heading me aa jayengi
+   - **Type** — `image` chuno
+   - **Image URL or video embed URL** — **Browse** dabao aur photo chuno
+   - **Caption** — photo me kya hai
+5. **Save** dabao
+
+**Isi page par video daalni ho:** ek row add karo, **Type** me `video` chuno,
+aur browser se copy kiya hua normal YouTube link paste kar do. `watch?v=...`,
+`youtu.be/...`, Shorts, Vimeo — sab chalte hain.
+
+### 13.3b Home page ki gallery strip me photos add karna
 
 1. **Content → Media library** kholo
 2. **Upload** dabao → apne computer se saari photos ek saath chuno

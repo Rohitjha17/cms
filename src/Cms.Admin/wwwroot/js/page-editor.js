@@ -223,8 +223,18 @@
       return data;
     };
 
+    // The select's value is the page type's number — "6" for Gallery — while the schemas above
+    // are keyed by its name. Looking them up by the number found nothing every time, so every
+    // page type fell through to "Custom pages use the HTML content field" and the structured
+    // fields never appeared at all: no way to add a gallery photograph, a disclosure document
+    // or a committee member from the console. The option's own text carries the name.
+    const typeName = () => {
+      const option = typeSelect.options[typeSelect.selectedIndex];
+      return option ? option.text.trim() : typeSelect.value;
+    };
+
     const render = () => {
-      const type = typeSelect.value;
+      const type = typeName();
       const schema = schemas[type];
       const data = normalizeData(type, parseJson(jsonInput.value));
       if (!schema) {

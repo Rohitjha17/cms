@@ -850,7 +850,28 @@ per picture → set "Slide change (seconds)" → Save.
 turn on Site settings → "Banner pictures carry their own text". This shows each
 one whole and stops the site printing a second heading over yours.
 
-### 14.3 Add photographs to the gallery
+### 14.3 Add photographs to the Gallery *page*
+
+This is the standalone Gallery page in your menu, not the strip on the home
+page.
+
+1. **Content → Media library** → upload your photographs
+2. **School website → Pages** → find **Gallery** → **Edit**
+3. Scroll to **Structured page content**
+4. Press **Add** for each photograph, and fill in the row:
+   - **Album name** — photographs sharing a name are grouped under one
+     heading, e.g. `Annual Day`, `Sports Day`. Leave it blank and everything
+     falls under one heading called "Gallery".
+   - **Type** — `image`
+   - **Image URL or video embed URL** — press **Browse** and pick the file
+   - **Caption** — what the picture shows
+5. **Save**
+
+**To put a video on the same page:** add a row, set **Type** to `video`, and
+paste the ordinary YouTube link from your address bar into the URL field. A
+`watch?v=…`, `youtu.be/…`, Shorts or Vimeo link all work.
+
+### 14.3b Add photographs to the home page strip
 
 1. **Content → Media library** → upload the pictures
 2. **Home page → Gallery** → add a row per picture

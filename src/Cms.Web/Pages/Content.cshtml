@@ -198,7 +198,22 @@
                             var caption = media.TryGetProperty("caption", out var mc) ? mc.GetString() : "";
                             if (type == "video" && !string.IsNullOrWhiteSpace(url))
                             {
-                                <figure><iframe src="@url" title="@caption" loading="lazy" allowfullscreen></iframe><figcaption>@caption</figcaption></figure>
+                                @* A frame needs YouTube's *embed* address, and what a person
+                                   copies out of the address bar is the watch address, which
+                                   YouTube refuses to be framed with — so a pasted link showed
+                                   an empty box. The link is read the same way the home page's
+                                   video section reads it, so an ordinary watch, youtu.be,
+                                   Shorts or Vimeo link works, and an uploaded file plays
+                                   directly. *@
+                                var film = VideoEmbed.Read(url);
+                                if (film?.FileUrl is { Length: > 0 } clip)
+                                {
+                                    <figure><video controls preload="none" poster="@film.PosterUrl"><source src="@clip" /></video><figcaption>@caption</figcaption></figure>
+                                }
+                                else if (film?.EmbedUrl is { Length: > 0 } player)
+                                {
+                                    <figure><iframe src="@player" title="@caption" loading="lazy" allowfullscreen></iframe><figcaption>@caption</figcaption></figure>
+                                }
                             }
                             else if (!string.IsNullOrWhiteSpace(url))
                             {
