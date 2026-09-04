@@ -147,6 +147,57 @@
             }
             break;
 
+        case "contact":
+            @* The console offers this section an address, a phone number, an email and a map,
+               and none of the four had anywhere to go: the section fell through to the generic
+               branch, which draws a heading and a paragraph and nothing else. Four fields that
+               look like they work and do not. Blank fields fall back to the school's own
+               details from Branding, so filling in nothing still gives a usable block. *@
+            var contactAddress = SectionJson.GetString(json, "address") ?? Model.Branding.Address;
+            var contactPhone = SectionJson.GetString(json, "phone") ?? Model.Branding.Phone;
+            var contactEmail = SectionJson.GetString(json, "email") ?? Model.Branding.Email;
+            var contactMap = SectionJson.GetString(json, "mapEmbedUrl") ?? Model.Branding.MapEmbedUrl;
+
+            <section data-section="@block.SectionKey" class="shell section contact-block">
+                <div>
+                    <div class="section-head">
+                        <h2>@(block.Title ?? "Get in touch")</h2>
+                        @if (!string.IsNullOrWhiteSpace(intro)) { <p>@intro</p> }
+                    </div>
+                    <ul class="contact-meta">
+                        @if (!string.IsNullOrWhiteSpace(contactAddress))
+                        {
+                            <li><span class="contact-meta__label">Address</span><span>@contactAddress</span></li>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(contactPhone))
+                        {
+                            <li>
+                                <partial name="_Icon" model="@("phone")" />
+                                <span class="contact-meta__label">Phone</span>
+                                <a href="tel:@contactPhone">@contactPhone</a>
+                            </li>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(contactEmail))
+                        {
+                            <li>
+                                <partial name="_Icon" model="@("mail")" />
+                                <span class="contact-meta__label">Email</span>
+                                <a href="mailto:@contactEmail">@contactEmail</a>
+                            </li>
+                        }
+                    </ul>
+                    @if (!string.IsNullOrWhiteSpace(block.ButtonText))
+                    {
+                        <a class="btn" href="@(block.ButtonLink ?? basePath + "/contact")">@block.ButtonText</a>
+                    }
+                </div>
+                @if (!string.IsNullOrWhiteSpace(contactMap))
+                {
+                    <iframe class="map" src="@contactMap" loading="lazy" title="Campus map"></iframe>
+                }
+            </section>
+            break;
+
         case "video":
             @* The section existed as a key, had fields in the console, and rendered nothing at
                all — whatever a school typed in went nowhere. A school has more than one film to

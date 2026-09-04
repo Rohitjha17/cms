@@ -354,6 +354,31 @@ public sealed class SchoolSectionsTests : IClassFixture<PublicWebFactory>
         await db.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// The console offers this section an address, a phone number, an email and a map. All four
+    /// used to go nowhere: the section fell through to the generic branch, which draws a heading
+    /// and a paragraph. Four fields that look like they work and do not are worse than four
+    /// fields that are not there.
+    /// </summary>
+    [Fact]
+    public async Task TheContactSection_ShowsTheAddressPhoneEmailAndMapItWasGiven()
+    {
+        await SaveSectionAsync(HomePageSectionKeys.Contact, "Get in touch", new
+        {
+            address = "12 Civil Lines, Kanpur 208001",
+            phone = "+91 90000 11111",
+            email = "info@example.edu",
+            mapEmbedUrl = "https://www.google.com/maps/embed?pb=EXAMPLE"
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("12 Civil Lines, Kanpur 208001", html);
+        Assert.Contains("90000 11111", html);
+        Assert.Contains("mailto:info@example.edu", html);
+        Assert.Contains("https://www.google.com/maps/embed?pb=EXAMPLE", html);
+    }
+
     // ---------------------------------------------------------------- helpers
 
     private async Task SaveSectionAsync(string key, string title, object json)

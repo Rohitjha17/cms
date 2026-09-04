@@ -416,9 +416,13 @@ paste it here. Stating the file size is a courtesy to parents on phones.
 #### 21. Contact Section
 **Fields:** Public email · Phone number · Campus address · Map embed URL
 
-**Note:** leave these blank and it uses the details from Branding. Fill them in
-only if the home page should show something different from the rest of the
-site.
+**How it works:** this draws your address, phone, email and a map on the home
+page. Leave a field blank and it falls back to the matching one in Branding, so
+filling in nothing still gives a working block. Fill one in only when the home
+page should show something different from the rest of the site.
+
+**The map on the Contact *page* is a different setting** — that one comes from
+Branding → Map embed URL.
 
 ---
 
