@@ -174,12 +174,51 @@
 
   var stillness = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+  // Where the banner is finished artwork the hero is the picture, so the picture has to fill
+  // it — the whole width of the page, with nothing trimmed off the edges.
+  //
+  // Doing that in CSS with aspect-ratio and a height cap does not work: a max-height on a box
+  // that has a ratio is transferred back through the ratio into a max-width, so capping the
+  // height silently narrowed the hero and left a bare strip down the side of the page. The
+  // height is therefore set here, from the picture itself: the full width of the hero at the
+  // picture's own proportions, and never taller than the window. A landscape banner — which is
+  // what a school's banner is — comes in well under that and is shown entire, edge to edge,
+  // with nothing cut off. The ceiling is only there so a square or portrait picture cannot open
+  // a hero several screens deep, and only that case is ever cropped.
+  var plain = document.body.classList.contains("hero-plain");
+
+  function fitHero(carousel, slide) {
+    if (!plain || !slide) return;
+
+    var source = getComputedStyle(slide).backgroundImage.match(/url\(["']?(.*?)["']?\)/);
+    if (!source) return;
+
+    var probe = new Image();
+    probe.onload = function () {
+      if (!(probe.naturalWidth > 0) || !(probe.naturalHeight > 0)) return;
+
+      var width = carousel.getBoundingClientRect().width;
+      var ceiling = window.innerHeight;
+      carousel.style.height =
+        Math.round(Math.min(width * probe.naturalHeight / probe.naturalWidth, ceiling)) + "px";
+    };
+    probe.src = source[1];
+  }
+
   carousels.forEach(function (carousel) {
     var slides = Array.prototype.slice.call(carousel.querySelectorAll(".hero-slides__item"));
     var dots = Array.prototype.slice.call(carousel.querySelectorAll("[data-hero-dot]"));
-    if (slides.length < 2) return;
 
     var current = 0;
+
+    fitHero(carousel, slides[0]);
+    // A window resized after the hero was measured would otherwise keep the old height.
+    window.addEventListener("resize", function () {
+      fitHero(carousel, slides[current] || slides[0]);
+    });
+
+    if (slides.length < 2) return;
+
     var timer = null;
     var seconds = parseFloat(carousel.getAttribute("data-autoplay")) || 6;
 
@@ -191,6 +230,7 @@
       dots.forEach(function (dot, index) {
         dot.classList.toggle("is-active", index === current);
       });
+      fitHero(carousel, slides[current]);
     }
 
     function start() {
@@ -317,7 +357,13 @@
   // So the poster is scaled to fit inside both limits at once: 640px wide, the size the
   // reference site opens at, and most of the window's height. It is never enlarged past its own
   // pixels, never trimmed, and never padded.
-  var POSTER_WIDTH = 640;
+  // Beside an enquiry form the poster takes 640px, the size the reference site opens at, and
+  // the form takes the rest of the panel. Alone it has the whole panel to itself, so it is
+  // given the whole panel: the same footprint the two of them fill together, rather than
+  // shrinking to a small picture in the middle of a large screen.
+  var alone = !popup.querySelector(".site-popup__form");
+  var POSTER_WIDTH = alone ? 1040 : 640;
+  var POSTER_HEIGHT = alone ? 0.88 : 0.82;
 
   function fitPoster(image) {
     if (!poster || !image || !(image.naturalWidth > 0) || !(image.naturalHeight > 0)) return;
@@ -325,7 +371,7 @@
     var room = Math.min(POSTER_WIDTH, document.documentElement.clientWidth - 32);
     var scale = Math.min(
       room / image.naturalWidth,
-      (window.innerHeight * 0.82) / image.naturalHeight,
+      (window.innerHeight * POSTER_HEIGHT) / image.naturalHeight,
       1);
 
     poster.style.width = Math.round(image.naturalWidth * scale) + "px";

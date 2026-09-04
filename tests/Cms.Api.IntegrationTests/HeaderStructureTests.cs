@@ -231,6 +231,27 @@ public sealed class HeaderStructureTests : IClassFixture<PublicWebFactory>
         Assert.Contains(tagline, html);
     }
 
+    /// <summary>
+    /// The bulletin template's banners are photographs of the school, so its hero keeps the
+    /// heading over them; the prospectus template's are posters that carry their own words, so
+    /// its hero prints nothing. That difference is the point of the two, and it is easy to lose
+    /// by copying settings from one to the other.
+    /// </summary>
+    [Fact]
+    public void EachTemplateTreatsItsBannersAsWhatTheyAre()
+    {
+        var bulletin = Cms.Application.Templates.SiteTemplateCatalog.Find("notice-board-school")!;
+        var prospectus = Cms.Application.Templates.SiteTemplateCatalog.Find("campus-prospectus")!;
+
+        Assert.False(bulletin.Settings.ContainsKey("heroPlainImages"));
+        Assert.True((bool)prospectus.Settings["heroPlainImages"]!);
+
+        // Both ship a slideshow rather than one still picture, and no two share a photograph.
+        Assert.True(bulletin.HeroImages.Count > 1);
+        Assert.True(prospectus.HeroImages.Count > 1);
+        Assert.Empty(bulletin.HeroImages.Intersect(prospectus.HeroImages));
+    }
+
     /// <summary>The markup of the strip above the header, on its own.</summary>
     private static string StripMarkup(string html)
     {

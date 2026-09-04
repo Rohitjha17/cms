@@ -433,9 +433,21 @@ public static class SiteTemplateCatalog
                 "Condensed headings and a tighter page — more visible without scrolling",
                 "Figures band in the school's own colour"
             ],
-            HeroImageUrl = "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1800&q=80",
+            HeroImageUrl = "https://www.cambridgehigh.in/upload/pics/HEAD1.jpg",
+            HeroImages =
+            [
+                "https://www.cambridgehigh.in/upload/pics/HEAD1.jpg",
+                "https://www.cambridgehigh.in/upload/pics/HEAD2.jpg",
+                "https://www.cambridgehigh.in/upload/pics/HEAD3.jpg",
+                "https://www.cambridgehigh.in/upload/pics/HEAD4.jpg",
+                "https://www.cambridgehigh.in/upload/pics/HEAD5.jpg"
+            ],
+            HeroAutoplaySeconds = 5,
             Settings = new Dictionary<string, object?>
             {
+                // The banners are photographs of the school, not posters with their own
+                // headlines, so the hero keeps its heading over them.
+                ["heroShowControls"] = true,
                 ["noticeLabel"] = "NOTICE",
                 ["noticeTickerScrolls"] = true,
                 ["noticeTickerRepeat"] = 1,
