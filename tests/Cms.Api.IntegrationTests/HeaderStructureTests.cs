@@ -98,47 +98,22 @@ public sealed class HeaderStructureTests : IClassFixture<PublicWebFactory>
         Assert.DoesNotContain("header-cta", await _client.GetStringAsync("/"));
     }
 
-    [Fact]
-    public async Task TheStripAboveTheHeader_ListsThePortalsGiven()
-    {
-        await SaveSettingsAsync(new()
-        {
-            ["topBarLinks"] = "Alumni|/alumni\nParent Portal|https://portal.example.in\nCBSE Disclosures|/disclosure"
-        });
-
-        var html = await _client.GetStringAsync("/");
-
-        Assert.Contains("top-meta__utility", html);
-        Assert.Contains("https://portal.example.in", html);
-        Assert.Contains("CBSE Disclosures", html);
-    }
-
     /// <summary>
-    /// A label with no link behind it looks like a link and does nothing, which is worse than
-    /// not being there. It is dropped rather than rendered.
+    /// There is no strip above the header any more. The phone and email live in the header
+    /// itself, the portals belong in the menu, and the social accounts are in the footer and on
+    /// the contact page — so nothing is left for a band across the top of every page to carry.
     /// </summary>
     [Fact]
-    public async Task ALineWithNoLink_IsDroppedRatherThanRenderedDead()
+    public async Task NothingSitsAboveTheHeader()
     {
-        await SaveSettingsAsync(new() { ["topBarLinks"] = "Alumni|/alumni\nComing soon" });
+        await SaveSettingsAsync(new() { ["headerContact"] = true });
 
         var html = await _client.GetStringAsync("/");
 
-        Assert.Contains("/alumni", html);
-        Assert.DoesNotContain("Coming soon", html);
-    }
-
-    [Fact]
-    public void TheLinkList_KeepsOnlyWellFormedLines()
-    {
-        var settings = new SiteSettingsDto
-        {
-            TopBarLinks = "  Alumni | /alumni  \n\nNo link here\n|/orphan\nLabel|\nPortal|https://a.b"
-        };
-
-        Assert.Equal(
-            [("Alumni", "/alumni"), ("Portal", "https://a.b")],
-            settings.TopBarLinkList);
+        Assert.DoesNotContain("top-meta", html);
+        // The header is still where it always was, and still carries the contact details.
+        Assert.Contains("site-header", html);
+        Assert.Contains("header-contact", html);
     }
 
     /// <summary>
@@ -147,16 +122,15 @@ public sealed class HeaderStructureTests : IClassFixture<PublicWebFactory>
     /// only one carries the row of portals above the header.
     /// </summary>
     [Theory]
-    [InlineData("notice-board-school", "NOTICE", false)]
-    [InlineData("campus-prospectus", "LATEST", true)]
-    public void ATemplatesHeader_TravelsWithIt(string key, string label, bool portalsAbove)
+    [InlineData("notice-board-school", "NOTICE")]
+    [InlineData("campus-prospectus", "LATEST")]
+    public void ATemplatesHeader_TravelsWithIt(string key, string label)
     {
         var template = Cms.Application.Templates.SiteTemplateCatalog.Find(key);
 
         Assert.NotNull(template);
         Assert.Equal(label, template.Settings["noticeLabel"]);
         Assert.True((bool)template.Settings["headerContact"]!);
-        Assert.Equal(portalsAbove, template.Settings.ContainsKey("topBarLinks"));
         Assert.Equal("Admission Enquiry", template.Settings["headerCtaText"]);
     }
 
@@ -188,47 +162,7 @@ public sealed class HeaderStructureTests : IClassFixture<PublicWebFactory>
 
         Assert.False(string.IsNullOrWhiteSpace(settings.NoticeLabel));
         Assert.Equal("Admission Enquiry", settings.HeaderCtaText);
-        if (key == "campus-prospectus")
-        {
-            Assert.Equal(4, settings.TopBarLinkList.Count);
-            Assert.Contains(("Parent Portal", "/parent-portal"), settings.TopBarLinkList);
-        }
-    }
-
-    /// <summary>
-    /// The tagline was printed on the strip above the header and again under the school's name.
-    /// With no portals and no phone number the strip was an empty band with one line repeated
-    /// in it, which is what a school looking at its own site kept asking about.
-    /// </summary>
-    [Fact]
-    public async Task WithNothingToPutOnIt_ThereIsNoStrip()
-    {
-        await SaveSettingsAsync([]);
-
-        // Restored before the assertion runs, so a failure here cannot leave the phone number
-        // missing for whichever test happens to run next against the same site.
-        var html = await WithoutContactDetailsAsync(() => _client.GetStringAsync("/"));
-
-        Assert.DoesNotContain("top-meta", html);
-    }
-
-    /// <summary>
-    /// The tagline still belongs under the school's name. What it must not do is appear on the
-    /// strip as well, which is the repetition that made the strip look like a mistake.
-    /// </summary>
-    [Fact]
-    public async Task TheStrip_DoesNotRepeatTheTagline()
-    {
-        await SaveSettingsAsync(new() { ["topBarLinks"] = "Alumni|/alumni" });
-
-        var html = await _client.GetStringAsync("/");
-        var tagline = await TaglineAsync();
-
-        Assert.Contains("top-meta", html);
-        Assert.False(string.IsNullOrWhiteSpace(tagline), "the fixture's site needs a tagline to test");
-        Assert.DoesNotContain(tagline, StripMarkup(html));
-        // It is still under the school's name, where it belongs.
-        Assert.Contains(tagline, html);
+        Assert.True(settings.HeaderContact);
     }
 
     /// <summary>
@@ -250,54 +184,6 @@ public sealed class HeaderStructureTests : IClassFixture<PublicWebFactory>
         Assert.True(bulletin.HeroImages.Count > 1);
         Assert.True(prospectus.HeroImages.Count > 1);
         Assert.Empty(bulletin.HeroImages.Intersect(prospectus.HeroImages));
-    }
-
-    /// <summary>
-    /// With the header showing "Call us" and "Mail us", the strip one line above must not print
-    /// the same phone number and the same email again. Two lines of identical text, one under
-    /// the other, is what a visitor notices first.
-    /// </summary>
-    [Fact]
-    public async Task TheStripAndTheHeader_DoNotBothPrintTheContactDetails()
-    {
-        await SaveSettingsAsync(new()
-        {
-            ["headerContact"] = true,
-            ["topBarLinks"] = "Alumni|/alumni"
-        });
-
-        var html = await _client.GetStringAsync("/");
-        var strip = StripMarkup(html);
-
-        Assert.Contains("header-contact", html);
-        Assert.Contains("/alumni", strip);
-        Assert.DoesNotContain("tel:", strip);
-        Assert.DoesNotContain("mailto:", strip);
-    }
-
-    /// <summary>
-    /// With the header not showing them, the strip is the only place they appear, so it keeps
-    /// them. Suppressing them in both would lose the phone number from the top of the page.
-    /// </summary>
-    [Fact]
-    public async Task WithoutTheHeaderBlocks_TheStripStillCarriesThem()
-    {
-        await SaveSettingsAsync([]);
-
-        var strip = StripMarkup(await _client.GetStringAsync("/"));
-
-        Assert.Contains("tel:", strip);
-        Assert.Contains("mailto:", strip);
-    }
-
-    /// <summary>The markup of the strip above the header, on its own.</summary>
-    private static string StripMarkup(string html)
-    {
-        var opens = html.IndexOf("<div class=\"top-meta", StringComparison.Ordinal);
-        if (opens < 0) return string.Empty;
-
-        var closes = html.IndexOf("<header", opens, StringComparison.Ordinal);
-        return closes < 0 ? html[opens..] : html[opens..closes];
     }
 
     /// <summary>
@@ -358,47 +244,7 @@ public sealed class HeaderStructureTests : IClassFixture<PublicWebFactory>
         Assert.True(template.HeroImages.Count > 1);
     }
 
-    private async Task<string> TaglineAsync()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
-        return site.Tagline ?? string.Empty;
-    }
-
-    /// <summary>
-    /// Runs <paramref name="work"/> with the site's phone and email cleared, and puts them back
-    /// afterwards however it ends. These tests share one site, so a test that took the phone
-    /// number away and left it that way would fail the next test to look for it.
-    /// </summary>
-    private async Task<string> WithoutContactDetailsAsync(Func<Task<string>> work)
-    {
-        string? phone, email;
-
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
-            (phone, email) = (site.Phone, site.Email);
-            (site.Phone, site.Email) = (null, null);
-            await db.SaveChangesAsync();
-        }
-
-        try
-        {
-            return await work();
-        }
-        finally
-        {
-            using var scope = _factory.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
-            (site.Phone, site.Email) = (phone, email);
-            await db.SaveChangesAsync();
-        }
-    }
-
-    private async Task SaveSettingsAsync(Dictionary<string, object?> values)
+     private async Task SaveSettingsAsync(Dictionary<string, object?> values)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

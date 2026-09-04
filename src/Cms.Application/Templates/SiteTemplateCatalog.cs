@@ -454,7 +454,6 @@ public static class SiteTemplateCatalog
                 ["headerContact"] = true,
                 ["headerCtaText"] = "Admission Enquiry",
                 ["headerCtaLink"] = "/admission",
-                ["topBarIcons"] = true,
                 ["scrollAnimations"] = true
             },
             HeroHeading = "Where every student is an achiever",
@@ -565,14 +564,8 @@ public static class SiteTemplateCatalog
                 ["noticeTickerRepeat"] = 1,
                 ["headerCtaText"] = "Admission Enquiry",
                 ["headerCtaLink"] = "/admission",
-                ["topBarIcons"] = true,
                 ["scrollAnimations"] = true,
-                ["topBarLinks"] = string.Join('\n',
-                    "Alumni|/alumni",
-                    "E-Newsletter|/newsletter",
-                    "Parent Portal|/parent-portal",
-                    "Mandatory Disclosure|/disclosure")
-            },
+},
             HomeSections =
             [
                 new SectionSample("why_choose_us", "What Makes Our School Special", null, null,

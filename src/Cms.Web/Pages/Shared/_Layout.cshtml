@@ -113,52 +113,6 @@
             <div class="notice-bar @noticeStyle" style="@(noticeColor is null ? null : $"background:{noticeColor}")"><div class="shell">@if (!string.IsNullOrWhiteSpace(settings.NoticeLabel)) { <span class="notice-bar__tag">@settings.NoticeLabel</span> }<span>@settings.NoticeTicker.Replace(" | ", " · ").Replace("|", " · ")</span></div></div>
         }
     }
-    @{
-        var utility = settings.TopBarLinkList;
-        // The tagline was printed here and again under the school's name, so a site with no
-        // portals and no phone number showed an empty grey band with one line repeated in it.
-        // The strip is for links; with no links there is no strip.
-        // The header carries the phone and email as "Call us" and "Mail us" when that is turned
-        // on, and printing them again one line above is the same two lines of text twice on the
-        // same screen. The strip keeps the links and the social icons; the header keeps the
-        // contact details. Only one of them says a thing.
-        var stripContact = !settings.HeaderContact;
-        // The social accounts are on the contact page and in the footer; a third copy of the
-        // same five icons at the top of every page is the same row said three times.
-        var hasStrip = utility.Count > 0
-            || (stripContact && (!string.IsNullOrWhiteSpace(brand.Phone)
-                || !string.IsNullOrWhiteSpace(brand.Email)));
-    }
-    @if (hasStrip)
-    {
-    <div class="top-meta @(settings.TopBarIcons ? "top-meta--icons" : null)">
-        <div class="shell">
-            @if (utility.Count > 0)
-            {
-                @* The strip above the header is where a school parks the pages that are not part
-                   of the story it tells — the parent portal, the alumni register, the disclosures
-                   the board requires — so the navigation below stays about the school itself. *@
-                <nav class="top-meta__utility" aria-label="Quick links">
-                    @foreach (var link in utility)
-                    {
-                        <a href="@link.Url">@link.Label</a>
-                    }
-                </nav>
-            }
-            <span class="top-meta__links">
-                @if (stripContact && !string.IsNullOrWhiteSpace(brand.Phone))
-                {
-                    <a href="tel:@brand.Phone">@if (settings.TopBarIcons) { <partial name="_Icon" model="@("phone")" /> }<span>@brand.Phone</span></a>
-                }
-                @if (stripContact && !string.IsNullOrWhiteSpace(brand.Email))
-                {
-                    <a href="mailto:@brand.Email">@if (settings.TopBarIcons) { <partial name="_Icon" model="@("mail")" /> }<span>@brand.Email</span></a>
-                }
-
-            </span>
-        </div>
-    </div>
-    }
     <header class="site-header">
         <div class="shell">
             <a class="brand" href="@homeUrl">

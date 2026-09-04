@@ -387,25 +387,6 @@ public sealed class PopupAndAppearanceTests : IClassFixture<PublicWebFactory>
         Assert.DoesNotContain("background-image:url(http://x/y)", html);
     }
 
-    [Fact]
-    public async Task TopBarIcons_AppearOnlyWhenAskedFor()
-    {
-        await SaveSettingsAsync(new Dictionary<string, object?>());
-        Assert.DoesNotContain("top-meta--icons", await _client.GetStringAsync("/"));
-
-        await SaveSettingsAsync(new Dictionary<string, object?>
-        {
-            ["topBarIcons"] = true,
-            ["facebook"] = "https://facebook.com/school"
-        });
-
-        var html = await _client.GetStringAsync("/");
-        Assert.Contains("top-meta--icons", html);
-        Assert.Contains("aria-label=\"Facebook\"", html);
-        // Drawn inline: an icon font is a request and a flash of nothing for shapes that never change.
-        Assert.Contains("<svg class=\"icon\"", html);
-    }
-
     /// <summary>
     /// Setting twenty-three sections one at a time to get a consistent site is not a choice
     /// anyone would make, so one setting stands in for all of them — and never overrules a

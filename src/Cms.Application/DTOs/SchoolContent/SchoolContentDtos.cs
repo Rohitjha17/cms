@@ -290,30 +290,12 @@ public sealed class SiteSettingsDto
     public string? HeaderCtaLink { get; set; }
 
     /// <summary>
-    /// Named links for the strip above the header — the portals and standing pages a school
-    /// keeps one click away: alumni, parent portal, disclosures. One per line, "Label|/url".
-    /// </summary>
-    /// <summary>
     /// The banner pictures are finished artwork — a school's admissions poster with its own
     /// headline, dates and button drawn into it. With this on, the hero shows each one whole
     /// and prints nothing over it: a heading laid across artwork that already has a heading is
     /// two headings on top of one another, and the scrim that makes ours legible dims theirs.
     /// </summary>
     public bool HeroPlainImages { get; set; }
-
-    public string? TopBarLinks { get; set; }
-
-    /// <summary>
-    /// <see cref="TopBarLinks"/> parsed. A line with no bar is a label pointing at nothing,
-    /// which is not a link, so it is dropped rather than rendered as dead text.
-    /// </summary>
-    public IReadOnlyList<(string Label, string Url)> TopBarLinkList =>
-        (TopBarLinks ?? string.Empty)
-            .Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(line => line.Split('|', 2, StringSplitOptions.TrimEntries))
-            .Where(parts => parts.Length == 2 && parts[0].Length > 0 && parts[1].Length > 0)
-            .Select(parts => (parts[0], parts[1]))
-            .ToList();
 
     /// <summary>
     /// Height of the header logo in pixels. Schools send crests of wildly different proportions
@@ -339,9 +321,6 @@ public sealed class SiteSettingsDto
 
     /// <summary>solid · gradient · dark · outline. How the notice strip itself is painted.</summary>
     public string? NoticeBarStyle { get; set; }
-
-    /// <summary>Draws the phone, email and social links in the top strip as icons.</summary>
-    public bool TopBarIcons { get; set; }
 
     /// <summary>solid · outline · soft · gradient. Empty is the design's own button.</summary>
     public string? ButtonStyle { get; set; }

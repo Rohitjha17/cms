@@ -167,17 +167,6 @@
                 <label class="field"><span>Header button</span><input asp-for="Input.HeaderCtaText" placeholder="Admission enquiry" /></label>
                 <label class="field"><span>Header button links to</span><input asp-for="Input.HeaderCtaLink" placeholder="/admission" /></label>
 
-                <label class="field full">
-                    <span>Links above the header</span>
-                    <textarea asp-for="Input.TopBarLinks" rows="4" placeholder="Alumni|/alumni&#10;Parent Portal|https://portal.example.in&#10;Mandatory Disclosure|/disclosure"></textarea>
-                    <small class="hint">One per line, as <code>Label|link</code>. Use these for portals and standing pages so the main menu stays about the school.</small>
-                </label>
-
-                <label class="switch-row full">
-                    <input asp-for="Input.TopBarIcons" type="checkbox" />
-                    <span><strong>Show icons in the top strip</strong><small>Draws the phone and email with icons, and brings the social links up beside them.</small></span>
-                </label>
-
                 <label class="field">
                     <span>Button colour</span>
                     <input asp-for="Input.ButtonColor" placeholder="#c0392b" />
