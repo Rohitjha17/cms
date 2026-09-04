@@ -2275,6 +2275,12 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 }
 .notice-bar--scrolling { display: flex; align-items: stretch; padding-block: 0; }
 .notice-bar--scrolling .notice-marquee { align-self: center; padding-block: .6rem; }
+@media (prefers-reduced-motion: reduce) {
+  /* Standing still the marquee is sized to the whole bar, which with a tag beside it would
+     centre the notice against a width the tag has already taken part of. It takes what is
+     left instead. */
+  .notice-bar--scrolling .notice-marquee { flex: 1 1 auto; width: auto; min-width: 0; }
+}
 
 .header-contact { display: none; }
 @media (min-width: 1080px) {
@@ -2289,7 +2295,10 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   letter-spacing: .08em;
   text-transform: uppercase;
 }
-.header-contact strong { display: block; font-size: .92rem; }
+.header-contact strong { display: block; font-size: .92rem; white-space: nowrap; }
+/* A phone number broken across two lines stops being a phone number, so the block keeps its
+   own width and the row gives way around it rather than through it. */
+.header-contact a { flex: none; }
 
 .header-cta { flex: none; }
 @media (max-width: 700px) { .header-cta { display: none; } }
@@ -2318,9 +2327,31 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   .variant-bulletin .site-header nav a.is-active { background: transparent; color: var(--accent); }
 }
 
-/* Atrium keeps its centred stack and puts the call to action under the navigation. */
-.variant-atrium .header-contact { display: none; }
-.variant-atrium .header-cta { margin-top: .2rem; }
+/* Atrium's own arrangement: the brand at the left, contact and the call to action at the
+   right, and the navigation centred on a rule below — the same three rows as Bulletin, read
+   quietly rather than boxed. The two stay apart in weight and colour, not in structure,
+   because that is how the sites they follow are actually built. */
+@media (min-width: 1080px) {
+  .variant-atrium .site-header .shell {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+    grid-template-areas: "brand contact cta" "nav nav nav";
+    justify-items: stretch;
+    align-items: center;
+    gap: .9rem 2rem;
+  }
+  .variant-atrium .brand { grid-area: brand; flex-direction: row; text-align: left; gap: .9rem; }
+  .variant-atrium .header-contact { grid-area: contact; justify-self: end; gap: 2.25rem; }
+  .variant-atrium .header-cta { grid-area: cta; }
+  .variant-atrium .site-header nav {
+    grid-area: nav;
+    border-top: 1px solid var(--line);
+    padding-top: .7rem;
+  }
+}
+/* No panel behind the icons here, and the labels carry the weight instead. */
+.variant-atrium .header-contact .icon { width: 22px; height: 22px; color: var(--brand); }
+.variant-atrium .header-contact small { letter-spacing: .14em; }
+.variant-atrium .header-contact strong { font-weight: 600; }
 
 /* --- The strip above the header ------------------------------------------- */
 

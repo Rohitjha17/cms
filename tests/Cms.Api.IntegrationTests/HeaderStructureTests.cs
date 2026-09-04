@@ -143,20 +143,19 @@ public sealed class HeaderStructureTests : IClassFixture<PublicWebFactory>
 
     /// <summary>
     /// A template that describes a header nobody gets when the site is created describes
-    /// nothing. Both replica templates are checked, because the point of them is that their
-    /// headers differ: one leads with the phone, the other with a row of portals.
+    /// nothing. Both replica templates are checked, and what separates them is asserted too:
+    /// only one carries the row of portals above the header.
     /// </summary>
     [Theory]
-    [InlineData("notice-board-school", "NOTICE", true, false)]
-    [InlineData("campus-prospectus", "LATEST", false, true)]
-    public void ATemplatesHeader_TravelsWithIt(
-        string key, string label, bool contactInHeader, bool portalsAbove)
+    [InlineData("notice-board-school", "NOTICE", false)]
+    [InlineData("campus-prospectus", "LATEST", true)]
+    public void ATemplatesHeader_TravelsWithIt(string key, string label, bool portalsAbove)
     {
         var template = Cms.Application.Templates.SiteTemplateCatalog.Find(key);
 
         Assert.NotNull(template);
         Assert.Equal(label, template.Settings["noticeLabel"]);
-        Assert.Equal(contactInHeader, template.Settings.TryGetValue("headerContact", out var c) && (bool)c!);
+        Assert.True((bool)template.Settings["headerContact"]!);
         Assert.Equal(portalsAbove, template.Settings.ContainsKey("topBarLinks"));
         Assert.Equal("Admission Enquiry", template.Settings["headerCtaText"]);
     }

@@ -529,6 +529,7 @@ public static class SiteTemplateCatalog
             Settings = new Dictionary<string, object?>
             {
                 ["noticeLabel"] = "LATEST",
+                ["headerContact"] = true,
                 ["noticeTickerScrolls"] = true,
                 ["noticeTickerRepeat"] = 1,
                 ["headerCtaText"] = "Admission Enquiry",
