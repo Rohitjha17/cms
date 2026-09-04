@@ -54,7 +54,13 @@
     // time; a section that chose for itself is never overruled by it.
     var defaultPattern = Model.Settings.SectionPattern;
 
+    // The hero is not one of these. It already has a picture — the banner, or the slideshow —
+    // and its own shading under the heading. Giving it a second background image and the white
+    // veil that goes under one puts a near-opaque sheet over the whole banner: the school's
+    // photograph arrives on the page washed out, which is what this looked like.
     var backdrops = Model.Website.HomeSections
+        .Where(section => !string.Equals(section.SectionKey, Cms.Domain.Constants.HomePageSectionKeys.Hero,
+            StringComparison.OrdinalIgnoreCase))
         .Select(section => new
         {
             section.SectionKey,

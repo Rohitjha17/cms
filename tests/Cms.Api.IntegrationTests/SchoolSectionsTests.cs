@@ -304,6 +304,56 @@ public sealed class SchoolSectionsTests : IClassFixture<PublicWebFactory>
         Assert.Contains("Every child is taught to think for themselves.", html);
     }
 
+    /// <summary>
+    /// A section with a background photograph gets a white veil drawn over it so the words on
+    /// top stay readable. The hero is not one of those: it already has a picture — the banner or
+    /// the slideshow — and its own shading under the heading. Applied there, the veil is a
+    /// near-opaque sheet across the whole banner, and the school's photograph arrives washed
+    /// out. It is the fault this test exists for.
+    /// </summary>
+    [Fact]
+    public async Task TheHero_NeverGetsTheVeilThatGoesUnderASectionBackground()
+    {
+        await SaveSectionAsync(HomePageSectionKeys.Hero, "Welcome", new { heading = "Welcome" });
+        await SetSectionBackgroundAsync(HomePageSectionKeys.Hero, "/uploads/some-photo.jpg");
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.DoesNotContain("[data-section=\"hero\"]::after", html);
+        Assert.DoesNotContain("[data-section=\"hero\"]::before", html);
+    }
+
+    /// <summary>
+    /// Every other section still gets it, or words written over a photograph disappear into it.
+    /// </summary>
+    [Fact]
+    public async Task AnOrdinarySectionWithAPhotograph_StillGetsItsVeil()
+    {
+        await SaveSectionAsync(HomePageSectionKeys.About, "About", new { });
+        await SetSectionBackgroundAsync(HomePageSectionKeys.About, "/uploads/some-photo.jpg");
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("[data-section=\"about\"]::before", html);
+        Assert.Contains("[data-section=\"about\"]::after", html);
+    }
+
+    private async Task SetSectionBackgroundAsync(string key, string imageUrl)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var siteId = await db.Sites.IgnoreQueryFilters()
+            .Where(x => x.SiteKey == "school").Select(x => x.Id).FirstAsync();
+
+        var section = await db.HomePageSections.IgnoreQueryFilters()
+            .FirstAsync(x => x.SiteId == siteId && x.SectionKey == key);
+
+        section.BackgroundImageUrl = imageUrl;
+        section.IsActive = true;
+        await db.SaveChangesAsync();
+    }
+
     // ---------------------------------------------------------------- helpers
 
     private async Task SaveSectionAsync(string key, string title, object json)
