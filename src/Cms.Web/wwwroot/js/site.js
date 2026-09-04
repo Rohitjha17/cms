@@ -673,3 +673,50 @@
     resizeTimer = window.setTimeout(build, 200);
   });
 })();
+
+/* ------------------------------------------------------------------ Hanging crest */
+
+/* The crest hangs below the header and over the banner, so the two read as one piece rather
+   than as two stacked bands with a rule between them.
+
+   How far it has to travel is measured, not guessed: some designs put the whole header on one
+   row, others give the menu a row of its own underneath, and a school can set its crest to any
+   height it likes. A percentage that hangs correctly on one of those overlaps the menu on
+   another. The header also publishes how much room the crest takes, so a menu on a second row
+   can start to the right of it instead of underneath it. */
+(function () {
+  "use strict";
+
+  var header = document.querySelector(".site-header");
+  var crest = header && header.querySelector(".brand img");
+  if (!crest) return;
+
+  // Below this there is not enough header to hang from, and a crest over the banner on a phone
+  // covers the part of the banner the school put the words on.
+  var NARROW = 760;
+  var OVERHANG = 0.3;
+
+  function place() {
+    crest.style.transform = "";
+    header.style.removeProperty("--crest-space");
+
+    if (window.innerWidth < NARROW || !(crest.offsetHeight > 0)) return;
+
+    var bar = header.getBoundingClientRect();
+    var badge = crest.getBoundingClientRect();
+
+    // Far enough to hang below the header by a third of itself...
+    var hang = bar.bottom - badge.bottom + crest.offsetHeight * OVERHANG;
+    // ...and far enough that the top of it is never above the top of the header, which a crest
+    // taller than a single-row bar otherwise is: it pokes up out of the page.
+    var clear = bar.top + 8 - badge.top;
+
+    crest.style.transform = "translateY(" + Math.round(Math.max(hang, clear)) + "px)";
+    header.style.setProperty("--crest-space", Math.round(crest.offsetWidth) + "px");
+  }
+
+  if (crest.complete) place();
+  else crest.addEventListener("load", place, { once: true });
+
+  window.addEventListener("resize", place);
+})();

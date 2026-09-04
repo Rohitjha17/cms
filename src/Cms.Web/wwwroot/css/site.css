@@ -936,13 +936,11 @@ img { opacity: 1; }
   background: color-mix(in srgb, var(--surface) 96%, transparent);
   box-shadow: 0 1px 0 var(--line), var(--shadow-sm);
 }
-.site-header .shell { transition: min-height .25s var(--ease); }
-.site-header.is-scrolled .shell { min-height: 64px; }
-.site-header.is-scrolled .brand img {
-  height: calc(var(--logo-size, 46px) * .82);
-  margin-block: calc((var(--logo-size, 46px) * .82 - 46px) / -2);
-  transition: height .25s var(--ease), margin-block .25s var(--ease);
-}
+/* The bar keeps its height and the crest keeps its size and its place, whatever the page is
+   doing. Shrinking both on scroll moved the crest and the name a few pixels down and left the
+   moment a visitor touched the wheel, and a school's crest is the one thing on the page that
+   should sit still. Scrolling changes the bar's weight — its ground and its shadow — and
+   nothing that has a position. */
 
 /* Back to top -------------------------------------------------------------- */
 
@@ -1105,17 +1103,13 @@ body.nav-locked { overflow: hidden; }
 .site-header {
   transition: box-shadow .28s ease, background-color .28s ease;
 }
-.site-header .shell { transition: min-height .28s ease; }
 .site-header.is-condensed {
   background: color-mix(in srgb, var(--surface) 97%, transparent);
   box-shadow: 0 10px 30px -22px rgba(9, 18, 36, .7);
 }
-.site-header.is-condensed .shell { min-height: 60px; }
-.site-header.is-condensed .brand small { opacity: 0; }
-.brand small { transition: opacity .22s ease; }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-header, .site-header .shell, .brand small { transition: none; }
+  .site-header { transition: none; }
 }
 
 /* ===========================================================================
@@ -2486,3 +2480,43 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 .social-links .icon { width: 20px; height: 20px; }
 .site-footer .social-links { margin-top: .9rem; gap: 1rem; }
 .site-footer .social-links .icon { width: 22px; height: 22px; }
+
+/* --- The crest, and the name beside it --------------------------------------
+   The crest sits on a disc of the header's own colour and hangs below the bar
+   into whatever is under it, so the header and the banner read as one piece
+   rather than two stacked bands with a line between them.
+
+   It hangs by a transform, not a margin, so the bar's height is untouched: a
+   bigger crest was the ask, a deeper header that pushes the whole page down
+   was not. And because nothing in the header resizes on scroll, the crest is
+   in the same place on a page halfway read as on one just opened. */
+
+.brand img {
+  padding: .7rem;
+  background: var(--surface);
+  border-radius: 50%;
+  box-shadow: 0 14px 30px -14px rgba(8, 17, 31, .5);
+  position: relative;
+  z-index: 2;
+}
+@media (max-width: 700px) {
+  /* Too little header to hang from, and a crest over the banner on a phone covers the banner. */
+  .brand img { transform: none; box-shadow: none; padding: 0; border-radius: 0; }
+}
+
+/* The name reads as the school's, in its own colour, with whatever follows it — the campus,
+   the city, the board — set under the name's right edge rather than under its left. */
+.brand strong { color: var(--brand); }
+.brand small { text-align: right; }
+
+@media (prefers-reduced-motion: reduce) {
+  .brand img { transition: none; }
+}
+
+/* The menu rows that sit under the brand have to begin to the right of the crest, or the crest
+   hangs straight through the first item. The header measures the crest and publishes its width;
+   Atrium's menu is centred, so it is held off on both sides and stays centred. */
+@media (min-width: 760px) {
+  .variant-bulletin .site-header nav { padding-left: calc(var(--crest-space, 0px) + 1.25rem); }
+  .variant-atrium .site-header nav { padding-inline: calc(var(--crest-space, 0px) + 1.25rem); }
+}
