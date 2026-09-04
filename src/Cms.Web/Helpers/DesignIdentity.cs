@@ -44,13 +44,13 @@ public static class DesignIdentity
 
         // Condensed and utilitarian — a noticeboard, not a prospectus.
         HomeVariant.Bulletin => new(
-            "family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600",
-            $"Oswald, {Sans}", $"'IBM Plex Sans', {Sans}"),
+            "family=Montserrat:wght@500;600;700&family=Roboto+Condensed:wght@400;500;700",
+            $"Montserrat, {Sans}", $"'Roboto Condensed', {Sans}"),
 
         // Large, quiet, editorial.
         HomeVariant.Atrium => new(
-            "family=Cormorant+Garamond:wght@300;500;600&family=Jost:wght@300;400;500",
-            $"'Cormorant Garamond', {Fallback}", $"Jost, {Sans}"),
+            "family=Libre+Baskerville:wght@400;700&family=Open+Sans:wght@300;400;600;700",
+            $"'Libre Baskerville', {Fallback}", $"'Open Sans', {Sans}"),
 
         // Classic keeps the pairing every design used to share.
         _ => new(

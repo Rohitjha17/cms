@@ -423,8 +423,8 @@ public static class SiteTemplateCatalog
             BestFor = "Schools that publish circulars, timetables and downloads constantly",
             WebsiteType = WebsiteType.School,
             HomeVariant = HomeVariant.Bulletin,
-            PrimaryColor = "#1f3a68",
-            SecondaryColor = "#c0392b",
+            PrimaryColor = "#29166f",
+            SecondaryColor = "#ff3115",
             SampleTagline = "Learn to lead",
             Highlights =
             [
@@ -434,6 +434,17 @@ public static class SiteTemplateCatalog
                 "Figures band in the school's own colour"
             ],
             HeroImageUrl = "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1800&q=80",
+            Settings = new Dictionary<string, object?>
+            {
+                ["noticeLabel"] = "NOTICE",
+                ["noticeTickerScrolls"] = true,
+                ["noticeTickerRepeat"] = 1,
+                ["headerContact"] = true,
+                ["headerCtaText"] = "Admission Enquiry",
+                ["headerCtaLink"] = "/admission",
+                ["topBarIcons"] = true,
+                ["scrollAnimations"] = true
+            },
             HeroHeading = "Where every student is an achiever",
             HeroDescription = "An all-round education — physical, social, emotional, intellectual and cultural — since 1984.",
             Statistics = new StatisticsSample(1450, 76, 340, 41),
@@ -504,8 +515,8 @@ public static class SiteTemplateCatalog
             BestFor = "Established institutions whose website is a prospectus, not a noticeboard",
             WebsiteType = WebsiteType.School,
             HomeVariant = HomeVariant.Atrium,
-            PrimaryColor = "#12294d",
-            SecondaryColor = "#a8842c",
+            PrimaryColor = "#0a438d",
+            SecondaryColor = "#991f22",
             SampleTagline = "We learn to serve",
             Highlights =
             [
@@ -515,6 +526,21 @@ public static class SiteTemplateCatalog
                 "Edge-to-edge photograph wall"
             ],
             HeroImageUrl = "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1800&q=80",
+            Settings = new Dictionary<string, object?>
+            {
+                ["noticeLabel"] = "LATEST",
+                ["noticeTickerScrolls"] = true,
+                ["noticeTickerRepeat"] = 1,
+                ["headerCtaText"] = "Admission Enquiry",
+                ["headerCtaLink"] = "/admission",
+                ["topBarIcons"] = true,
+                ["scrollAnimations"] = true,
+                ["topBarLinks"] = string.Join('\n',
+                    "Alumni|/alumni",
+                    "E-Newsletter|/newsletter",
+                    "Parent Portal|/parent-portal",
+                    "Mandatory Disclosure|/disclosure")
+            },
             HeroHeading = "A school that moves with the world your children will inherit",
             HeroDescription = "Founded in 1931, and still asking what an education is for.",
             Statistics = new StatisticsSample(2100, 140, 96, 94),
@@ -630,6 +656,17 @@ public sealed class SiteTemplate
     public required IReadOnlyList<DepartmentSample> Departments { get; init; }
     public required IReadOnlyList<NewsSample> News { get; init; }
     public required IReadOnlyList<EventSample> Events { get; init; }
+
+    /// <summary>
+    /// Site settings the template starts a school on — the notice label, whether the header
+    /// carries the phone and email, its one call to action, the portals above it.
+    ///
+    /// These are structure, not sample content: they are what makes one template's header read
+    /// unlike another's, so they are written whether or not sample content was asked for. A
+    /// school changes any of them in Site Settings afterwards.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?> Settings { get; init; } =
+        new Dictionary<string, object?>();
 
     /// <summary>Every template ships the full starter page set from the page gallery.</summary>
     public IReadOnlyList<string> PageTemplateKeys => PageTemplateKeys_;

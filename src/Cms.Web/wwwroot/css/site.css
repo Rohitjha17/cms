@@ -2257,3 +2257,89 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   text-align: center;
 }
 .variant-prestige .site-footer { text-align: center; }
+
+/* --- Notice label, and contact in the header ------------------------------- */
+
+.notice-bar__tag {
+  flex: none;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 1rem;
+  background: var(--accent);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.notice-bar--scrolling { display: flex; align-items: stretch; padding-block: 0; }
+.notice-bar--scrolling .notice-marquee { align-self: center; padding-block: .6rem; }
+
+.header-contact { display: none; }
+@media (min-width: 1080px) {
+  .header-contact { display: flex; align-items: center; gap: 1.75rem; }
+}
+.header-contact a { display: flex; align-items: center; gap: .6rem; color: var(--ink); }
+.header-contact .icon { width: 26px; height: 26px; color: var(--accent); }
+.header-contact small {
+  display: block;
+  color: var(--muted);
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.header-contact strong { display: block; font-size: .92rem; }
+
+.header-cta { flex: none; }
+@media (max-width: 700px) { .header-cta { display: none; } }
+
+/* Bulletin puts the contact blocks and the call to action on the brand row, with the
+   navigation on its own bar underneath — the way both reference sites are built. */
+@media (min-width: 1080px) {
+  .variant-bulletin .site-header .shell {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto auto;
+    grid-template-areas: "brand contact contact cta" "nav nav nav nav";
+    gap: .75rem 1.5rem;
+    align-items: center;
+  }
+  .variant-bulletin .header-contact { grid-area: contact; justify-self: end; }
+  .variant-bulletin .header-cta { grid-area: cta; }
+  .variant-bulletin .site-header nav {
+    grid-area: nav;
+    justify-content: center;
+    margin-top: .35rem;
+    border-top: 0;
+    background: var(--brand);
+    border-radius: 999px;
+  }
+  .variant-bulletin .site-header nav a { color: #fff; border-right: 0; }
+  .variant-bulletin .site-header nav a:hover { color: var(--accent); }
+  .variant-bulletin .site-header nav a.is-active { background: transparent; color: var(--accent); }
+}
+
+/* Atrium keeps its centred stack and puts the call to action under the navigation. */
+.variant-atrium .header-contact { display: none; }
+.variant-atrium .header-cta { margin-top: .2rem; }
+
+/* --- The strip above the header ------------------------------------------- */
+
+.top-meta__utility { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1.1rem; }
+.top-meta__utility a {
+  position: relative;
+  color: inherit;
+  font-size: .78rem;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+/* A thin divider between links, drawn rather than typed, so the last one has none. */
+.top-meta__utility a + a::before {
+  content: "";
+  position: absolute;
+  left: -.55rem;
+  top: .2em;
+  bottom: .2em;
+  border-left: 1px solid currentColor;
+  opacity: .35;
+}
+@media (max-width: 860px) { .top-meta__utility { display: none; } }

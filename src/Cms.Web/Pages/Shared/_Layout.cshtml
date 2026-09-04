@@ -98,6 +98,7 @@
             var notices = settings.NoticeTicker
                 .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             <div class="notice-bar notice-bar--scrolling @noticeStyle" style="@(noticeColor is null ? null : $"background:{noticeColor}")">
+                @if (!string.IsNullOrWhiteSpace(settings.NoticeLabel)) { <span class="notice-bar__tag">@settings.NoticeLabel</span> }
                 <div class="notice-marquee" data-notice-marquee
                      data-notice-repeat="@Math.Clamp(settings.NoticeTickerRepeat, 0, 3)"
                      style="@(settings.NoticeTickerSeconds > 0 ? $"--notice-speed:{Math.Clamp(settings.NoticeTickerSeconds, 5, 120)}s" : null)">
@@ -109,12 +110,25 @@
         }
         else
         {
-            <div class="notice-bar @noticeStyle" style="@(noticeColor is null ? null : $"background:{noticeColor}")"><div class="shell"><span>@settings.NoticeTicker.Replace(" | ", " · ").Replace("|", " · ")</span></div></div>
+            <div class="notice-bar @noticeStyle" style="@(noticeColor is null ? null : $"background:{noticeColor}")"><div class="shell">@if (!string.IsNullOrWhiteSpace(settings.NoticeLabel)) { <span class="notice-bar__tag">@settings.NoticeLabel</span> }<span>@settings.NoticeTicker.Replace(" | ", " · ").Replace("|", " · ")</span></div></div>
         }
     }
     <div class="top-meta @(settings.TopBarIcons ? "top-meta--icons" : null)">
         <div class="shell">
             <span>@(brand.Tagline ?? "Admissions open · Visit campus · Enquire today")</span>
+            @{ var utility = settings.TopBarLinkList; }
+            @if (utility.Count > 0)
+            {
+                @* The strip above the header is where a school parks the pages that are not part
+                   of the story it tells — the parent portal, the alumni register, the disclosures
+                   the board requires — so the navigation below stays about the school itself. *@
+                <nav class="top-meta__utility" aria-label="Quick links">
+                    @foreach (var link in utility)
+                    {
+                        <a href="@link.Url">@link.Label</a>
+                    }
+                </nav>
+            }
             <span class="top-meta__links">
                 @if (!string.IsNullOrWhiteSpace(brand.Phone))
                 {
@@ -152,6 +166,32 @@
                     }
                 </span>
             </a>
+            @if (settings.HeaderContact)
+            {
+                @* Both reference sites put the phone, the email and one call to action in the
+                   header itself rather than in a strip above it, because those are the three
+                   things a parent came for. *@
+                <div class="header-contact">
+                    @if (!string.IsNullOrWhiteSpace(brand.Phone))
+                    {
+                        <a href="tel:@brand.Phone">
+                            <partial name="_Icon" model="@("phone")" />
+                            <span><small>Call us</small><strong>@brand.Phone</strong></span>
+                        </a>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(brand.Email))
+                    {
+                        <a href="mailto:@brand.Email">
+                            <partial name="_Icon" model="@("mail")" />
+                            <span><small>Mail us</small><strong>@brand.Email</strong></span>
+                        </a>
+                    }
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(settings.HeaderCtaText))
+            {
+                <a class="btn header-cta" href="@(settings.HeaderCtaLink ?? shell.BasePath + "/admission")">@settings.HeaderCtaText</a>
+            }
             <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false">Menu</button>
             <nav aria-label="Primary" data-primary-nav>
                 @foreach (var item in shell.Navigation)

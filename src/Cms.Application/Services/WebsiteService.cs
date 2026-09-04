@@ -509,6 +509,7 @@ public sealed class WebsiteService : IWebsiteService
         }, cancellationToken);
 
         var tenantId = RequireTenant();
+        await ApplySettingsAsync(tenantId, created.Id, template, cancellationToken);
         await ApplyHomeCopyAsync(tenantId, created.Id, template, dto.Name, cancellationToken);
         await ApplyPageCopyAsync(tenantId, created.Id, template, dto.Name, cancellationToken);
 
@@ -518,6 +519,38 @@ public sealed class WebsiteService : IWebsiteService
         }
 
         return (await GetWebsitesAsync(cancellationToken)).First(x => x.Id == created.Id);
+    }
+
+    /// <summary>
+    /// Writes the template's own site settings. This is what makes one template's header read
+    /// unlike another's, so it happens whether or not sample content was asked for — a school
+    /// that declines the sample people and events still wants its own header.
+    /// </summary>
+    private async Task ApplySettingsAsync(
+        Guid tenantId, Guid siteId, SiteTemplate template, CancellationToken cancellationToken)
+    {
+        if (template.Settings.Count == 0)
+        {
+            return;
+        }
+
+        var json = new JsonObject();
+        foreach (var (key, value) in template.Settings)
+        {
+            json[key] = value switch
+            {
+                null => null,
+                bool flag => JsonValue.Create(flag),
+                int number => JsonValue.Create(number),
+                _ => JsonValue.Create(value.ToString())
+            };
+        }
+
+        await _contentRepository.AddEntryAsync(
+            ContentEntry(tenantId, siteId, DTOs.SchoolContent.SchoolContentTypes.Setting,
+                DTOs.SchoolContent.SchoolContentTypes.SettingsKey,
+                "Site settings", null, null, json.ToJsonString(), null, 0),
+            cancellationToken);
     }
 
     private async Task ApplyHomeCopyAsync(

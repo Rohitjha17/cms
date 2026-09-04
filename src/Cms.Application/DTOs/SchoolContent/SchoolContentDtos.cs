@@ -276,6 +276,38 @@ public sealed class SiteSettingsDto
     public int NoticeTickerRepeat { get; set; }
 
     /// <summary>
+    /// A short label at the head of the notice strip — "NOTICE", "LATEST". Schools mark the
+    /// strip out this way so it reads as an announcement rather than as decoration.
+    /// </summary>
+    public string? NoticeLabel { get; set; }
+
+    /// <summary>Puts the phone and email in the header itself, with icons and labels.</summary>
+    public bool HeaderContact { get; set; }
+
+    /// <summary>A single call to action in the header. Empty shows none.</summary>
+    public string? HeaderCtaText { get; set; }
+
+    public string? HeaderCtaLink { get; set; }
+
+    /// <summary>
+    /// Named links for the strip above the header — the portals and standing pages a school
+    /// keeps one click away: alumni, parent portal, disclosures. One per line, "Label|/url".
+    /// </summary>
+    public string? TopBarLinks { get; set; }
+
+    /// <summary>
+    /// <see cref="TopBarLinks"/> parsed. A line with no bar is a label pointing at nothing,
+    /// which is not a link, so it is dropped rather than rendered as dead text.
+    /// </summary>
+    public IReadOnlyList<(string Label, string Url)> TopBarLinkList =>
+        (TopBarLinks ?? string.Empty)
+            .Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(line => line.Split('|', 2, StringSplitOptions.TrimEntries))
+            .Where(parts => parts.Length == 2 && parts[0].Length > 0 && parts[1].Length > 0)
+            .Select(parts => (parts[0], parts[1]))
+            .ToList();
+
+    /// <summary>
     /// Height of the header logo in pixels. Schools send crests of wildly different proportions
     /// and one fixed size flatters none of them, so the size is theirs to set. Zero keeps the
     /// design's own default.

@@ -43,6 +43,12 @@
                     <span><strong>Scroll the text across the bar</strong><small>Moves continuously, and pauses when a visitor hovers over it. Still text is easier to read — use this only when the notice matters more than the rest of the page.</small></span>
                 </label>
                 <label class="field">
+                    <span>Label</span>
+                    <input asp-for="Input.NoticeLabel" placeholder="NOTICE" />
+                    <small class="hint">A short word at the head of the strip, in the accent colour. Leave blank for none.</small>
+                </label>
+
+                <label class="field">
                     <span>Copies on the strip</span>
                     <select asp-for="Input.NoticeTickerRepeat">
                         <option value="1">One — a single copy crossing, with a gap behind it</option>
@@ -146,6 +152,20 @@
                         <option value="dark">Dark</option>
                         <option value="outline">Outline</option>
                     </select>
+                </label>
+
+                <label class="switch-row full">
+                    <input asp-for="Input.HeaderContact" type="checkbox" />
+                    <span><strong>Phone and email in the header</strong><small>Shown with icons beside the logo, as "Call us" and "Mail us". Hidden on narrow screens.</small></span>
+                </label>
+
+                <label class="field"><span>Header button</span><input asp-for="Input.HeaderCtaText" placeholder="Admission enquiry" /></label>
+                <label class="field"><span>Header button links to</span><input asp-for="Input.HeaderCtaLink" placeholder="/admission" /></label>
+
+                <label class="field full">
+                    <span>Links above the header</span>
+                    <textarea asp-for="Input.TopBarLinks" rows="4" placeholder="Alumni|/alumni&#10;Parent Portal|https://portal.example.in&#10;Mandatory Disclosure|/disclosure"></textarea>
+                    <small class="hint">One per line, as <code>Label|link</code>. Use these for portals and standing pages so the main menu stays about the school.</small>
                 </label>
 
                 <label class="switch-row full">
