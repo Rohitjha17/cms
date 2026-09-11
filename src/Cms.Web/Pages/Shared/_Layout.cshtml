@@ -8,6 +8,9 @@
         catch { shell = new PublicWebsiteDto(); }
     }
     var brand = shell.Branding;
+    // A website still holding a withdrawn design's number falls back to Prestige, so the
+    // typefaces, the body class and the home layout all agree on one design.
+    var design = Cms.Web.Helpers.DesignIdentity.Resolve(brand.HomeVariant);
     var primary = string.IsNullOrWhiteSpace(brand.PrimaryColor) ? "#0f2d5c" : brand.PrimaryColor;
     var secondary = string.IsNullOrWhiteSpace(brand.SecondaryColor) ? "#c9a227" : brand.SecondaryColor;
     var title = ViewData["Title"] as string ?? brand.Name;
@@ -81,7 +84,7 @@
     }
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    @{ var typeface = Cms.Web.Helpers.DesignIdentity.Fonts(brand.HomeVariant); }
+    @{ var typeface = Cms.Web.Helpers.DesignIdentity.Fonts(design); }
     <link href="https://fonts.googleapis.com/css2?@(typeface.Query)&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")@(buttonColor is null ? "" : $"--btn-color:{buttonColor};")@(hoverColor is null ? "" : $"--hover-color:{hoverColor};")@* Raw because a font stack contains apostrophes — 'Segoe UI' — and Razor encodes them to
@@ -89,7 +92,7 @@
        These strings come from DesignIdentity, not from anything a school can type. *@
 --font-display:@Html.Raw(typeface.Display);--font-body:@Html.Raw(typeface.Body);}</style>
 </head>
-<body class="variant-@brand.HomeVariant.ToString().ToLowerInvariant() @skin @(settings.HeroPlainImages ? "hero-plain" : null)" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
+<body class="variant-@design.ToString().ToLowerInvariant() @skin @(settings.HeroPlainImages ? "hero-plain" : null)" data-scroll-animations="@(settings.ScrollAnimations ? "on" : "off")">
     @if (!string.IsNullOrWhiteSpace(settings.NoticeTicker))
     {
         if (settings.NoticeTickerScrolls)

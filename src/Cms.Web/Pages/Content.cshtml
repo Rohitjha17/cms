@@ -1,6 +1,7 @@
 @page "/{slug}"
 @model Cms.Web.Pages.ContentModel
 @using Cms.Web.Helpers
+@using Cms.Domain.Enums
 @{
     var content = Model.ContentPage;
     JsonElement data = default;
@@ -23,7 +24,14 @@
 <article class="page-shell">
     <header class="page-hero">
         <div class="shell">
-            <p class="eyebrow">@content.PageType</p>
+            @* The eyebrow is the kind of page this is — About, Admission, Gallery. "Custom" is
+               not a kind of page; it is the absence of one, and it is our word for that rather
+               than anything a visitor came to read. A page the school built itself gets its
+               heading and nothing above it. *@
+            @if (content.PageType != PageType.Custom)
+            {
+                <p class="eyebrow">@content.PageType</p>
+            }
             <h1>@content.Title</h1>
             @if (!string.IsNullOrWhiteSpace(content.Excerpt))
             {

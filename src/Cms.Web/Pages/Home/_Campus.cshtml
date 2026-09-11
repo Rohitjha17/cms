@@ -33,7 +33,11 @@
         </ul>
         <a class="text-link" href="@(basePath)/facilities">Facilities</a>
     </article>
-    <article>
+    @* Events are laid out here, in the panel beside the highlights, but nothing on the page
+       said so — and renderedSections below tells the shared renderer they are handled. The
+       result was a section that existed, was switched on, and carried no marker of its own:
+       invisible to anything auditing what the page shows. *@
+    <article data-section="upcoming_events">
         <h2>@(events?.Title ?? "This season")</h2>
         @foreach (var item in SectionJson.GetArray(eventsJson, "items").Take(3))
         {

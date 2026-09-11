@@ -100,7 +100,7 @@ public static class DatabaseSeeder
                 Name = "Cambridge High School",
                 SiteKey = "school",
                 WebsiteType = WebsiteType.School,
-                HomeVariant = HomeVariant.Classic,
+                HomeVariant = HomeVariant.Prestige,
                 IsDefault = true,
                 IsActive = true,
                 Tagline = "Excellence in schooling since day one",
@@ -117,7 +117,7 @@ public static class DatabaseSeeder
                 Name = "Cambridge College of Arts & Science",
                 SiteKey = "college",
                 WebsiteType = WebsiteType.College,
-                HomeVariant = HomeVariant.Academic,
+                HomeVariant = HomeVariant.Atrium,
                 IsDefault = false,
                 IsActive = true,
                 Tagline = "Where ambition meets opportunity",
@@ -134,13 +134,22 @@ public static class DatabaseSeeder
         await HomePageSeed.EnsureSectionsAsync(db, DemoTenantId, DemoSchoolSiteId);
         await HomePageSeed.EnsureSectionsAsync(db, DemoTenantId, DemoCollegeSiteId);
         await SchoolWebsiteSeed.EnsureAsync(
-            db, DemoTenantId, DemoSchoolSiteId, HomeVariant.Classic,
+            db, DemoTenantId, DemoSchoolSiteId, HomeVariant.Prestige,
             "Cambridge High School", "Excellence in schooling since day one");
         await SchoolWebsiteSeed.EnsureAsync(
-            db, DemoTenantId, DemoCollegeSiteId, HomeVariant.Academic,
+            db, DemoTenantId, DemoCollegeSiteId, HomeVariant.Atrium,
             "Cambridge College of Arts & Science", "Where ambition meets opportunity");
         await SchoolContentSeed.EnsureAsync(db, DemoTenantId, DemoSchoolSiteId);
         await SchoolContentSeed.EnsureAsync(db, DemoTenantId, DemoCollegeSiteId);
+
+        // Four complete websites, one per design, with every section filled and the appearance
+        // settings spread across them. Behind its own switch rather than the demo one: the demo
+        // data is a believable new website, and these are deliberately maximal — every option
+        // turned on at once, which is right for a demonstration and wrong for a starting point.
+        if (configuration.GetValue("Seed:EnableShowcaseSites", environment.IsDevelopment()))
+        {
+            await DemoShowcaseSeed.EnsureAsync(db, DemoTenantId, logger);
+        }
 
         // Demo domains intentionally host both /school and /college portals.
         var demoDomains = await db.TenantDomains.IgnoreQueryFilters()

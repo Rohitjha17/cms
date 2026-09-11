@@ -12,7 +12,7 @@ public class Site : BaseEntity, ITenantEntity
     public string Name { get; set; } = string.Empty;
     public string SiteKey { get; set; } = string.Empty;
     public WebsiteType WebsiteType { get; set; }
-    public HomeVariant HomeVariant { get; set; } = HomeVariant.Classic;
+    public HomeVariant HomeVariant { get; set; } = HomeVariant.Prestige;
     public bool IsDefault { get; set; }
     public bool IsActive { get; set; } = true;
 

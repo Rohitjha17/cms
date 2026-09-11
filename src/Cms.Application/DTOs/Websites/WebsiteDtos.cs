@@ -79,7 +79,7 @@ public sealed class ProvisionWebsiteDto
     public string Name { get; set; } = string.Empty;
     public string SiteKey { get; set; } = string.Empty;
     public WebsiteType WebsiteType { get; set; } = WebsiteType.School;
-    public HomeVariant HomeVariant { get; set; } = HomeVariant.Classic;
+    public HomeVariant HomeVariant { get; set; } = HomeVariant.Prestige;
     public bool IsDefault { get; set; }
     public string? DomainName { get; set; }
     public string? LogoUrl { get; set; }

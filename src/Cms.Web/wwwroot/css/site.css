@@ -34,8 +34,12 @@
   --r-lg: 1.375rem;
   --r-xl: 1.875rem;
 
-  --gutter: clamp(1.25rem, 4vw, 2.5rem);
-  --section-y: clamp(3.25rem, 6.5vw, 5.5rem);
+  --gutter: clamp(1.125rem, 4vw, 2.5rem);
+  /* Both of these used to hold a floor far above what a phone needs — the section rhythm
+     never came below 52px top and bottom, so two headings on a 375px screen were 104px
+     apart and a page was mostly air. The floors are now what a phone should actually get
+     and the vw term carries the growth, so the same rule serves 360px and 1600px. */
+  --section-y: clamp(2.125rem, 5vw + 1rem, 5.5rem);
   --ease: cubic-bezier(.22, .61, .36, 1);
 
   --font-display: "Cormorant Garamond", Georgia, serif;
@@ -90,9 +94,13 @@ h1, h2, h3 {
   letter-spacing: -.015em;
   text-wrap: balance;
 }
-h1 { font-size: clamp(2.5rem, 5.4vw, 4.1rem); line-height: 1.04; letter-spacing: -.025em; }
-h2 { font-size: clamp(1.75rem, 3vw, 2.5rem); }
-h3 { font-size: clamp(1.15rem, 1.6vw, 1.35rem); font-family: var(--font-body); font-weight: 650; letter-spacing: -.01em; }
+/* The floors matter more than the ceilings. A 2.5rem h1 minimum put a 40px headline on a
+   375px screen, which is three or four words a line; the vw term never engaged because it
+   was below the floor at every phone width. Each of these now starts where a phone wants
+   it and grows on a slope that reaches the old desktop size by about 1440px. */
+h1 { font-size: clamp(1.875rem, 3.4vw + 1.05rem, 4.1rem); line-height: 1.06; letter-spacing: -.025em; }
+h2 { font-size: clamp(1.375rem, 1.7vw + .98rem, 2.5rem); }
+h3 { font-size: clamp(1.05rem, .5vw + .87rem, 1.35rem); font-family: var(--font-body); font-weight: 650; letter-spacing: -.01em; }
 
 p { margin: 0 0 1rem; color: var(--ink-soft); line-height: 1.7; }
 p:last-child { margin-bottom: 0; }
@@ -111,6 +119,8 @@ p:last-child { margin-bottom: 0; }
   font-weight: 700;
   letter-spacing: .16em;
   text-transform: uppercase;
+  /* An eyebrow is a label, and a label that wraps is no longer one. */
+  text-wrap: balance;
 }
 .eyebrow::before {
   width: 1.6rem;
@@ -126,8 +136,26 @@ p:last-child { margin-bottom: 0; }
 
 .rich-text { max-width: 46rem; }
 .rich-text h2, .rich-text h3 { margin-top: 2rem; }
-.rich-text ul, .rich-text ol { margin: 0 0 1rem; padding-left: 1.35rem; color: var(--ink-soft); }
 .rich-text li { margin-bottom: .4rem; }
+
+/* A list in prose belongs to the paragraph above it, so its markers sit just
+   inside the text rather than at the browser's default 40px — which on a 339px
+   phone column is an eighth of the width, and leaves the bullets lined up with
+   nothing on the page. .rich-text had this; every other place prose is shown
+   did not, so the same list was indented differently on the About page and on
+   the home page. */
+:is(.rich-text,
+    .section-body,
+    .message-block,
+    .panel,
+    .campus-panels article,
+    .prestige-row > *,
+    .card-grid article,
+    .split-cards article) :is(ul, ol) {
+  margin: 0 0 1rem;
+  padding-inline-start: 1.35rem;
+  color: var(--ink-soft);
+}
 .rich-text a { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
 
 /* Announcement bar --------------------------------------------------------- */
@@ -175,8 +203,10 @@ p:last-child { margin-bottom: 0; }
      hangs past the bar instead of pushing it open: a bigger crest was the ask, a fatter header
      that shoves the whole page down was not. */
   width: auto;
-  height: var(--logo-size, 46px);
-  margin-block: calc((var(--logo-size, 46px) - 46px) / -2);
+  /* Resolved once so the cap below only has to move one value. */
+  --logo-h: var(--logo-size, 46px);
+  height: var(--logo-h);
+  margin-block: calc((var(--logo-h) - 46px) / -2);
   max-width: min(220px, 40vw);
   flex: none;
   object-fit: contain;
@@ -311,8 +341,15 @@ p:last-child { margin-bottom: 0; }
   position: relative;
   display: grid;
   align-items: end;
-  min-height: min(78vh, 720px);
-  padding: 7rem 0 5rem;
+  /* A banner, not a page. At 78vh a hero took 84% of a 1440x900 laptop screen once the
+     header was counted, and nothing below it was visible — the site opened as a picture
+     with no evidence there was anything under it. The start of the next section now
+     always shows, which is what tells a visitor to scroll. */
+  min-height: min(66vh, 640px);
+  /* The ceilings are reached around 1370px, which is where a 768-tall laptop sits — so on
+     exactly that machine the hero was paying its maximum padding on its shortest screen.
+     Lower ceilings; the fluid range below them is unchanged. */
+  padding: clamp(3.5rem, 7vw + 1rem, 5.5rem) 0 clamp(2.25rem, 5vw + .75rem, 3.5rem);
   overflow: hidden;
   color: #fff;
   /* One shade, low and behind the copy only.
@@ -334,21 +371,24 @@ p:last-child { margin-bottom: 0; }
 .hero-copy p, .hero .shell p { text-shadow: 0 1px 8px rgba(7, 16, 33, .6); }
 .hero-copy, .hero .shell { position: relative; z-index: 1; max-width: 46rem; }
 .hero h1 { color: #fff; }
-.hero p { color: rgba(255, 255, 255, .88); font-size: clamp(1.05rem, 1.4vw, 1.2rem); }
+/* :not(.eyebrow), because the eyebrow in a hero is a <p> too — and this rule outranks
+   .eyebrow's own font-size, so every hero label was being set at body size with an
+   eyebrow's tracking on it. At 375px that is what pushed a one-line label onto two. */
+.hero p:not(.eyebrow) { color: rgba(255, 255, 255, .88); font-size: clamp(.95rem, .6vw + .8rem, 1.2rem); }
+.hero p.eyebrow { color: var(--accent); }
 .hero .eyebrow { color: var(--accent); }
 
-.hero-classic { }
-.hero-campus { min-height: min(70vh, 640px); }
-.hero-academic {
-  background:
-    linear-gradient(150deg, rgba(9, 20, 40, .95), rgba(28, 60, 100, .72)),
-    var(--hero, url("https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1800&q=80")) center / cover no-repeat;
-}
-.hero-prestige { align-items: center; min-height: min(84vh, 800px); }
+.hero-campus { min-height: min(64vh, 600px); }
+/* Prestige is the formal one and carries a framed panel, so it keeps a little more height
+   than the rest — but not a screenful more. */
+.hero-prestige { align-items: center; min-height: min(70vh, 680px); }
 
 .prestige-frame {
   max-width: 46rem;
-  padding: clamp(1.75rem, 4vw, 3rem);
+  /* 48px of inset on every side of the panel is generous on a wide screen and is the
+     difference between the next section peeking above the fold and not, on a 1366x768
+     laptop. The fluid range below the ceiling is unchanged. */
+  padding: clamp(1.5rem, 4vw, 2.5rem);
   background: rgba(10, 16, 28, .42);
   border: 1px solid rgba(255, 255, 255, .22);
   border-radius: var(--r-lg);
@@ -356,39 +396,6 @@ p:last-child { margin-bottom: 0; }
 }
 
 /* Modern variant: light, split hero */
-.hero-modern {
-  min-height: auto;
-  padding: clamp(2.5rem, 5vw, 4rem) 0 1rem;
-  color: var(--ink);
-  background: none;
-}
-.hero-modern::after { display: none; }
-.hero-modern h1 { color: var(--ink); }
-.hero-modern p { color: var(--ink-soft); }
-.modern-grid {
-  display: grid;
-  grid-template-columns: 1.02fr .98fr;
-  gap: clamp(1.5rem, 3vw, 2.75rem);
-  align-items: center;
-}
-.modern-media {
-  position: relative;
-  min-height: 440px;
-  background-size: cover;
-  background-position: center;
-  border-radius: var(--r-xl);
-  box-shadow: var(--shadow-lg);
-}
-.modern-media::after {
-  position: absolute;
-  inset: auto 1.25rem 1.25rem auto;
-  width: 40%;
-  height: 26%;
-  border: 2px solid color-mix(in srgb, var(--accent) 78%, transparent);
-  border-radius: var(--r-md);
-  content: "";
-}
-
 /* Statistics band ---------------------------------------------------------- */
 
 .stats-grid {
@@ -398,7 +405,7 @@ p:last-child { margin-bottom: 0; }
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   width: min(clamp(1200px, 88vw, 1520px), calc(100% - var(--gutter) * 2));
-  margin: -2.75rem auto 0;
+  margin-inline: auto;
   overflow: hidden;
   background: var(--line);
   border: 1px solid var(--line);
@@ -420,9 +427,117 @@ p:last-child { margin-bottom: 0; }
 
 /* Sections ----------------------------------------------------------------- */
 
-.section, .page-body { padding: var(--section-y) 0; }
-.section.muted { background: var(--surface-soft); border-block: 1px solid var(--line); }
-.section-head { max-width: 42rem; margin-bottom: 2rem; }
+/* --- How much room a section gets ------------------------------------------
+   Every section used to take a whole rhythm unit above it and another below, so
+   two of them put two units between their content no matter what was in them: a
+   gallery and a one-line "Director's message" were separated by the same gap,
+   and the message section was more air than message.
+
+   Two changes. A section pays half the gap and its neighbour pays the other
+   half, so adjacent sections share one unit instead of stacking two. And the
+   unit is scaled by what the section actually holds, because that is what the
+   gap has to separate — pictures need to stand clear of the text around them, a
+   grid of cards needs less, prose less again, and a heading with nothing under
+   it needs almost none.
+
+   The two variables stay separate on purpose. --rhythm is the design's own
+   measure, which is why Bulletin is tighter than Atrium; --weight is what this
+   particular section contains. Setting them separately means a design can be
+   airier without flattening the difference between its full sections and its
+   empty ones, which is what a single padding value on .section could not do. */
+
+:is(.section,
+    .campus-panels, .prestige-row, .split-cards,
+    .bulletin-welcome, .atrium-statement, .atrium-pillars, .atrium-wall,
+    .stats-grid) {
+  --weight: 1;
+  padding-block: calc(var(--rhythm, var(--section-y)) * var(--weight) / 2);
+}
+
+/* Three of the design blocks are coloured bands, and a band's padding has to sit
+   on the element the colour is painted on — the inner shell — or the colour ends
+   at the text. Same measure, one level down. */
+.bulletin-figures > .shell,
+.bulletin-cta > .shell,
+.atrium-message > .shell {
+  padding-block: calc(var(--rhythm, var(--section-y)) * var(--weight, 1) / 2);
+}
+
+/* Each design lays part of its page out in blocks of its own rather than in a
+   plain .section, and those carried fixed padding — so a design could look tidy
+   through its .section runs and still have a 128px band sitting in the middle of
+   them. They are on the same measure now. These weights are written rather than
+   detected because, unlike a .section, what each block holds is fixed by the
+   design: a wall is always pictures, a figures strip is always figures, a call
+   to action is always a line and a button. */
+.atrium-wall { --weight: 1.15; }
+.atrium-statement,
+.bulletin-welcome { --weight: .8; }
+.bulletin-cta { --weight: .5; }
+
+/* Prose under a heading: less than a grid needs, more than a label. */
+.section:has(> .section-body),
+.section:has(> .message-block) { --weight: .8; }
+
+/* Pictures and film. A photograph butted close to a paragraph reads as an
+   illustration of that paragraph, so a section built around one is the only
+   kind that gets more than the standard measure rather than less. */
+.section:has(> .gallery-grid),
+.section:has(> .section-image),
+.section:has(> .video-grid),
+.section:has(> .map),
+.section:has(> figure) { --weight: 1.15; }
+
+/* A heading and a button, or a heading and nothing at all: the section is a
+   label, and should cost about what a label costs. Last, and most specific, so
+   it wins over the rules above — a section with no body is a section with no
+   body whatever else it was going to be classed as. */
+.section:has(> .section-head:last-child),
+.section:has(> .section-head + .section-more:last-child) { --weight: .5; }
+
+/* A section-head with nothing under it is not introducing anything. */
+.section > .section-head:last-child { margin-bottom: 0; }
+
+/* --- Where the heading sits --------------------------------------------------
+   Three of the designs centre their section headings. Over a grid of cards or a
+   wall of pictures that reads as intended: the block underneath is symmetric, so
+   a centred heading sits on its axis. Over a paragraph it does not — body copy
+   ranges left, and a centred heading above it shares no edge with anything, which
+   is the misalignment you see rather than a centred heading.
+
+   So the heading follows what it introduces. Prose takes the heading with it;
+   grids, galleries and tables leave it where the design put it. */
+.section:has(> .section-body) > .section-head,
+.section:has(> .message-block) > .section-head,
+.section:has(> .rich-text) > .section-head {
+  margin-inline: 0;
+  text-align: start;
+}
+.section:has(> .section-body) > .section-head .eyebrow,
+.section:has(> .message-block) > .section-head .eyebrow,
+.section:has(> .rich-text) > .section-head .eyebrow { justify-content: flex-start; }
+
+/* A section that has both — a picture and the prose beside it — keeps the prose
+   rule: the text is what the reader is aligning to. */
+.section:has(> .section-body) > .section-head p,
+.section:has(> .message-block) > .section-head p { margin-inline: 0; }
+
+/* A band with its own background needs its edges to clear the content inside
+   it, so it keeps the full measure on both sides rather than half. */
+.section.muted {
+  padding-block: calc(var(--rhythm, var(--section-y)) * var(--weight));
+  background: var(--surface-soft);
+  border-block: 1px solid var(--line);
+}
+.section-head { max-width: 42rem; margin-bottom: clamp(1.15rem, 2.4vw, 2rem); }
+.section-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  max-height: 380px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+}
 .section-head p { margin-top: .5rem; }
 
 /* Shared card surface. Borders carry the structure; shadow only on lift. */
@@ -432,7 +547,6 @@ p:last-child { margin-bottom: 0; }
 .message-list article,
 .person-card,
 .campus-panels article,
-.academic-columns article,
 .people-card,
 .news-item,
 .event-card,
@@ -447,7 +561,6 @@ p:last-child { margin-bottom: 0; }
 .card-grid article,
 .message-list article,
 .campus-panels article,
-.academic-columns article,
 .people-card,
 .news-item,
 .event-card {
@@ -458,28 +571,31 @@ p:last-child { margin-bottom: 0; }
 .news-item:hover,
 .event-card:hover,
 .campus-panels article:hover,
-.academic-columns article:hover {
-  transform: translateY(-2px);
-  border-color: var(--line-strong);
-  box-shadow: var(--shadow-md);
-}
-
 .panel { padding: clamp(1.4rem, 2.5vw, 2rem); }
 
-.campus-panels, .academic-columns, .prestige-row, .split-cards, .card-grid, .contact-layout {
+.campus-panels,
+.prestige-row,
+.split-cards,
+.card-grid,
+.contact-layout {
   display: grid;
   gap: 1.25rem;
 }
-.campus-panels, .academic-columns, .prestige-row, .split-cards {
+.campus-panels,
+.prestige-row,
+.split-cards {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   width: min(clamp(1200px, 88vw, 1520px), calc(100% - var(--gutter) * 2));
-  margin: 2rem auto;
+  margin-inline: auto;
 }
+
+/* Only under the banner. The overlap is what makes the figures read as part of the
+   hero; anywhere else in the page it is the band climbing into whatever is above it. */
+.hero + .stats-grid { margin-top: -2.75rem; }
 
 /* These blocks self-centre when used at page level (home variants). Inside a
    .shell they must not centre again, or they indent away from the body text. */
 .shell .campus-panels,
-.shell .academic-columns,
 .shell .prestige-row,
 .shell .split-cards,
 .shell .cta-band,
@@ -488,7 +604,6 @@ p:last-child { margin-bottom: 0; }
   margin-inline: 0;
 }
 .campus-panels article,
-.academic-columns article,
 .prestige-row > *,
 .split-cards article,
 .card-grid article,
@@ -500,7 +615,6 @@ p:last-child { margin-bottom: 0; }
 /* Headings inside a card are subheads, not section titles. */
 .split-cards article h2,
 .campus-panels article h2,
-.academic-columns article h2,
 .panel h2,
 .message-list article h2 {
   font-size: clamp(1.2rem, 1.7vw, 1.45rem);
@@ -563,7 +677,28 @@ p:last-child { margin-bottom: 0; }
 .page-hero h1 { font-size: clamp(2rem, 3.6vw, 3rem); }
 .page-hero .lede { margin-top: .5rem; }
 .page-body { padding: clamp(2.25rem, 4vw, 3.25rem) 0 var(--section-y); }
-.page-body > * + * { margin-top: 2rem; }
+
+/* An inner page runs on margins between its blocks rather than padding inside
+   them, so a block that also belongs to the page-level rhythm drops its padding
+   here and takes the margin instead — otherwise it pays both and a gallery on
+   the About page sits twice as far down as the same gallery on the home page.
+
+   Named rather than "every child": a .panel draws a box and its padding is the
+   inside of that box, not page rhythm, so taking it away would close the box up
+   on its own text. */
+.page-body > :is(.section, .campus-panels, .prestige-row, .split-cards, .stats-grid) {
+  padding-block: 0;
+}
+
+/* And the margin is chosen by what comes next, on the same reasoning as the home
+   page: a paragraph following a paragraph needs a line's worth of separation, a
+   block of cards needs to be clearly its own thing, and a picture needs to clear
+   the text above it or it reads as an illustration of that sentence. */
+.page-body > * + * { margin-top: calc(var(--section-y) * .6); }
+.page-body > * + :is(.gallery-block, .split-cards, .card-grid, .contact-layout,
+                     .steps, .disclosure-table, .message-list, .panel, .people-block,
+                     .event-list, .table-scroll) { margin-top: calc(var(--section-y) * .85); }
+.page-body > * + :is(figure, img, .section-image, iframe, video) { margin-top: var(--section-y); }
 
 /* Admission steps ---------------------------------------------------------- */
 
@@ -851,8 +986,6 @@ p:last-child { margin-bottom: 0; }
 
 /* Variant accents ---------------------------------------------------------- */
 
-body.variant-academic .eyebrow { color: color-mix(in srgb, var(--accent) 80%, #fff); }
-
 /* Responsive --------------------------------------------------------------- */
 
 @media (max-width: 1000px) {
@@ -869,12 +1002,16 @@ body.variant-academic .eyebrow { color: color-mix(in srgb, var(--accent) 80%, #f
   .site-header nav a { padding: .7rem .25rem; border-bottom: 1px solid var(--line); }
   .site-header nav a::after { display: none; }
 
-  .modern-grid, .campus-panels, .academic-columns, .prestige-row,
-  .split-cards, .contact-layout, .contact-form, .footer-grid {
+  .campus-panels,
+  .prestige-row,
+  .split-cards,
+  .contact-layout,
+  .contact-form,
+  .footer-grid {
     grid-template-columns: 1fr;
   }
-  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: -1.5rem; }
-  .modern-media { min-height: 300px; }
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero + .stats-grid { margin-top: -1.5rem; }
 }
 
 @media (max-width: 720px) {
@@ -942,7 +1079,11 @@ body.variant-academic .eyebrow { color: color-mix(in srgb, var(--accent) 80%, #f
 
 /* Images fade in rather than snapping, which hides decode jank on slow connections. */
 img { opacity: 1; }
-.card-grid img, .news-item img, .people-card img, .gallery-grid img, .article-image, .modern-media {
+.card-grid img,
+.news-item img,
+.people-card img,
+.gallery-grid img,
+.article-image {
   transition: opacity .4s var(--ease);
 }
 .card-grid img:not(.is-loaded), .news-item img:not(.is-loaded),
@@ -1031,23 +1172,21 @@ body.nav-locked { overflow: hidden; }
 }
 
 @media (max-width: 560px) {
-  :root { --section-y: 2.5rem; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .stats-grid .stat { padding: 1.15rem .75rem; }
-  .cta-row { flex-direction: column; align-items: stretch; }
-  .cta-row .btn { width: 100%; }
   .people-grid { grid-template-columns: 1fr 1fr; }
   .people-card { padding: 1.1rem .85rem; }
   .people-card img, .people-card__initial { width: 68px; height: 68px; }
   .disclosure-table th, .disclosure-table td { padding: .75rem .8rem; font-size: .88rem; }
-  .to-top { width: 42px; height: 42px; }
+  .to-top { width: 44px; height: 44px; }
 }
 
 /* Touch devices get no hover lift — it sticks after tapping ------------------ */
 
 @media (hover: none) {
   .card-grid article:hover, .people-card:hover, .news-item:hover,
-  .event-card:hover, .campus-panels article:hover, .academic-columns article:hover {
+.event-card:hover,
+.campus-panels article:hover {
     transform: none;
     box-shadow: var(--shadow-xs);
   }
@@ -1101,6 +1240,13 @@ body.nav-locked { overflow: hidden; }
 .hero-slides__nav svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
 .hero-slides__nav--prev { left: clamp(10px, 3vw, 28px); }
 .hero-slides__nav--next { right: clamp(10px, 3vw, 28px); }
+/* The hit area, not the bar. Inset horizontally by half the 8px gap so neighbouring
+   targets meet without overlapping, and 20px top and bottom for a 44px-tall target. */
+.hero-slides__dots button::before {
+  position: absolute;
+  inset: -20px -4px;
+  content: "";
+}
 .hero-slides__dots {
   position: absolute;
   bottom: 22px;
@@ -1111,6 +1257,7 @@ body.nav-locked { overflow: hidden; }
   transform: translateX(-50%);
 }
 .hero-slides__dots button {
+  position: relative;
   width: 26px;
   height: 4px;
   padding: 0;
@@ -1747,26 +1894,11 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
    Design identities.
 
    Until now every variant shared one typeface pairing, one card shape and one
-   spacing rhythm, so five templates were the same page with the blocks in a
+   spacing rhythm, so the templates were the same page with the blocks in a
    different order — which is exactly how they read. Type comes from the
    layout, which loads only the families the chosen design needs; the rest is
    here. Each block changes shape, density and colour weighting, not just hue.
    =========================================================================== */
-
-/* --- Modern: sharp, tight, high contrast ---------------------------------- */
-
-.variant-modern {
-  --r-xs: 0;
-  --r-sm: 0;
-  --r-md: 0;
-}
-.variant-modern h1,
-.variant-modern h2 { letter-spacing: -.03em; text-transform: uppercase; }
-.variant-modern .eyebrow { letter-spacing: .22em; }
-.variant-modern .btn { text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
-.variant-modern :is(.card-grid > article, .news-item, .people-card, .event-card) {
-  border-left: 3px solid var(--brand);
-}
 
 /* --- Campus: soft, warm, generous ----------------------------------------- */
 
@@ -1784,23 +1916,6 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   box-shadow: 0 10px 30px rgba(60, 40, 20, .09);
 }
 .variant-campus img { border-radius: 1rem; }
-
-/* --- Academic: bookish, restrained, ruled --------------------------------- */
-
-.variant-academic {
-  --r-xs: 2px;
-  --r-sm: 2px;
-  --r-md: 2px;
-}
-.variant-academic h1,
-.variant-academic h2 { font-weight: 400; letter-spacing: 0; }
-.variant-academic .section-head { border-bottom: 1px solid var(--line); padding-bottom: .9rem; }
-.variant-academic :is(.card-grid > article, .news-item, .people-card, .event-card) {
-  border: 1px solid var(--line);
-  box-shadow: none;
-  background: transparent;
-}
-.variant-academic .btn { box-shadow: none; }
 
 /* --- Prestige: formal, spaced, gold --------------------------------------- */
 
@@ -1838,7 +1953,7 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 }
 .variant-bulletin h1 { letter-spacing: .01em; text-transform: uppercase; }
 .variant-bulletin h2 { font-size: clamp(1.3rem, 2.2vw, 1.7rem); text-transform: uppercase; letter-spacing: .02em; }
-.variant-bulletin .section { padding-block: clamp(1.75rem, 3vw, 2.5rem); }
+.variant-bulletin { --rhythm: clamp(1.5rem, 3vw + .6rem, 3.25rem); }
 .variant-bulletin .btn { border-radius: 3px; text-transform: uppercase; letter-spacing: .05em; }
 
 .bulletin-pillars > .shell {
@@ -1856,7 +1971,6 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
   gap: clamp(1.5rem, 4vw, 3rem);
-  padding-block: clamp(2rem, 4vw, 3rem);
 }
 @media (max-width: 860px) { .bulletin-welcome { grid-template-columns: 1fr; } }
 
@@ -1880,7 +1994,6 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 .bulletin-figures > .shell {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  padding-block: 1.4rem;
   text-align: center;
 }
 .bulletin-figures strong { display: block; font-family: var(--font-display); font-size: 1.9rem; }
@@ -1893,7 +2006,6 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-block: 1.6rem;
 }
 .bulletin-cta h2 { margin: 0 0 .25rem; }
 .bulletin-cta p { margin: 0; color: var(--muted); }
@@ -1909,7 +2021,7 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 .variant-atrium .eyebrow { letter-spacing: .28em; font-weight: 400; }
 .variant-atrium .btn { border-radius: 0; font-weight: 400; letter-spacing: .08em; }
 
-.atrium-statement { padding-block: clamp(4rem, 10vw, 8rem); text-align: center; }
+.atrium-statement { text-align: center; }
 .atrium-statement .section-body { max-width: 62ch; margin-inline: auto; font-size: 1.08rem; }
 
 .atrium-message > .shell {
@@ -1917,11 +2029,24 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
   align-items: center;
   gap: clamp(2rem, 6vw, 5rem);
-  padding-block: clamp(3rem, 8vw, 6rem);
 }
-@media (max-width: 820px) { .atrium-message > .shell { grid-template-columns: 1fr; } }
+@media (max-width: 820px) {
+  /* Stacked, the portrait's column is the full width of the page — and a 4:5 ratio then
+     makes it 707x883, a whole tablet screen of one face. It keeps a portrait's size and
+     sits above the quote, which is what the two columns were doing side by side. */
+  .atrium-message > .shell { grid-template-columns: 1fr; }
+  .atrium-message figure { max-width: 320px; }
+}
 .atrium-message figure { margin: 0; }
-.atrium-message img { width: 100%; height: auto; display: block; }
+/* Atrium gives the principal a full-height portrait on purpose — it is the design's
+   one big photograph. Cropped rather than left at whatever shape the school uploaded,
+   so a tall picture does not make the row twice the height of the quote beside it. */
+.atrium-message img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
 .atrium-message blockquote {
   margin: .5rem 0 1.2rem;
   font-family: var(--font-display);
@@ -1932,7 +2057,6 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 .atrium-message__by strong { display: block; }
 .atrium-message__by span { color: var(--muted); font-size: .9rem; }
 
-.atrium-pillars { padding-block: clamp(3rem, 7vw, 6rem); }
 .atrium-pillars ol { margin: 2rem 0 0; padding: 0; list-style: none; counter-reset: pillar; }
 .atrium-pillars li {
   counter-increment: pillar;
@@ -1959,7 +2083,7 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 .atrium-pillars h3 { margin: 0 0 .4rem; font-family: var(--font-display); font-size: 1.4rem; font-weight: 500; }
 .atrium-pillars p { margin: 0; max-width: 60ch; color: var(--muted); }
 
-.atrium-wall { padding-block: clamp(3rem, 7vw, 6rem) 0; }
+.atrium-wall { padding-bottom: 0; }
 .atrium-wall__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -1975,6 +2099,18 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
    and cannot be searched with the browser's own find.
    =========================================================================== */
 
+.table-scroll,
+.disclosure-table table,
+.custom-html table {
+  /* A sideways-scrolling table with no affordance reads as a table whose last column has
+     been cut off. The fade on the right edge is what says there is more, and it is painted
+     only while there is: scroll to the end and it goes. */
+  background:
+    linear-gradient(to right, var(--surface) 30%, transparent) left / 28px 100% no-repeat local,
+    linear-gradient(to left, var(--surface) 30%, transparent) right / 28px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(19, 27, 43, .16), transparent) left / 12px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgba(19, 27, 43, .16), transparent) right / 12px 100% no-repeat scroll;
+}
 .table-scroll { overflow-x: auto; }
 .table-scroll table {
   width: 100%;
@@ -2016,8 +2152,12 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   gap: clamp(1.5rem, 5vw, 4rem);
 }
 @media (max-width: 760px) { .crest-section { grid-template-columns: 1fr; } }
-.crest-section__mark { margin: 0; }
-.crest-section__mark img { width: 100%; height: auto; }
+.crest-section__mark { margin: 0; max-width: 220px; }
+.crest-section__mark img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
 .crest-section .motto {
   font-family: var(--font-display);
   font-size: 1.25rem;
@@ -2079,12 +2219,59 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 
 .founder-section {
   display: grid;
-  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
   gap: clamp(1.5rem, 5vw, 4rem);
   align-items: start;
 }
 @media (max-width: 820px) { .founder-section { grid-template-columns: 1fr; } }
-.founder-section__who img { width: 100%; height: auto; border-radius: var(--r-sm); margin-bottom: 1rem; }
+/* --- Leadership portraits ---------------------------------------------------
+   The principal's, chairman's, director's and manager's messages each carry a
+   photograph, and nothing here sized it: the only rule that reached it was the
+   blanket "img { max-width: 100% }", so the portrait took the full width of the
+   section and stood as tall as its own aspect ratio made it — a head-and-
+   shoulders shot the size of the message it was meant to illustrate.
+
+   A portrait sits beside its words at the size a portrait wants: square, capped,
+   and cropped to the face rather than letterboxed. Below the point where two
+   columns stop fitting it goes above the text and keeps the same size. */
+
+.message-block {
+  display: grid;
+  grid-template-columns: minmax(0, 156px) minmax(0, 1fr);
+  gap: clamp(1.1rem, 3vw, 2rem);
+  align-items: start;
+}
+.message-block:not(:has(> .message-portrait)) { grid-template-columns: minmax(0, 1fr); }
+/* Two classes deep on purpose. "​.page-body img" and "​.section img" are both more
+   specific than a lone class, so a bare .message-portrait cap loses the cascade — which
+   is what left the four portraits on the Messages page at the full width of the column
+   and, with a square aspect ratio, as tall as the page was wide. */
+.message-block .message-portrait,
+.message-list .message-portrait {
+  width: 100%;
+  max-width: 156px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--r-md);
+}
+@media (max-width: 560px) {
+  .message-block { grid-template-columns: minmax(0, 96px) minmax(0, 1fr); gap: 1rem; }
+}
+
+/* The founder's portrait is the one place a larger picture is the point, but a
+   320px column at a portrait aspect is still 400px of face. Cropped and capped. */
+/* The cap goes on the wrapper, not the picture. "​.section img { max-width: 100% }" is a
+   more specific selector than anything that names this image, so capping the image itself
+   lost the cascade — which only showed on Bulletin, where the section is its own two-column
+   grid and the founder's column is the full width of the page: a 1128px portrait. */
+.founder-section__who { max-width: 260px; }
+.founder-section__who img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  margin-bottom: 1rem;
+}
 .founder-name { margin: 0; font-weight: 700; }
 .founder-dates { margin: .1rem 0 1rem; color: var(--muted); font-size: .9rem; }
 
@@ -2175,7 +2362,17 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   border-top: 2px solid var(--line);
 }
 .variant-bulletin .section > * { grid-column: 2; }
-.variant-bulletin .section-head { grid-column: 1; grid-row: 1 / span 20; text-align: left; }
+/* Row 1, not "rows 1 to 20". Spanning twenty rows does not reserve twenty rows of
+   nothing — it creates them, and every one of the nineteen gaps between them is real:
+   19 × 24px of empty space inside every section, which is why a principal's message
+   with a portrait and four lines of text stood 711px tall. The heading sits at the top
+   of its column, which is where it was being drawn anyway. */
+.variant-bulletin .section-head {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  text-align: left;
+}
 
 /* The same fault, and the same fix. */
 @media (max-width: 860px) {
@@ -2214,7 +2411,7 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 .variant-atrium .site-header nav { justify-content: center; flex-wrap: wrap; gap: .2rem 1.4rem; }
 .variant-atrium .site-header nav a { font-size: .82rem; letter-spacing: .12em; text-transform: uppercase; }
 
-.variant-atrium .section { padding-block: clamp(3.5rem, 8vw, 7rem); }
+.variant-atrium { --rhythm: clamp(2.75rem, 6vw + 1.25rem, 7rem); }
 .variant-atrium .section-head { text-align: center; margin-bottom: 2.5rem; }
 .variant-atrium .section-head p { max-width: 58ch; margin-inline: auto; }
 .variant-atrium .section-body { max-width: 64ch; margin-inline: auto; }
@@ -2236,11 +2433,6 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 
 /* --- Modern: left-ruled, two up, nothing centred ---------------------------- */
 
-.variant-modern .site-header { border-bottom-width: 3px; border-bottom-color: var(--brand); }
-.variant-modern .site-header nav a { text-transform: uppercase; font-size: .8rem; letter-spacing: .06em; }
-.variant-modern .section-head { text-align: left; border-left: 4px solid var(--brand); padding-left: 1rem; }
-.variant-modern .card-grid { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-
 /* --- Campus: rounded, three up, centred heads ------------------------------- */
 
 .variant-campus .site-header nav a { border-radius: 999px; padding-inline: .9rem; }
@@ -2252,34 +2444,12 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 
 /* --- Academic: ruled columns, dense, nothing rounded ------------------------ */
 
-.variant-academic .site-header nav a { font-size: .84rem; font-variant: small-caps; letter-spacing: .04em; }
-.variant-academic .section {
-  display: grid;
-  grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
-  gap: 1rem 2.5rem;
-  align-items: start;
-}
-.variant-academic .section > * { grid-column: 2; }
-.variant-academic .section-head { grid-column: 1; grid-row: 1 / span 20; border-bottom: 0; border-right: 1px solid var(--line); padding-right: 1.5rem; }
-
 /* On a phone the two columns become one. Setting the template alone was not enough: every
    child is pinned to column 2, and a child pinned to a column the template does not have makes
    the browser invent one — so the section stayed two columns wide and ran 136px off the side of
    a 390px screen. The children have to come back to column 1 with it. */
 @media (max-width: 820px) {
-  .variant-academic .section { grid-template-columns: 1fr; }
-  .variant-academic .section > *,
-  .variant-academic .section-head { grid-column: 1; }
-  .variant-academic .section-head {
-    grid-row: auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    padding-right: 0;
-  }
 }
-.variant-academic .card-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1px; background: var(--line); }
-.variant-academic .card-grid > article { background: var(--surface); padding: 1rem; border: 0; }
-
 /* --- Prestige: centred, spaced, a rule under every heading ------------------ */
 
 .variant-prestige .site-header .shell { justify-content: center; gap: 2rem; }
@@ -2542,20 +2712,15 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 
 .brand img { position: relative; z-index: 2; }
 
-/* A crest on a disc, a crest in a panel, or the artwork on its own — the school chooses. The
-   first two carry the header's colour down over the banner; "original" leaves the drawing
-   exactly as it was made, which is right for a crest that already has its own outline. */
-.logo-rounded .brand img,
-.logo-square .brand img {
-  padding: .7rem;
-  background: var(--surface);
-  box-shadow: 0 14px 30px -14px rgba(8, 17, 31, .5);
-}
+/* A round crop, a square-cornered crop, or the artwork untouched — the school chooses.
+   These used to draw the crest on a white disc with a shadow under it, which reads as a
+   frame put around the school's own artwork rather than as a shape choice, and looked
+   like a border nobody had asked for. The shape is now the shape, and nothing else. */
 .logo-rounded .brand img { border-radius: 50%; }
 .logo-square .brand img { border-radius: var(--r-sm, 10px); }
 @media (max-width: 700px) {
   .logo-rounded .brand img,
-  .logo-square .brand img { box-shadow: none; padding: 0; border-radius: 0; }
+  .logo-square .brand img { border-radius: 0; }
 }
 @media (max-width: 700px) {
   /* Too little header to hang from, and a crest over the banner on a phone covers the banner. */
@@ -2647,7 +2812,6 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
   display: flex;
   flex-wrap: wrap;
   gap: 1rem 2.5rem;
-  margin: 0 0 1.5rem;
   padding: 1rem 1.25rem;
   list-style: none;
   background: var(--surface-2, #f4f5f7);
@@ -2713,3 +2877,244 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 
 .title-align-center .page-hero .lede { margin-inline: auto; }
 .title-align-right  .page-hero .lede { margin-inline: auto 0; }
+
+/* ===========================================================================
+   Small screens.
+
+   Last in the sheet on purpose. The design identities above are written for a
+   wide window — a heading column beside its section, a hero with room to
+   breathe, tracking measured in whole ems — and several of them hold enough
+   specificity that a media query earlier in the file would lose to them. This
+   block is the one place to look for what a phone or a tablet actually gets,
+   for all four designs, rather than the rules being scattered through each
+   design's own section.
+
+   Each rule here answers something that is wrong on a narrow screen, not a
+   preference: copy that runs off the side, tracking that turns a one-line
+   label into three, a crest sized for a desktop header, or a gap that was
+   generous at 1400px and absurd at 375px.
+   =========================================================================== */
+
+/* --- Wherever the menu button is shown ------------------------------------- */
+
+/* The menu button appears below 1000px. Bulletin and Atrium lay their header out as
+   a grid with named areas, and neither names one for the button — nor for the enquiry
+   button, which is itself only hidden below 700px. Both were auto-placed into implicit
+   rows of their own, which is why those two headers stood 104px, 108px and 139px tall
+   at various widths with a single word on the bottom row. Three cells on the brand's
+   row; the enquiry column collapses to nothing at the widths where it is hidden. */
+@media (max-width: 1000px) {
+  /* One header for all four, rather than a grid for the two designs that named areas
+     and the flex default for the other two. The default wrapped: the brand is a flex
+     item that takes the width it is offered, so on a 375px screen it took all 339px of
+     it and pushed the menu button onto a second row — a 148px header on Prestige and
+     128px on Campus with one word on the bottom line. Each design's own header rule is
+     listed so this wins over it; Prestige's, for one, centres the row and sets a 2rem
+     gap, which is right at 1400px and is most of the reason the button did not fit. */
+  .site-header .shell,
+  .variant-prestige .site-header .shell,
+  .variant-campus .site-header .shell,
+  .variant-bulletin .site-header .shell,
+  .variant-atrium .site-header .shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas: "brand cta toggle" "nav nav nav";
+    align-items: center;
+    /* Not justify-items: start. A grid item aligned to the start is sized to its own
+       content rather than stretched to its track, so the brand grew to the full width of
+       an un-wrapped school name and ran out under the enquiry button — "Riverstone
+       International School" printed underneath "Request the prospectus". Stretched, it
+       is the width of its track and its name wraps inside it. */
+    justify-items: stretch;
+    gap: 0 .6rem;
+  }
+  .brand { grid-area: brand; min-width: 0; }
+  /* Wrapping beats ellipsis for a name: two lines of "Riverstone International School"
+     is a school's name, and "Riverstone International Sch…" is not. */
+  .brand strong { white-space: normal; }
+  .header-cta { grid-area: cta; }
+  .nav-toggle { grid-area: toggle; }
+  .site-header nav { grid-area: nav; }
+
+  /* Its nav is a horizontal scroller; let it reach the edges of the screen rather
+     than sitting inside the gutter with its last item cut off. */
+  .variant-bulletin .site-header nav {
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+  }
+
+  .variant-atrium .site-header .shell { padding-block: .85rem; }
+  .variant-atrium .brand { flex-direction: row; text-align: left; }
+  .variant-atrium .site-header nav { justify-content: flex-start; }
+
+  /* A crest height set in the console is an instruction for the desktop header. At
+     150px — which the console allows — it hangs 52px past a 46px bar at every width,
+     and on anything narrower than a laptop that is the crest sitting over the top of
+     the banner. Bring it down, and let it sit in the bar rather than over it. */
+  .brand img { --logo-h: min(var(--logo-size, 46px), 72px); margin-block: 0; }
+
+  /* A hero taking four fifths of a tablet screen is a page you have to scroll
+     past before the site starts. */
+  .hero { min-height: min(66vh, 560px); }
+  .hero-prestige, .hero-campus { min-height: min(66vh, 560px); }
+}
+
+/* --- Tablet and below ------------------------------------------------------ */
+
+@media (max-width: 900px) {
+  /* A design that puts the section heading in its own column has nowhere to put
+     it once the window is narrower than the two columns together. Prestige and
+     Atrium centre their headings, which reads as indecision at this width. */
+  .variant-atrium .section-head,
+  .variant-campus .section-head,
+  .variant-prestige .section-head { margin-inline: 0; text-align: left; }
+  .variant-prestige .section-head h2::after { margin-inline: 0; }
+  .variant-atrium .section-head .eyebrow,
+  .variant-campus .section-head .eyebrow,
+  .variant-prestige .section-head .eyebrow { justify-content: flex-start; }
+  .variant-campus .section-head p { margin-inline: 0; max-width: none; }
+  .variant-atrium .section-head p,
+  .variant-atrium .section-body { margin-inline: 0; max-width: none; }
+
+  /* Four figures across a tablet leaves each one too narrow to read. */
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* --- Phones ---------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  /* The console sets the crest height for the desktop header. Honoured literally
+     on a phone, a 120px crest is a third of the screen and pushes the name and
+     the menu button onto separate rows. Cap it, and drop the negative margin
+     that only exists to stop a tall crest fattening a wide header. */
+  .brand img { --logo-h: min(var(--logo-size, 46px), 52px); margin-block: 0; max-width: 44vw; }
+  /* The name wraps rather than truncating: ellipsing a school's own name on its own
+     website is worse than a taller bar, and clamping it to two lines — which is what was
+     here — simply cut the third line off "Riverstone International School" on every page
+     of that site. The header is allowed to be as tall as the name needs. */
+  .brand strong { font-size: clamp(.95rem, 3.6vw, 1.2rem); white-space: normal; }
+  .brand small { font-size: .72rem; white-space: normal; }
+  .site-header .shell { gap: .75rem; min-height: 60px; padding-block: .65rem; }
+
+  /* Tracking is a fraction of the font size, so the designs that set it widest
+     are the ones that break first: "HERITAGE · CHARACTER · AMBITION" at .34em
+     is half again the width of the screen. */
+  .eyebrow { letter-spacing: .1em; gap: .35rem; }
+  /* The rule before the label is 1.6rem wide plus its gap — 32px, better than a
+     tenth of the screen, spent on a dash that is deciding whether the label wraps. */
+  .eyebrow::before { width: .9rem; }
+  .variant-prestige .eyebrow,
+  .variant-atrium .eyebrow { letter-spacing: .1em; }
+
+  /* The frame insets the hero copy by 28px on top of the page's own 18px gutter,
+     which on a 375px screen is a quarter of the width gone before the headline. */
+  .prestige-frame { padding: 1.25rem 1.15rem; }
+
+  /* The hero is a banner, not a page. Two thirds of the screen is enough for
+     one on a phone, and the picture still reads at that height. */
+  .hero { min-height: min(64vh, 440px); padding: clamp(2.5rem, 12vw, 4rem) 0 clamp(1.75rem, 7vw, 2.5rem); }
+  .hero-prestige, .hero-campus { min-height: min(64vh, 440px); }
+
+  /* Buttons on their own line each, full width, rather than two half-width ones
+     with a word wrapped inside each. */
+  .cta-row { flex-direction: column; align-items: stretch; gap: .6rem; }
+  .cta-row .btn { width: 100%; justify-content: center; }
+
+  /* A card grid at this width is one column whatever its minmax says; saying so
+     stops a 210px minimum from forcing two columns of four-character words.
+     People and statistics keep their pairs — a face and a figure both read small. */
+  .card-grid,
+  .facility-list { grid-template-columns: 1fr; }
+
+  /* Atrium is built on air. At 375px that air is most of what there is, so it
+     keeps more room than the other three and much less than it takes at 1440px.
+     Its four named blocks each carry their own padding with a 3rem or 4rem floor,
+     so setting .section alone left the statement band at 64px top and bottom. */
+  .variant-atrium .section-head { margin-bottom: 1.35rem; }
+  .variant-atrium .card-grid { gap: 1.75rem; }
+  .variant-atrium h1 { font-size: clamp(1.9rem, 8.5vw, 2.6rem); }
+  .variant-atrium h2 { font-size: clamp(1.4rem, 6vw, 1.8rem); }
+  .atrium-pillars ol { margin-top: 1.25rem; }
+  /* Centred prose is ragged on both edges. Over a 40-character line that is a
+     flourish; over the six lines this becomes on a phone it is work to read. The
+     whole block ranges left, or the heading and its rule sit centred above copy
+     that does not, which reads as two blocks rather than one. */
+  .atrium-statement { text-align: left; }
+  .atrium-statement .section-body { margin-inline: 0; font-size: 1rem; }
+
+  /* Campus rounds everything generously; at this width the radius eats the
+     content's own padding. */
+  .variant-campus .btn { padding-inline: 1.35rem; }
+
+  .table-scroll table { font-size: .9rem; }
+  .table-scroll :is(th, td) { padding: .6rem .7rem; }
+  .contact-meta__label { font-size: .78rem; }
+
+  .section-head { margin-bottom: 1rem; }
+  .variant-prestige .section-head,
+  .variant-campus .section-head { margin-bottom: 1rem; }
+  .page-body { padding-block: var(--section-y); }
+}
+
+/* --- Short screens ----------------------------------------------------------
+   A 1366x768 laptop is a wide screen and a short one, and every rule above reads
+   width. On that machine the header and the banner together took the whole of the
+   first screen — worst on Atrium, whose header is 206px by design: crest, name and
+   tagline centred, then a centred menu under them.
+
+   Keyed on height, so nothing here touches a tall monitor at the same width, and
+   held to laptops and up so it never reaches a phone. It buys back about forty
+   pixels, which is the difference between the page appearing to end at the banner
+   and showing that it does not. */
+
+@media (min-width: 1000px) and (max-height: 820px) {
+  .hero { padding-block: clamp(3.5rem, 7vw + 1rem, 4rem) clamp(2rem, 5vw, 2.75rem); }
+  .hero-prestige { min-height: min(64vh, 560px); }
+  .variant-atrium .site-header .shell { padding-block: .9rem; }
+  .variant-atrium .site-header nav { gap: .15rem 1.15rem; }
+  .variant-atrium .brand { gap: .2rem; }
+}
+
+/* --- Touch, at any width ---------------------------------------------------
+   Not a width query. A tablet held in two hands is pointed at with a thumb exactly as a
+   phone is, and a 36px button is as awkward on one as on the other — scoping this to a
+   phone breakpoint fixed it at 375px and left it broken at 768px. A mouse-driven window
+   at the same width does not need the controls grown, and does not get them. */
+
+@media (pointer: coarse) {
+  /* About 44px is what a thumb needs. The links keep their position: the padding is
+     absorbed by a matching negative margin, so the target grows and the layout does not. */
+  .btn, .contact-form button, .nav-toggle { min-height: 44px; }
+  .text-link, .section-more a:not(.btn) {
+    min-height: 44px;
+    padding-block: .55rem;
+    margin-block: -.55rem;
+  }
+  .text-link { margin-top: calc(1rem - .55rem); }
+
+  /* The smallest text on the site, and both sit on pages a parent actually reads: the
+     category chip on News at 11px, and the month under an event date at 10.7px. The
+     tracking is what marks these out as labels; the size was only making them hard. */
+  .tag { font-size: .76rem; padding-inline: .55rem; }
+  .event-card__date span { font-size: .74rem; }
+}
+
+/* --- Narrow phones --------------------------------------------------------- */
+
+@media (max-width: 380px) {
+  .brand small { display: none; }
+  .eyebrow { letter-spacing: .08em; }
+}
+
+/* --- Anything wide inside content scrolls itself --------------------------- */
+
+/* A school pastes a fee table or a timetable into a page and it is wider than a
+   phone. Without this the whole document scrolls sideways and every section is
+   misaligned by the width of the widest table on the page. */
+.page-body table:not(.table-scroll *):not(.custom-html *) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.page-body img, .section img { max-width: 100%; height: auto; }
+.page-body pre, .section pre { max-width: 100%; overflow-x: auto; }

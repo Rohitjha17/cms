@@ -19,7 +19,7 @@
     var galleryJson = SectionJson.Parse(gallery?.JsonData);
 
     var banner = brand.HeaderImageUrl
-        ?? "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1800&q=80";
+        ?? "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1800&q=80";
     var heading = SectionJson.GetString(heroJson, "heading") ?? hero?.Title ?? brand.Name;
     var description = SectionJson.GetString(heroJson, "description")
         ?? RichText.ToPlainText(hero?.Description) ?? brand.Tagline;

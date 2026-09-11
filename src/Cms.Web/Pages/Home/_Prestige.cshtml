@@ -33,7 +33,7 @@
             }
         </cite>
     </blockquote>
-    <div>
+    <div data-section="testimonials">
         <h2>@(testimonials?.Title ?? "Voices from our community")</h2>
         @foreach (var item in SectionJson.GetArray(testimonialsJson, "items").Take(2))
         {
@@ -45,7 +45,7 @@
 </section>
 @if (achievements is not null)
 {
-    <section data-section="testimonials" class="shell section">
+    <section data-section="achievements" class="shell section">
         <h2>@achievements.Title</h2>
         <div class="card-grid">
             @foreach (var item in SectionJson.GetArray(achievementsJson, "items"))

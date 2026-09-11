@@ -144,7 +144,7 @@ public sealed class IndexModel : PageModel, IReloadablePage
                 Name = x.Name?.Trim() ?? string.Empty,
                 SiteKey = x.SiteKey?.Trim().ToLowerInvariant() ?? string.Empty,
                 WebsiteType = string.IsNullOrWhiteSpace(x.WebsiteType) ? "School" : x.WebsiteType.Trim(),
-                HomeVariant = string.IsNullOrWhiteSpace(x.HomeVariant) ? "Classic" : x.HomeVariant.Trim(),
+                HomeVariant = string.IsNullOrWhiteSpace(x.HomeVariant) ? "Prestige" : x.HomeVariant.Trim(),
                 IsDefault = x.IsDefault,
                 IsActive = x.IsActive
             })
@@ -163,7 +163,7 @@ public sealed class IndexModel : PageModel, IReloadablePage
             Input.Sites.Add(new TenantSiteInputDto
             {
                 WebsiteType = nameof(WebsiteType.School),
-                HomeVariant = nameof(HomeVariant.Classic),
+                HomeVariant = nameof(HomeVariant.Prestige),
                 IsActive = true,
                 IsDefault = Input.Sites.Count == 0
             });

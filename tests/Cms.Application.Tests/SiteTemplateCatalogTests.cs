@@ -134,7 +134,7 @@ public sealed class SiteTemplateCatalogTests
     [Fact]
     public void Find_IsCaseInsensitiveAndReturnsNullForUnknown()
     {
-        Assert.NotNull(SiteTemplateCatalog.Find("HERITAGE-DAY-SCHOOL"));
+        Assert.NotNull(SiteTemplateCatalog.Find("PRESTIGE-INSTITUTION"));
         Assert.Null(SiteTemplateCatalog.Find("no-such-template"));
     }
 }

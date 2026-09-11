@@ -80,7 +80,7 @@ public static class PlatformSeed
                 Name = tenant.Name,
                 SiteKey = PlatformSiteKey,
                 WebsiteType = WebsiteType.Other,
-                HomeVariant = HomeVariant.Classic,
+                HomeVariant = HomeVariant.Prestige,
                 IsDefault = true,
                 IsActive = true,
                 Tagline = "Platform administration",

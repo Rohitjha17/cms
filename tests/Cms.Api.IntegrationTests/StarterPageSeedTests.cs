@@ -26,7 +26,7 @@ public sealed class StarterPageSeedTests : IClassFixture<PublicWebFactory>
     {
         var (db, tenantId, siteId) = await ArrangeAsync();
 
-        await SchoolWebsiteSeed.EnsureAsync(db, tenantId, siteId, HomeVariant.Classic, "Test", "Tagline");
+        await SchoolWebsiteSeed.EnsureAsync(db, tenantId, siteId, HomeVariant.Prestige, "Test", "Tagline");
 
         var pages = await db.Pages.IgnoreQueryFilters().Where(x => x.SiteId == siteId).CountAsync();
         Assert.True(pages > 0, "a brand new website should be given its starter pages");
@@ -37,7 +37,7 @@ public sealed class StarterPageSeedTests : IClassFixture<PublicWebFactory>
     {
         var (db, tenantId, siteId) = await ArrangeAsync();
 
-        await SchoolWebsiteSeed.EnsureAsync(db, tenantId, siteId, HomeVariant.Classic, "Test", "Tagline");
+        await SchoolWebsiteSeed.EnsureAsync(db, tenantId, siteId, HomeVariant.Prestige, "Test", "Tagline");
 
         var doomed = await db.Pages.IgnoreQueryFilters().FirstAsync(x => x.SiteId == siteId);
         var slug = doomed.Slug;
@@ -45,7 +45,7 @@ public sealed class StarterPageSeedTests : IClassFixture<PublicWebFactory>
         await db.SaveChangesAsync();
 
         // The application restarts, and the seeder runs again.
-        await SchoolWebsiteSeed.EnsureAsync(db, tenantId, siteId, HomeVariant.Classic, "Test", "Tagline");
+        await SchoolWebsiteSeed.EnsureAsync(db, tenantId, siteId, HomeVariant.Prestige, "Test", "Tagline");
 
         var slugs = await db.Pages.IgnoreQueryFilters()
             .Where(x => x.SiteId == siteId).Select(x => x.Slug).ToListAsync();

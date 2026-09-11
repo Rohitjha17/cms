@@ -175,20 +175,21 @@ there.
 | **Map embed URL** | The map on the contact page | See section 14.6 for how to get one. |
 | **Social links JSON** | Footer and contact page | Prefer setting these in **Site settings** instead. |
 
-### 3.1 The seven designs
+### 3.1 The four designs
 
 Changing this changes the layout only. Every word, picture and section stays
 exactly where it was. You can switch back immediately if you dislike it.
 
 | Design | What it looks like | Suits |
 |---|---|---|
-| **Classic** | Wide photo banner, a strip of numbers, welcome, gallery | Most schools |
-| **Modern** | Banner photo beside the headline, then course cards | Schools with strong photography |
+| **Prestige** | Centred framed banner with a leadership quote | Heritage institutions; the default for a new website |
 | **Campus** | Tall banner, large facility panels underneath | Big campuses |
-| **Academic** | Results-led banner, numbers and department columns | Colleges, senior schools |
-| **Prestige** | Centred framed banner with a leadership quote | Heritage institutions |
 | **Bulletin** | Dense and practical — notices beside the welcome, tight headings | Schools publishing circulars and timetables |
 | **Atrium** | Spacious and editorial — big type, full-size principal's portrait, a wall of photographs | Schools whose site reads like a prospectus |
+
+Three older designs — Classic, Modern and Academic — were withdrawn. Websites
+that had chosen one were moved to Prestige, Campus and Atrium respectively, and
+nothing on those sites changed but the layout.
 
 **Try this:** switch design, look at the public site, switch back if you don't
 like it. It costs you nothing and takes ten seconds.

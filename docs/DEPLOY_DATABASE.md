@@ -15,6 +15,55 @@ So every time a release adds a database change, one of these has to happen:
 
 ---
 
+## Pending: RetireLegacyHomeVariants (11 September 2026)
+
+Withdraws three home designs — Classic, Modern and Academic — leaving Prestige,
+Campus, Bulletin and Atrium. No column is added or dropped; the script moves
+every website that had chosen a withdrawn design onto the nearest surviving one:
+
+| Was | Becomes |
+| --- | --- |
+| Classic | Prestige |
+| Modern | Campus |
+| Academic | Atrium |
+
+**Symptom if it is missing:** those websites keep a design number the
+application no longer has, so the public home page falls back to Prestige and
+the console's Design list shows nothing selected — the school appears to have
+lost its choice rather than to have been moved.
+
+### Option A — run the script (recommended)
+
+1. **Back up the database first.**
+2. Open `docs/sql/2026-09-11-RetireLegacyHomeVariants.sql` in SQL Server
+   Management Studio, connected to the CMS database.
+3. Run it.
+
+The script is idempotent: it checks whether the migration has already been
+applied and does nothing if it has. It changes `Sites.HomeVariant` and nothing
+else — no column, page or content is altered or removed. Note that it **does**
+change data, so the backup matters more here than for a column addition.
+
+### Checking it worked
+
+```sql
+SELECT [HomeVariant], COUNT(*) FROM [Sites] GROUP BY [HomeVariant];
+```
+
+Only 3, 5, 6 and 7 should appear. Or:
+
+```sql
+SELECT MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId;
+```
+
+`20260911071500_RetireLegacyHomeVariants` should be the last row.
+
+Option B below applies to this script too — with
+`Database:ApplyMigrationsOnStartup` on, the application runs it on its next
+start.
+
+---
+
 ## Pending: PageCustomHtml (4 September 2026)
 
 Adds one column, `Pages.UseCustomHtml`, for the switch that lets a school build

@@ -2,10 +2,7 @@ namespace Cms.Domain.Constants;
 
 public static class PageTemplateKeys
 {
-    public const string HomeClassic = "home-classic";
-    public const string HomeModern = "home-modern";
     public const string HomeCampus = "home-campus";
-    public const string HomeAcademic = "home-academic";
     public const string HomePrestige = "home-prestige";
     public const string About = "about";
     public const string Admission = "admission";

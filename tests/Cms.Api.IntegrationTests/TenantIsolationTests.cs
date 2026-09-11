@@ -62,7 +62,7 @@ public sealed class TenantIsolationTests : IClassFixture<CmsApiFactory>, IAsyncL
             Name = "Rival Academy",
             SiteKey = "school",
             WebsiteType = WebsiteType.School,
-            HomeVariant = HomeVariant.Modern,
+            HomeVariant = HomeVariant.Campus,
             IsDefault = true,
             IsActive = true,
             CreatedDate = DateTime.UtcNow,

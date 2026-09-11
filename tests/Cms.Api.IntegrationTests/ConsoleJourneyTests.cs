@@ -28,7 +28,7 @@ public sealed class ConsoleJourneyTests : IClassFixture<AdminFactory>
     {
         await PostFormAsync("/CMS/Templates/Index", new Dictionary<string, string>
         {
-            ["Input.TemplateKey"] = "metro-modern-school",
+            ["Input.TemplateKey"] = "residential-campus",
             ["Input.Name"] = "Riverside Public School",
             ["Input.SiteKey"] = "riverside-public",
             ["Input.IncludeSampleContent"] = "true"

@@ -91,7 +91,7 @@ public sealed class TenantManagementService : ITenantManagementService
             site.WebsiteType = Enum.Parse<WebsiteType>(input.WebsiteType, true);
             site.HomeVariant = Enum.TryParse<HomeVariant>(input.HomeVariant, true, out var variant)
                 ? variant
-                : HomeVariant.Classic;
+                : HomeVariant.Prestige;
             site.IsDefault = input.IsDefault;
             site.IsActive = input.IsActive;
         }

@@ -32,7 +32,7 @@ public class IndexModel : PageModel
 
     public string SchoolName { get; private set; } = "Your website";
     public string TenantName { get; private set; } = "Workspace";
-    public string HomeVariant { get; private set; } = "Classic";
+    public string HomeVariant { get; private set; } = "Prestige";
     public string? Tagline { get; private set; }
     public int PageCount { get; private set; }
     public int PublishedPageCount { get; private set; }

@@ -182,17 +182,18 @@ change aa chuka hoga.
 | **Map embed URL** | Contact page ka map | Kaise nikale — 13.8 dekho |
 | **Social links JSON** | Footer aur contact page | Iski jagah **Site settings** me bharna behtar hai |
 
-### 3.1 Saat design
+### 3.1 Chaar design
 
 | Design | Kaisa dikhta hai | Kiske liye |
 |---|---|---|
-| **Classic** | Chaudi photo banner, numbers ki patti, welcome, gallery | Zyadatar school |
-| **Modern** | Photo heading ke bagal me, phir course cards | Achhi photography wale |
+| **Prestige** | Beech me framed banner, leadership quote | Purane naamwale institution; nayi website ka default |
 | **Campus** | Lamba banner, neeche badi facility panels | Bade campus |
-| **Academic** | Result-wala banner, numbers, department columns | College, senior school |
-| **Prestige** | Beech me framed banner, leadership quote | Purane naamwale institution |
 | **Bulletin** | Bhara-bhara aur kaam ka — notice welcome ke bagal me | Circular aur timetable roz daalne wale |
 | **Atrium** | Khula-khula, badi type, principal ki poori photo, photo wall | Jinki site prospectus jaisi lage |
+
+Teen purane design — Classic, Modern aur Academic — hata diye gaye hain. Jin
+websites par ye lage the unhe kramash: Prestige, Campus aur Atrium par shift kar
+diya gaya; layout ke alawa un sites par kuch nahi badla.
 
 **Try karke dekho:** design badlo → live site dekho → pasand na aaye to wapas
 badal do. 10 second ka kaam hai, kuch nuksaan nahi.

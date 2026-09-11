@@ -109,11 +109,21 @@
                 var person = SectionJson.GetString(json, "personName");
                 var role = SectionJson.GetString(json, "designation");
                 var quote = SectionJson.GetString(json, "quote");
+                // A school that has switched this section on but not yet written the message
+                // was getting the empty block anyway — a heading with a blank space under it,
+                // and the spacing of a section with something in it. Draw it when there is
+                // something to draw.
+                var hasMessage = !string.IsNullOrWhiteSpace(block.ImageUrl)
+                    || !string.IsNullOrWhiteSpace(quote)
+                    || !string.IsNullOrWhiteSpace(block.Description)
+                    || !string.IsNullOrWhiteSpace(person);
                 <section data-section="@block.SectionKey" class="shell section message-section">
                     <div class="section-head">
                         <p class="eyebrow">@(role ?? block.Title)</p>
                         <h2>@(block.Title ?? role)</h2>
                     </div>
+                    @if (hasMessage)
+                    {
                     <div class="message-block">
                         @if (!string.IsNullOrWhiteSpace(block.ImageUrl))
                         {
@@ -128,6 +138,7 @@
                             }
                         </div>
                     </div>
+                    }
                 </section>
             }
             break;

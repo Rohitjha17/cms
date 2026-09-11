@@ -274,8 +274,8 @@ public sealed class AdminConsoleTests : IClassFixture<AdminFactory>
 
         foreach (var name in new[]
                  {
-                     "Heritage Day School", "Metro Modern School", "Residential Campus",
-                     "Degree College", "Prestige Institution"
+                     "Prestige Institution", "Residential Campus",
+                     "Notice Board School", "Campus Prospectus"
                  })
         {
             Assert.Contains(name, html);

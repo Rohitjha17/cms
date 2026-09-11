@@ -28,7 +28,7 @@ public sealed class IndexModel : PageModel, IReloadablePage
     public ProvisionWebsiteDto Input { get; set; } = new()
     {
         WebsiteType = WebsiteType.School,
-        HomeVariant = HomeVariant.Classic,
+        HomeVariant = HomeVariant.Prestige,
         TemplateKeys = PageTemplateKeys.StarterPages.ToList()
     };
 

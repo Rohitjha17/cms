@@ -112,31 +112,24 @@
     </style>
 }
 
-@if (brand.HomeVariant == HomeVariant.Bulletin)
+@{
+    // Resolve once: a website still holding a withdrawn design's number falls back to
+    // Prestige here, the same way the layout picks its typefaces and body class.
+    var design = Cms.Web.Helpers.DesignIdentity.Resolve(brand.HomeVariant);
+}
+@if (design == HomeVariant.Bulletin)
 {
     <partial name="Home/_Bulletin" model="Model.Website" />
 }
-else if (brand.HomeVariant == HomeVariant.Atrium)
+else if (design == HomeVariant.Atrium)
 {
     <partial name="Home/_Atrium" model="Model.Website" />
 }
-else if (brand.HomeVariant == HomeVariant.Modern)
-{
-    <partial name="Home/_Modern" model="Model.Website" />
-}
-else if (brand.HomeVariant == HomeVariant.Campus)
+else if (design == HomeVariant.Campus)
 {
     <partial name="Home/_Campus" model="Model.Website" />
 }
-else if (brand.HomeVariant == HomeVariant.Academic)
-{
-    <partial name="Home/_Academic" model="Model.Website" />
-}
-else if (brand.HomeVariant == HomeVariant.Prestige)
-{
-    <partial name="Home/_Prestige" model="Model.Website" />
-}
 else
 {
-    <partial name="Home/_Classic" model="Model.Website" />
+    <partial name="Home/_Prestige" model="Model.Website" />
 }

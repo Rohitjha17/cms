@@ -55,7 +55,7 @@ public sealed class PublicRoutingTests : IClassFixture<PublicWebFactory>, IAsync
             Name = DedicatedBrand,
             SiteKey = DedicatedSiteKey,
             WebsiteType = WebsiteType.School,
-            HomeVariant = HomeVariant.Modern,
+            HomeVariant = HomeVariant.Campus,
             IsDefault = false,
             IsActive = true,
             CreatedDate = DateTime.UtcNow,
@@ -73,11 +73,18 @@ public sealed class PublicRoutingTests : IClassFixture<PublicWebFactory>, IAsync
             CreatedBy = "test"
         });
         // A website provisioned through the console always gets the standard page set; the
-        // fixture mirrors that so the crawl exercises a realistic site.
+        // fixture mirrors that so the crawl exercises a realistic site. It has to be the whole
+        // set: a home design links to the pages it expects to be there, and a fixture holding
+        // three of the eight fails the crawl on the design's links rather than on a fault.
         db.Pages.AddRange(
             NewPage(tenantId, siteId, PageType.About, "About us", "about", 1),
             NewPage(tenantId, siteId, PageType.Admission, "Admission", "admission", 2),
-            NewPage(tenantId, siteId, PageType.Contact, "Contact", "contact", 3));
+            NewPage(tenantId, siteId, PageType.Facilities, "Facilities", "facilities", 3),
+            NewPage(tenantId, siteId, PageType.Messages, "Messages", "messages", 4),
+            NewPage(tenantId, siteId, PageType.Gallery, "Gallery", "gallery", 5),
+            NewPage(tenantId, siteId, PageType.Disclosure, "Disclosure", "disclosure", 6),
+            NewPage(tenantId, siteId, PageType.Committee, "Committee", "committee", 7),
+            NewPage(tenantId, siteId, PageType.Contact, "Contact", "contact", 8));
 
         await db.SaveChangesAsync();
     }
@@ -432,7 +439,7 @@ public sealed class ForwardedPrefixTests : IClassFixture<ProxiedWebFactory>, IAs
             Name = SchoolBrand,
             SiteKey = "noida-campus",
             WebsiteType = WebsiteType.School,
-            HomeVariant = HomeVariant.Modern,
+            HomeVariant = HomeVariant.Campus,
             IsActive = true,
             CreatedDate = DateTime.UtcNow,
             CreatedBy = "test"
@@ -451,7 +458,12 @@ public sealed class ForwardedPrefixTests : IClassFixture<ProxiedWebFactory>, IAs
         db.Pages.AddRange(
             NewSchoolPage(tenantId, siteId, PageType.About, "About us", "about", 1),
             NewSchoolPage(tenantId, siteId, PageType.Admission, "Admission", "admission", 2),
-            NewSchoolPage(tenantId, siteId, PageType.Contact, "Contact", "contact", 3));
+            NewSchoolPage(tenantId, siteId, PageType.Facilities, "Facilities", "facilities", 3),
+            NewSchoolPage(tenantId, siteId, PageType.Messages, "Messages", "messages", 4),
+            NewSchoolPage(tenantId, siteId, PageType.Gallery, "Gallery", "gallery", 5),
+            NewSchoolPage(tenantId, siteId, PageType.Disclosure, "Disclosure", "disclosure", 6),
+            NewSchoolPage(tenantId, siteId, PageType.Committee, "Committee", "committee", 7),
+            NewSchoolPage(tenantId, siteId, PageType.Contact, "Contact", "contact", 8));
 
         await db.SaveChangesAsync();
     }

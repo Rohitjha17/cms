@@ -174,17 +174,25 @@
 
   var stillness = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  // Where the banner is finished artwork the hero is the picture, so the picture has to fill
-  // it — the whole width of the page, with nothing trimmed off the edges.
+  // Where the banner is finished artwork the hero is the picture, so the picture is shown
+  // whole — nothing trimmed off any edge.
   //
   // Doing that in CSS with aspect-ratio and a height cap does not work: a max-height on a box
   // that has a ratio is transferred back through the ratio into a max-width, so capping the
   // height silently narrowed the hero and left a bare strip down the side of the page. The
-  // height is therefore set here, from the picture itself: the full width of the hero at the
-  // picture's own proportions, and never taller than the window. A landscape banner — which is
-  // what a school's banner is — comes in well under that and is shown entire, edge to edge,
-  // with nothing cut off. The ceiling is only there so a square or portrait picture cannot open
-  // a hero several screens deep, and only that case is ever cropped.
+  // size is therefore set here, from the picture itself.
+  //
+  // The ceiling used to be the whole window, which meant the banner could take the entire
+  // first screen: header, banner, and nothing else until you scrolled. It is a banner, not a
+  // page. Two thirds of the window now, so the start of whatever follows is always visible and
+  // the page reads as having more to it.
+  //
+  // The banner stays the full width of the page whatever its proportions. Narrowing it to
+  // avoid cropping was tried and is worse: it leaves the hero's own dark backing showing down
+  // both sides of the picture, which reads as a border drawn around the banner rather than as
+  // a banner. A landscape picture — which is what a school's banner is — still comes in under
+  // the ceiling and is shown entire; only a square or portrait one is cropped, and edge to
+  // edge with the top and middle kept is the better of the two bad options for those.
   var plain = document.body.classList.contains("hero-plain");
 
   function fitHero(carousel, slide) {
@@ -198,9 +206,10 @@
       if (!(probe.naturalWidth > 0) || !(probe.naturalHeight > 0)) return;
 
       var width = carousel.getBoundingClientRect().width;
-      var ceiling = window.innerHeight;
-      carousel.style.height =
-        Math.round(Math.min(width * probe.naturalHeight / probe.naturalWidth, ceiling)) + "px";
+      var ratio = probe.naturalHeight / probe.naturalWidth;
+      var ceiling = Math.min(window.innerHeight * 0.66, 620);
+
+      carousel.style.height = Math.round(Math.min(width * ratio, ceiling)) + "px";
     };
     probe.src = source[1];
   }
@@ -710,8 +719,24 @@
     // ...and far enough that the top of it is never above the top of the header, which a crest
     // taller than a single-row bar otherwise is: it pokes up out of the page.
     var clear = bar.top + 8 - badge.top;
+    var travel = Math.max(hang, clear);
 
-    crest.style.transform = "translateY(" + Math.round(Math.max(hang, clear)) + "px)";
+    // A menu on a row of its own is inside the header, so hanging to the bottom of the header
+    // means hanging straight through it. Two of the designs publish --crest-space and start
+    // their menu to the right of the crest; the other two do not, and their crest was landing
+    // on "Home" and "About us". Rather than teach each design separately, stop short of any
+    // menu row the crest would actually pass over — measured, so a design that solves it
+    // another way is unaffected.
+    var nav = header.querySelector("nav");
+    if (nav && nav.offsetParent !== null) {
+      var menu = nav.getBoundingClientRect();
+      var sideBySide = menu.right < badge.left || menu.left > badge.right;
+      if (!sideBySide && menu.top >= badge.bottom - 1) {
+        travel = Math.min(travel, menu.top - 6 - badge.bottom);
+      }
+    }
+
+    crest.style.transform = "translateY(" + Math.round(Math.max(travel, 0)) + "px)";
     // The width of the crest plus a gap, so a menu row that starts after it clears it rather
     // than touching it. Published as one number because the gap belongs to the measurement,
     // not to whichever rule happens to use it.
