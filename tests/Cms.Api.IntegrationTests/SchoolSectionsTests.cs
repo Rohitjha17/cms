@@ -385,6 +385,40 @@ public sealed class SchoolSectionsTests : IClassFixture<PublicWebFactory>
         Assert.Contains("https://www.google.com/maps/embed?pb=EXAMPLE", html);
     }
 
+    /// <summary>
+    /// The crest sits beside its own reading, and the block owns its layout.
+    ///
+    /// It used to be laid out by the section itself, so it inherited whichever grid the design
+    /// imposed. Bulletin puts every child of a section in its second column — so the crest and
+    /// the words stacked on top of one another with the first column left empty, and on a
+    /// narrow screen the whole block collapsed to a ribbon of text a word wide.
+    /// </summary>
+    [Fact]
+    public async Task TheCrest_KeepsItsOwnLayoutWhateverTheDesign()
+    {
+        await SaveSectionAsync(HomePageSectionKeys.Crest, "We Learn To Serve", new
+        {
+            intro = "Our motto reflects concern about others.",
+            items = new object[]
+            {
+                new { symbol = "The book", meaning = "Signifies learning", iconUrl = "/uploads/book.png" },
+                new { symbol = "The tree", meaning = "Signifies rootedness in integrity" }
+            }
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        // The inner block is what carries the layout; the section only places it.
+        Assert.Contains("crest-section__inner", html);
+        Assert.Contains("crest-layout", html);
+        Assert.Contains("The book", html);
+        Assert.Contains("Signifies learning", html);
+
+        // A supplied pictogram is used; a row without one still gets its badge.
+        Assert.Contains("/uploads/book.png", html);
+        Assert.Equal(2, System.Text.RegularExpressions.Regex.Matches(html, "crest-badge").Count);
+    }
+
     // ---------------------------------------------------------------- helpers
 
     private async Task SaveSectionAsync(string key, string title, object json)

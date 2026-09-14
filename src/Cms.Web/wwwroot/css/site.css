@@ -2161,36 +2161,62 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 
 /* --- Crest ---------------------------------------------------------------- */
 
-.crest-section {
+/* The motto over the top, the crest beside its own reading underneath. The grid is on the
+   inner element, so a design can place this block but cannot take it apart. */
+.crest-section__inner { display: grid; gap: clamp(1.25rem, 3vw, 2rem); }
+
+.crest-section__head { max-width: 56rem; margin-inline: auto; text-align: center; }
+.crest-section__head .eyebrow { justify-content: center; }
+.crest-section .motto {
+  margin: .4rem 0 0;
+  color: var(--muted);
+  font-size: .84rem;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: .1em;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+
+.crest-layout {
   display: grid;
-  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
-  align-items: start;
+  grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+  align-items: center;
   gap: clamp(1.5rem, 5vw, 4rem);
 }
-@media (max-width: 760px) { .crest-section { grid-template-columns: 1fr; } }
-.crest-section__mark { margin: 0; max-width: 220px; }
-.crest-section__mark img {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: contain;
+.crest-layout:not(:has(> .crest-section__mark)) { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 760px) {
+  .crest-layout { grid-template-columns: 1fr; justify-items: center; text-align: start; }
 }
-.crest-section .motto {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-style: italic;
-  color: var(--brand);
-}
-.crest-meanings { margin: 0; display: grid; gap: .9rem; }
-.crest-meanings > div {
+
+.crest-section__mark { margin: 0; width: 100%; max-width: 260px; }
+.crest-section__mark img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+
+/* One symbol per line, its badge beside it — read in order, which is the point of a crest. */
+.crest-meanings { margin: 0; padding: 0; list-style: none; display: grid; gap: 1.1rem; }
+.crest-meanings li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; align-items: start; }
+.crest-badge {
   display: grid;
-  grid-template-columns: minmax(0, 9rem) minmax(0, 1fr);
-  gap: 1rem;
-  padding-bottom: .9rem;
-  border-bottom: 1px solid var(--line);
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: var(--brand);
+  border-radius: 50%;
+  overflow: hidden;
 }
-@media (max-width: 560px) { .crest-meanings > div { grid-template-columns: 1fr; gap: .2rem; } }
-.crest-meanings dt { font-weight: 700; color: var(--accent); }
-.crest-meanings dd { margin: 0; color: var(--muted); }
+.crest-badge img { width: 60%; height: 60%; object-fit: contain; }
+/* No picture supplied: a plain mark, so the row still reads as one of a set. */
+.crest-badge:empty::after,
+.crest-badge:not(:has(img))::after {
+  width: 12px;
+  height: 12px;
+  background: var(--surface);
+  border-radius: 50%;
+  content: "";
+}
+.crest-meanings__text { display: grid; gap: .15rem; }
+.crest-meanings__text strong { color: var(--ink); }
+.crest-meanings__text span { color: var(--muted); }
 
 /* --- Alumni --------------------------------------------------------------- */
 
@@ -3231,3 +3257,11 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 .prestige-voice blockquote { margin: 0; font-family: var(--font-display); font-size: 1.1rem; }
 .prestige-voice figcaption { color: var(--muted); font-size: .92rem; }
 .prestige-voice figcaption strong { color: var(--ink); }
+
+/* The crest block owns the full width of its section and its own heading.
+   Written to out-rank the per-design section rules, which range every heading left and put
+   every child in a second column — the empty first column is what left this block starting a
+   quarter of the way across the page with nothing beside it. */
+.crest-section > .crest-section__inner { grid-column: 1 / -1; }
+.crest-section > .crest-section__inner > .crest-section__head { text-align: center; }
+.crest-section > .crest-section__inner > .crest-section__head .eyebrow { justify-content: center; }

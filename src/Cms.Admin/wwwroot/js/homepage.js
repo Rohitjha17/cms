@@ -273,7 +273,9 @@
     achievements: [["title", "Achievement"], ["year", "Year"], ["description", "Description"], ["imageUrl", "Image URL"]],
     partners: [["name", "Partner name"], ["logoUrl", "Logo URL"], ["url", "Website URL"]],
     timings: [["wing", "Wing or class range"], ["summer", "First term hours"], ["winter", "Second term hours"]],
-    crest: [["symbol", "Symbol"], ["meaning", "What it stands for"]],
+    // The icon is optional: supply one per symbol and the badges become the school's own
+    // pictograms, leave them blank and each row keeps a plain mark.
+    crest: [["symbol", "Symbol"], ["meaning", "What it stands for"], ["iconUrl", "Icon image URL (optional)"]],
     alumni: [["name", "Name"], ["role", "What they do now"], ["batch", "Class of"], ["imageUrl", "Portrait URL"]],
     staff_list: [["name", "Name"], ["designation", "Designation"], ["qualification", "Qualification"]],
     facilities: [["title", "Facility"], ["description", "Description"], ["imageUrl", "Photograph URL"]],

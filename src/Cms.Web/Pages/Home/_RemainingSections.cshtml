@@ -333,25 +333,44 @@
         case "crest":
             @* A school explains what it stands for by reading its own crest. Each symbol is a
                line, and the whole point is that they are read in order. *@
+            @* The crest beside its own reading, with the motto over the top of both.
+
+               The layout lives on an inner element rather than on the section itself. As a
+               section it inherited whichever grid the design imposes — and Bulletin's puts
+               every child in its second column, so the crest and the words stacked on top of
+               one another with the first column left empty, and on a narrow screen the whole
+               thing collapsed to a 78px ribbon of text a word wide. A design can place this
+               block; it cannot reach inside it. *@
             <section data-section="@block.SectionKey" class="shell section crest-section">
-                @if (!string.IsNullOrWhiteSpace(block.ImageUrl))
-                {
-                    <figure class="crest-section__mark"><img src="@block.ImageUrl" alt="@(block.Title ?? "School crest")" loading="lazy" /></figure>
-                }
-                <div>
-                    <div class="section-head">
+                <div class="crest-section__inner">
+                    <div class="section-head crest-section__head">
                         <h2>@(block.Title ?? "Our crest")</h2>
                         @if (!string.IsNullOrWhiteSpace(intro)) { <p class="motto">@intro</p> }
                     </div>
-                    <dl class="crest-meanings">
-                        @foreach (var symbol in items)
+                    <div class="crest-layout">
+                        @if (!string.IsNullOrWhiteSpace(block.ImageUrl))
                         {
-                            <div>
-                                <dt>@SectionJson.Item(symbol, "symbol")</dt>
-                                <dd>@SectionJson.Item(symbol, "meaning")</dd>
-                            </div>
+                            <figure class="crest-section__mark"><img src="@block.ImageUrl" alt="@(block.Title ?? "School crest")" loading="lazy" /></figure>
                         }
-                    </dl>
+                        <ul class="crest-meanings">
+                            @foreach (var symbol in items)
+                            {
+                                var badge = SectionJson.Item(symbol, "iconUrl");
+                                <li>
+                                    <span class="crest-badge">
+                                        @if (!string.IsNullOrWhiteSpace(badge))
+                                        {
+                                            <img src="@badge" alt="" loading="lazy" />
+                                        }
+                                    </span>
+                                    <span class="crest-meanings__text">
+                                        <strong>@SectionJson.Item(symbol, "symbol")</strong>
+                                        <span>@SectionJson.Item(symbol, "meaning")</span>
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
                 </div>
             </section>
             break;
