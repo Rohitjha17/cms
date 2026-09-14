@@ -1,5 +1,6 @@
 extern alias webapp;
 
+using Cms.Application.DTOs.SchoolContent;
 using Cms.Domain.Constants;
 using Cms.Domain.Entities;
 using Cms.Infrastructure.Persistence;
@@ -99,6 +100,69 @@ public sealed class CardContentTests : IClassFixture<PublicWebFactory>
     [InlineData(null, "#131b2b")]
     public void TheInkOnAButton_IsLegibleOnTheSchoolsOwnColour(string? background, string expected)
         => Assert.Equal(expected, ReadableInk.On(background));
+
+    /// <summary>
+    /// An event carries a picture, and the school uploads one against every event it runs. The
+    /// home page drew the date, the title and the venue, and dropped the picture on the floor —
+    /// so a school that had filled in all three saw a wall of text where its photographs were.
+    /// The same held for news.
+    /// </summary>
+    [Fact]
+    public async Task AnEventsPicture_ReachesTheHomePage()
+    {
+        await SaveEntryAsync(SchoolContentTypes.Event, "sports-day", "Sports Day",
+            "/uploads/sports-day.jpg", "Track and field on the main ground.");
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("/uploads/sports-day.jpg", html);
+        Assert.Contains("Sports Day", html);
+        Assert.Contains("Track and field on the main ground.", html);
+    }
+
+    [Fact]
+    public async Task ANewsPicture_ReachesTheHomePage()
+    {
+        await SaveEntryAsync(SchoolContentTypes.News, "prize-day", "Prize Day",
+            "/uploads/prize-day.jpg", "Certificates were given out on Friday.");
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("/uploads/prize-day.jpg", html);
+        Assert.Contains("Prize Day", html);
+    }
+
+    private async Task SaveEntryAsync(string contentType, string key, string title, string imageUrl, string summary)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
+
+        var entry = await db.ContentEntries.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.SiteId == site.Id && x.ContentType == contentType && x.Key == key);
+
+        if (entry is null)
+        {
+            entry = new ContentEntry
+            {
+                TenantId = site.TenantId,
+                SiteId = site.Id,
+                ContentType = contentType,
+                Key = key
+            };
+            db.ContentEntries.Add(entry);
+        }
+
+        entry.Title = title;
+        entry.Summary = summary;
+        entry.ImageUrl = imageUrl;
+        entry.IsActive = true;
+        entry.DisplayOrder = 0;
+        entry.PublishDate = DateTime.UtcNow.AddDays(30);
+
+        await db.SaveChangesAsync();
+    }
 
     private async Task SaveAsync(string key, string title, object json)
     {

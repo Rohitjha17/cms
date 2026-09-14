@@ -42,9 +42,15 @@
                             @foreach (var item in news.Take(3))
                             {
                                 <article>
-                                    <p class="eyebrow">@item.Category</p>
-                                    <h3><a href="@(basePath)/news/@item.Key">@item.Headline</a></h3>
-                                    @if (!string.IsNullOrWhiteSpace(item.Summary)) { <p>@item.Summary</p> }
+                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.Headline" loading="lazy" />
+                                    }
+                                    <div class="card-grid__text">
+                                        <p class="eyebrow">@item.Category</p>
+                                        <h3><a href="@(basePath)/news/@item.Key">@item.Headline</a></h3>
+                                        @if (!string.IsNullOrWhiteSpace(item.Summary)) { <p>@item.Summary</p> }
+                                    </div>
                                 </article>
                             }
                         }
@@ -53,6 +59,10 @@
                             @foreach (var item in items.Take(3))
                             {
                                 <article>
+                                    @if (SectionJson.Item(item, "imageUrl") is { Length: > 0 } newsPicture)
+                                    {
+                                        <img src="@newsPicture" alt="@SectionJson.Item(item, "title")" loading="lazy" />
+                                    }
                                     <h3>@SectionJson.Item(item, "title")</h3>
                                     <p>@SectionJson.Item(item, "summary")</p>
                                 </article>
@@ -79,9 +89,16 @@
                             @foreach (var item in events.Take(3))
                             {
                                 <article>
-                                    <p class="eyebrow">@(item.StartsOn?.ToString("dd MMM yyyy"))</p>
-                                    <h3><a href="@(basePath)/events/@item.Key">@item.Title</a></h3>
-                                    @if (!string.IsNullOrWhiteSpace(item.Venue)) { <p>@item.Venue</p> }
+                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.Title" loading="lazy" />
+                                    }
+                                    <div class="card-grid__text">
+                                        <p class="eyebrow">@(item.StartsOn?.ToString("dd MMM yyyy"))</p>
+                                        <h3><a href="@(basePath)/events/@item.Key">@item.Title</a></h3>
+                                        @if (!string.IsNullOrWhiteSpace(item.Venue)) { <p class="card-meta">@item.Venue</p> }
+                                        @if (!string.IsNullOrWhiteSpace(item.Summary)) { <p>@item.Summary</p> }
+                                    </div>
                                 </article>
                             }
                         }
@@ -90,6 +107,10 @@
                             @foreach (var item in items.Take(3))
                             {
                                 <article>
+                                    @if (SectionJson.Item(item, "imageUrl") is { Length: > 0 } eventPicture)
+                                    {
+                                        <img src="@eventPicture" alt="@SectionJson.Item(item, "title")" loading="lazy" />
+                                    }
                                     <h3>@SectionJson.Item(item, "title")</h3>
                                     <p>@SectionJson.Item(item, "location")</p>
                                 </article>
