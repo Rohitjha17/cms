@@ -281,7 +281,10 @@ p:last-child { margin-bottom: 0; }
   justify-content: center;
   gap: .5rem;
   padding: .8rem 1.4rem;
-  color: #1c1403;
+  /* Worked out from the school's own colour rather than assumed. A school whose accent is
+     navy or maroon used to get dark text on a dark button — a solid black bar with the words
+     invisible inside it. */
+  color: var(--on-accent, #131b2b);
   background: var(--accent);
   border: 1px solid transparent;
   border-radius: var(--r-xs);
@@ -508,14 +511,17 @@ p:last-child { margin-bottom: 0; }
    So the heading follows what it introduces. Prose takes the heading with it;
    grids, galleries and tables leave it where the design put it. */
 .section:has(> .section-body) > .section-head,
-.section:has(> .message-block) > .section-head,
 .section:has(> .rich-text) > .section-head {
   margin-inline: 0;
   text-align: start;
 }
 .section:has(> .section-body) > .section-head .eyebrow,
-.section:has(> .message-block) > .section-head .eyebrow,
 .section:has(> .rich-text) > .section-head .eyebrow { justify-content: flex-start; }
+
+/* A leadership message is the exception the rule above allows for: the block is a portrait
+   beside a message, bounded and centred on the page, so it is symmetric and a centred heading
+   sits on its axis. The prose inside still ranges left, because prose has to. */
+.section:has(> .message-block) > .section-head { margin-inline: auto; }
 
 /* A section that has both — a picture and the prose beside it — keeps the prose
    rule: the text is what the reader is aligning to. */
@@ -676,7 +682,9 @@ p:last-child { margin-bottom: 0; }
    the homepage hero so the two never compete. */
 .page-hero h1 { font-size: clamp(2rem, 3.6vw, 3rem); }
 .page-hero .lede { margin-top: .5rem; }
-.page-body { padding: clamp(2.25rem, 4vw, 3.25rem) 0 var(--section-y); }
+/* The hero above already pays its own bottom padding and draws a rule, so a second full
+   measure here stacked into a band of empty page between the title and the first thing on it. */
+.page-body { padding: clamp(1.25rem, 2.2vw, 1.75rem) 0 var(--section-y); }
 
 /* An inner page runs on margins between its blocks rather than padding inside
    them, so a block that also belongs to the page-level rhythm drops its padding
@@ -836,9 +844,12 @@ p:last-child { margin-bottom: 0; }
 .contact-meta li strong { color: var(--ink); font-weight: 650; }
 
 .contact-form { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; margin-top: 1.25rem; }
+/* One column on a phone. Two columns of inputs plus their padding are wider than the screen,
+   so the fields ran off the right-hand edge and the page scrolled sideways to reach them. */
+@media (max-width: 700px) { .contact-form { grid-template-columns: 1fr; } }
 .contact-form label { display: grid; gap: .35rem; color: var(--ink); font-size: .88rem; font-weight: 650; }
 .contact-form .full, .contact-form button { grid-column: 1 / -1; }
-.contact-form input, .contact-form textarea {
+.contact-form input, .contact-form textarea, .contact-form select {
   padding: .8rem .95rem;
   color: var(--ink);
   background: var(--surface);
@@ -1772,7 +1783,12 @@ body[data-scroll-animations="off"] [data-section]::after { animation: none !impo
 
 /* --- Buttons take the school's own colour --------------------------------- */
 
-.btn-style-solid .btn { background: var(--btn-color, var(--brand)); }
+/* The ink follows whichever colour actually ends up behind the words. */
+.btn-style-solid .btn,
+.btn-style-solid .contact-form button {
+  background: var(--btn-color, var(--brand));
+  color: var(--on-btn, var(--on-brand, #fff));
+}
 .btn-style-outline .btn { color: var(--btn-color, var(--brand)); }
 .btn-style-soft .btn {
   color: var(--btn-color, var(--brand));
@@ -2237,9 +2253,13 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 
 .message-block {
   display: grid;
-  grid-template-columns: minmax(0, 156px) minmax(0, 1fr);
-  gap: clamp(1.1rem, 3vw, 2rem);
+  grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
+  gap: clamp(1.25rem, 3vw, 2.25rem);
   align-items: start;
+  /* Bounded and centred. Run across the full width of a wide screen it read as a stray
+     paragraph rather than as the head of the school addressing you. */
+  max-width: 64rem;
+  margin-inline: auto;
 }
 .message-block:not(:has(> .message-portrait)) { grid-template-columns: minmax(0, 1fr); }
 /* Two classes deep on purpose. "​.page-body img" and "​.section img" are both more
@@ -2249,13 +2269,13 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 .message-block .message-portrait,
 .message-list .message-portrait {
   width: 100%;
-  max-width: 156px;
+  max-width: 210px;
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: var(--r-md);
 }
 @media (max-width: 560px) {
-  .message-block { grid-template-columns: minmax(0, 96px) minmax(0, 1fr); gap: 1rem; }
+  .message-block { grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 1rem; }
 }
 
 /* The founder's portrait is the one place a larger picture is the point, but a
@@ -3118,3 +3138,96 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 }
 .page-body img, .section img { max-width: 100%; height: auto; }
 .page-body pre, .section pre { max-width: 100%; overflow-x: auto; }
+
+/* --- Cards that carry a picture ---------------------------------------------
+   The generic card had no room for one because nothing ever drew one. The
+   picture sits above the words at a settled shape, so a row of cards lines up
+   whatever proportions the school uploaded. */
+
+.card-grid > article { display: flex; flex-direction: column; overflow: hidden; }
+.card-grid > article > img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  margin: calc(var(--card-pad, 1.25rem) * -1) calc(var(--card-pad, 1.25rem) * -1) 1rem;
+  width: calc(100% + var(--card-pad, 1.25rem) * 2);
+  max-width: none;
+}
+.card-grid__text { display: flex; flex-direction: column; gap: .35rem; }
+.card-meta {
+  margin: 0;
+  color: var(--accent);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.card-grid h3 a { color: inherit; }
+.card-grid h3 a:hover { color: var(--brand); }
+
+/* --- The quotation in a leadership message ---------------------------------
+   It had no styling of its own, so the browser's default applied: margin 1em
+   40px. That is what pushed the opening line 40px further in than every
+   paragraph under it — the indent that reads as the text being mysteriously
+   off-centre. It is the message's opening line, so it is set like one. */
+
+.message-block blockquote {
+  margin: 0 0 1rem;
+  padding: 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 1.7vw, 1.35rem);
+  font-weight: 500;
+  line-height: 1.45;
+}
+.message-block > div > :last-child { margin-bottom: 0; }
+.message-signature { margin-top: 1rem; color: var(--muted); }
+.message-signature strong { color: var(--ink); }
+
+/* --- Facilities ------------------------------------------------------------
+   One facility per row, picture left and name right, left a long column of
+   half-empty rows. They are cards: picture, then its name underneath. */
+
+.facility-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+@media (min-width: 1024px) { .facility-list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 700px) and (max-width: 1023px) { .facility-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.facility-list article {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  padding: 0;
+  border: 0;
+}
+.facility-list article:last-child { padding-bottom: 0; }
+.facility-list img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+}
+.facility-list h3 { margin: 0; font-size: 1.05rem; }
+.facility-list p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+/* --- Mandatory disclosure --------------------------------------------------
+   Three columns that read as three different kinds of thing: the document's
+   name, which is prose and ranges left; its category, which is a label and
+   centres in its column; and the link to the file, which sits at the end of
+   the row where the eye finishes. */
+
+.disclosure-table th:nth-child(1), .disclosure-table td:nth-child(1) { text-align: left; }
+.disclosure-table th:nth-child(2), .disclosure-table td:nth-child(2) { text-align: center; }
+.disclosure-table th:nth-child(3), .disclosure-table td:nth-child(3) { text-align: right; }
+.disclosure-table td:nth-child(3) { white-space: nowrap; }
+
+/* A voice from the community: who said it, and what they are to the school. */
+.prestige-voice { margin: 0 0 1.5rem; display: grid; gap: .6rem; justify-items: inherit; }
+.prestige-voice img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; }
+.prestige-voice blockquote { margin: 0; font-family: var(--font-display); font-size: 1.1rem; }
+.prestige-voice figcaption { color: var(--muted); font-size: .92rem; }
+.prestige-voice figcaption strong { color: var(--ink); }

@@ -37,8 +37,24 @@
         <h2>@(testimonials?.Title ?? "Voices from our community")</h2>
         @foreach (var item in SectionJson.GetArray(testimonialsJson, "items").Take(2))
         {
-            <p>“@(item.TryGetProperty("quote", out var q) ? q.GetString() : "")”<br />
-            <strong>@(item.TryGetProperty("name", out var n) ? n.GetString() : "")</strong></p>
+            @* The console asks for a portrait and a relation as well as the quote and the name,
+               and this block drew neither — so a parent's photograph went nowhere and there was
+               no way to tell a parent's words from a former student's. *@
+            var who = SectionJson.Item(item, "name");
+            var relation = SectionJson.Item(item, "role");
+            var portrait = SectionJson.Item(item, "imageUrl");
+
+            <figure class="prestige-voice">
+                @if (!string.IsNullOrWhiteSpace(portrait))
+                {
+                    <img src="@portrait" alt="@who" loading="lazy" />
+                }
+                <blockquote>“@SectionJson.Item(item, "quote")”</blockquote>
+                <figcaption>
+                    <strong>@who</strong>
+                    @if (!string.IsNullOrWhiteSpace(relation)) { <span> · @relation</span> }
+                </figcaption>
+            </figure>
         }
         <a class="text-link" href="@(basePath)/messages">Read messages</a>
     </div>

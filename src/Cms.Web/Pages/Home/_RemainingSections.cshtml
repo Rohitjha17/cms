@@ -296,6 +296,11 @@
                     <h2>@(block.Title ?? "School timings")</h2>
                     @if (!string.IsNullOrWhiteSpace(intro)) { <p>@intro</p> }
                 </div>
+                                @* A heading row with nothing under it reads as the page having failed rather
+                   than as a table nobody has filled in yet. The rest of the section still
+                   shows, so an intro written before the rows is not lost. *@
+                @if (items.Count > 0)
+                {
                 <div class="table-scroll">
                     <table class="timings-table">
                         <thead>
@@ -317,6 +322,7 @@
                         </tbody>
                     </table>
                 </div>
+                }
                 @if (!string.IsNullOrWhiteSpace(block.Description))
                 {
                     <p class="table-note">@RichText.ToPlainText(block.Description)</p>
@@ -381,6 +387,11 @@
                     <h2>@(block.Title ?? "Staff list")</h2>
                     @if (!string.IsNullOrWhiteSpace(intro)) { <p>@intro</p> }
                 </div>
+                                @* A heading row with nothing under it reads as the page having failed rather
+                   than as a table nobody has filled in yet. The rest of the section still
+                   shows, so an intro written before the rows is not lost. *@
+                @if (items.Count > 0)
+                {
                 <div class="table-scroll">
                     <table class="staff-table">
                         <thead>
@@ -399,6 +410,7 @@
                         </tbody>
                     </table>
                 </div>
+                }
             </section>
             break;
 
@@ -474,6 +486,11 @@
                     <h2>@(block.Title ?? "Downloads")</h2>
                     @if (!string.IsNullOrWhiteSpace(intro)) { <p>@intro</p> }
                 </div>
+                                @* A heading row with nothing under it reads as the page having failed rather
+                   than as a table nobody has filled in yet. The rest of the section still
+                   shows, so an intro written before the rows is not lost. *@
+                @if (items.Count > 0)
+                {
                 <div class="table-scroll">
                     <table class="downloads-table">
                         <thead><tr><th>Document</th><th>Format</th><th>Size</th><th></th></tr></thead>
@@ -496,6 +513,7 @@
                         </tbody>
                     </table>
                 </div>
+                }
             </section>
             break;
 
@@ -515,12 +533,57 @@
                 }
                 @if (items.Count > 0)
                 {
+                    @* Every section without a renderer of its own lands here: courses,
+                       departments, events, achievements, testimonials, partners. It used to
+                       draw a heading and a paragraph and nothing else — so the picture a school
+                       had uploaded against each row never appeared, a testimonial showed no
+                       name because testimonials carry "name" and not "title", and the page
+                       address on a course led nowhere because no link was ever drawn. *@
                     <div class="card-grid">
                         @foreach (var item in items.Take(8))
                         {
+                            var cardImage = SectionJson.Item(item, "imageUrl")
+                                ?? SectionJson.Item(item, "logoUrl")
+                                ?? SectionJson.Item(item, "photoUrl");
+                            var cardTitle = SectionJson.Item(item, "title")
+                                ?? SectionJson.Item(item, "name");
+                            var cardBody = SectionJson.Item(item, "description")
+                                ?? SectionJson.Item(item, "quote")
+                                ?? SectionJson.Item(item, "summary");
+                            var cardMeta = SectionJson.Item(item, "date")
+                                ?? SectionJson.Item(item, "year")
+                                ?? SectionJson.Item(item, "location")
+                                ?? SectionJson.Item(item, "role");
+                            // A page address typed as "/departments" has to keep the path this
+                            // website is served under, or the link lands on another school's page
+                            // — or on nothing. An address to somewhere else is left alone.
+                            var cardHref = SectionJson.Item(item, "url");
+                            var cardLink = cardHref is { Length: > 0 } && cardHref.StartsWith('/')
+                                ? basePath + cardHref
+                                : cardHref;
+
                             <article>
-                                <h3>@SectionJson.Item(item, "title")</h3>
-                                <p>@(SectionJson.Item(item, "description") ?? SectionJson.Item(item, "quote") ?? SectionJson.Item(item, "summary"))</p>
+                                @if (!string.IsNullOrWhiteSpace(cardImage))
+                                {
+                                    <img src="@cardImage" alt="@cardTitle" loading="lazy" />
+                                }
+                                <div class="card-grid__text">
+                                    @if (!string.IsNullOrWhiteSpace(cardMeta)) { <p class="card-meta">@cardMeta</p> }
+                                    @if (!string.IsNullOrWhiteSpace(cardTitle))
+                                    {
+                                        <h3>
+                                            @if (!string.IsNullOrWhiteSpace(cardLink))
+                                            {
+                                                <a href="@cardLink">@cardTitle</a>
+                                            }
+                                            else
+                                            {
+                                                @cardTitle
+                                            }
+                                        </h3>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(cardBody)) { <p>@cardBody</p> }
+                                </div>
                             </article>
                         }
                     </div>

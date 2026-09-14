@@ -87,7 +87,7 @@
     @{ var typeface = Cms.Web.Helpers.DesignIdentity.Fonts(design); }
     <link href="https://fonts.googleapis.com/css2?@(typeface.Query)&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <style>:root{--brand:@primary;--accent:@secondary;@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")@(buttonColor is null ? "" : $"--btn-color:{buttonColor};")@(hoverColor is null ? "" : $"--hover-color:{hoverColor};")@* Raw because a font stack contains apostrophes — 'Segoe UI' — and Razor encodes them to
+    <style>:root{--brand:@primary;--accent:@secondary;--on-accent:@Cms.Web.Helpers.ReadableInk.On(secondary);--on-brand:@Cms.Web.Helpers.ReadableInk.On(primary);@(buttonColor is null ? "" : $"--on-btn:{Cms.Web.Helpers.ReadableInk.On(buttonColor)};")@(settings.LogoHeight > 0 ? $"--logo-size:{Math.Clamp(settings.LogoHeight, 28, 160)}px;" : "")@(buttonColor is null ? "" : $"--btn-color:{buttonColor};")@(hoverColor is null ? "" : $"--hover-color:{hoverColor};")@* Raw because a font stack contains apostrophes — 'Segoe UI' — and Razor encodes them to
        &#x27;, which makes the whole declaration invalid and drops every design back to Times.
        These strings come from DesignIdentity, not from anything a school can type. *@
 --font-display:@Html.Raw(typeface.Display);--font-body:@Html.Raw(typeface.Body);}</style>
