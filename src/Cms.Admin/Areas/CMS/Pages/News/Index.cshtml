@@ -84,9 +84,11 @@
             <form method="post" asp-page-handler="Save" class="field-grid">
                 <input type="hidden" asp-for="EditId" />
                 <input type="hidden" asp-for="Input.Key" />
+                    <small class="hint">A short name used in the address. Lower case, hyphens instead of spaces.</small>
                 <div asp-validation-summary="All" class="validation-summary full"></div>
 
-                <label class="field full"><span>Headline</span><input asp-for="Input.Headline" placeholder="Winter break circular" required /></label>
+                <label class="field full"><span>Headline</span><input asp-for="Input.Headline" placeholder="Winter break circular" required />
+                    <small class="hint">The notice itself. Keep it short enough to read at a glance.</small></label>
 
                 <label class="field">
                     <span>Category</span>
@@ -94,13 +96,16 @@
                 </label>
                 <label class="field"><span>Publish date</span><input asp-for="Input.PublishDate" type="datetime-local" /></label>
 
-                <label class="field full"><span>Summary</span><textarea asp-for="Input.Summary" rows="2" placeholder="One or two lines shown in the listing."></textarea></label>
-                <label class="field full"><span>Full text</span><textarea asp-for="Input.Body" rows="8"></textarea></label>
+                <label class="field full"><span>Summary</span><textarea asp-for="Input.Summary" rows="2" placeholder="One or two lines shown in the listing."></textarea>
+                    <small class="hint">One or two lines. This is what appears on the home page under the headline.</small></label>
+                <label class="field full"><span>Full text</span><textarea asp-for="Input.Body" rows="8"></textarea>
+                    <small class="hint">The full notice, for the news page.</small></label>
 
                 <label class="field full">
                     <span>Image</span>
                     <span class="upload-row">
                         <input asp-for="Input.ImageUrl" id="news-image-url" placeholder="/uploads/… or https://…" />
+                    <small class="hint">Optional. Around 800 x 600.</small>
                         <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#news-image-url">Browse media</button>
                     </span>
                 </label>
@@ -109,11 +114,13 @@
                     <span>Attachment (PDF)</span>
                     <span class="upload-row">
                         <input asp-for="Input.AttachmentUrl" id="news-attachment-url" placeholder="/uploads/… or https://…" />
+                    <small class="hint">Optional. Browse to attach the PDF you uploaded in the Media library.</small>
                         <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#news-attachment-url">Browse media</button>
                     </span>
                 </label>
 
-                <label class="field"><span>Display order</span><input asp-for="Input.DisplayOrder" type="number" min="0" /></label>
+                <label class="field"><span>Display order</span><input asp-for="Input.DisplayOrder" type="number" min="0" />
+                    <small class="hint">Lower numbers appear first.</small></label>
 
                 <label class="switch-row full">
                     <input asp-for="Input.IsFeatured" />

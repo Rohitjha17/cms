@@ -67,27 +67,36 @@
             <form method="post" asp-page-handler="Save" class="field-grid">
                 <input type="hidden" asp-for="EditId" />
                 <input type="hidden" asp-for="Input.Key" />
+                    <small class="hint">A short name used in the address. Lower case, hyphens instead of spaces.</small>
                 <div asp-validation-summary="All" class="validation-summary full"></div>
 
-                <label class="field full"><span>Event title</span><input asp-for="Input.Title" placeholder="Annual Day 2026" required /></label>
+                <label class="field full"><span>Event title</span><input asp-for="Input.Title" placeholder="Annual Day 2026" required />
+                    <small class="hint">e.g. Annual Day, Parent-Teacher Meeting.</small></label>
 
-                <label class="field"><span>Starts</span><input asp-for="Input.StartsOn" type="datetime-local" required /></label>
-                <label class="field"><span>Ends (optional)</span><input asp-for="Input.EndsOn" type="datetime-local" /></label>
+                <label class="field"><span>Starts</span><input asp-for="Input.StartsOn" type="datetime-local" required />
+                    <small class="hint">When it begins. Shown beside the event.</small></label>
+                <label class="field"><span>Ends (optional)</span><input asp-for="Input.EndsOn" type="datetime-local" />
+                    <small class="hint">Optional. Leave blank for a single-day event.</small></label>
 
                 <label class="field full"><span>Venue</span><input asp-for="Input.Venue" placeholder="School auditorium" /></label>
-                <label class="field full"><span>Summary</span><textarea asp-for="Input.Summary" rows="2"></textarea></label>
-                <label class="field full"><span>Details</span><textarea asp-for="Input.Body" rows="7"></textarea></label>
+                <label class="field full"><span>Summary</span><textarea asp-for="Input.Summary" rows="2"></textarea>
+                    <small class="hint">One line describing the event.</small></label>
+                <label class="field full"><span>Details</span><textarea asp-for="Input.Body" rows="7"></textarea>
+                    <small class="hint">The full details, for the events page.</small></label>
 
                 <label class="field full">
                     <span>Image</span>
                     <span class="upload-row">
                         <input asp-for="Input.ImageUrl" id="event-image-url" placeholder="/uploads/… or https://…" />
+                    <small class="hint">Optional. Around 800 x 600.</small>
                         <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#event-image-url">Browse media</button>
                     </span>
                 </label>
 
-                <label class="field"><span>Registration link</span><input asp-for="Input.RegistrationUrl" placeholder="https://…" /></label>
-                <label class="field"><span>Display order</span><input asp-for="Input.DisplayOrder" type="number" min="0" /></label>
+                <label class="field"><span>Registration link</span><input asp-for="Input.RegistrationUrl" placeholder="https://…" />
+                    <small class="hint">Optional. A form or booking link, starting https://</small></label>
+                <label class="field"><span>Display order</span><input asp-for="Input.DisplayOrder" type="number" min="0" />
+                    <small class="hint">Lower numbers appear first.</small></label>
 
                 <label class="switch-row full">
                     <input asp-for="Input.IsPublished" />

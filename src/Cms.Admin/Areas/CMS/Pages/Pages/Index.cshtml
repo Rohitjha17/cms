@@ -48,15 +48,20 @@
             <form method="post" asp-page-handler="Save" class="field-grid">
                 <input asp-for="EditId" type="hidden" />
                 <div asp-validation-summary="All" class="validation-summary full"></div>
-                <label class="field"><span>Title</span><input asp-for="Input.Title" /></label>
-                <label class="field"><span>Slug</span><input asp-for="Input.Slug" placeholder="about" /></label>
+                <label class="field"><span>Title</span><input asp-for="Input.Title" />
+                    <small class="hint">The heading on the page, and its name in the menu.</small></label>
+                <label class="field"><span>Slug</span><input asp-for="Input.Slug" placeholder="about" />
+                    <small class="hint">The address. “about” gives yourschool.edu/about. Lower case, hyphens instead of spaces. Changing it breaks every existing link to this page.</small></label>
                 <label class="field">
                     <span>Page type</span>
                     <select asp-for="Input.PageType" asp-items="Html.GetEnumSelectList<PageType>()" data-page-type></select>
                 </label>
-                <label class="field"><span>Template key</span><input asp-for="Input.TemplateKey" /></label>
-                <label class="field full"><span>Excerpt</span><textarea asp-for="Input.Excerpt" rows="2"></textarea></label>
-                <label class="field full"><span>Page content (HTML)</span><textarea asp-for="Input.Content" rows="6"></textarea></label>
+                <label class="field"><span>Template key</span><input asp-for="Input.TemplateKey" />
+                    <small class="hint">For technical use. Leave it alone.</small></label>
+                <label class="field full"><span>Excerpt</span><textarea asp-for="Input.Excerpt" rows="2"></textarea>
+                    <small class="hint">A one-line summary, used in listings and on Google.</small></label>
+                <label class="field full"><span>Page content (HTML)</span><textarea asp-for="Input.Content" rows="6"></textarea>
+                    <small class="hint">The body of the page. Plain text works; HTML gives you full control.</small></label>
 
                 <label class="switch-row full">
                     <input asp-for="Input.UseCustomHtml" type="checkbox" data-custom-html />
@@ -77,12 +82,16 @@
                     <span>Featured image URL</span>
                     <div class="media-url-row">
                         <input asp-for="Input.FeaturedImageUrl" id="featured-image-url" />
+                    <small class="hint">Optional. A picture for this page, around 1600 x 900.</small>
                         <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#featured-image-url">Browse media</button>
                     </div>
                 </label>
-                <label class="field"><span>Menu order</span><input asp-for="Input.MenuOrder" type="number" /></label>
-                <label class="field"><span>SEO title</span><input asp-for="Input.MetaTitle" /></label>
-                <label class="field full"><span>SEO description</span><input asp-for="Input.MetaDescription" /></label>
+                <label class="field"><span>Menu order</span><input asp-for="Input.MenuOrder" type="number" />
+                    <small class="hint">Lower numbers appear earlier in the menu.</small></label>
+                <label class="field"><span>SEO title</span><input asp-for="Input.MetaTitle" />
+                    <small class="hint">The heading Google shows. Under 60 characters.</small></label>
+                <label class="field full"><span>SEO description</span><input asp-for="Input.MetaDescription" />
+                    <small class="hint">The grey paragraph under your link on Google. Under 160 characters.</small></label>
                 <label class="switch-row full"><input asp-for="Input.ShowInMenu" type="checkbox" /><span><strong>Show in menu</strong><small>Primary navigation syncs from these pages.</small></span></label>
                 <label class="switch-row full"><input asp-for="Input.IsActive" type="checkbox" /><span><strong>Published</strong></span></label>
                 <div class="full form-actions">

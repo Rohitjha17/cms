@@ -88,10 +88,13 @@
             <form method="post" asp-page-handler="Save" class="field-grid">
                 <input type="hidden" asp-for="EditId" />
                 <input type="hidden" asp-for="Input.Key" />
+                    <small class="hint">A short name used in the address. Lower case, hyphens instead of spaces.</small>
                 <div asp-validation-summary="All" class="validation-summary full"></div>
 
-                <label class="field"><span>Full name</span><input asp-for="Input.FullName" placeholder="Dr. Anita Rao" required /></label>
-                <label class="field"><span>Designation</span><input asp-for="Input.Designation" placeholder="Principal" /></label>
+                <label class="field"><span>Full name</span><input asp-for="Input.FullName" placeholder="Dr. Anita Rao" required />
+                    <small class="hint">As it should appear — e.g. Ms. Surabhi Bhargav.</small></label>
+                <label class="field"><span>Designation</span><input asp-for="Input.Designation" placeholder="Principal" />
+                    <small class="hint">e.g. Principal, PGT Physics.</small></label>
 
                 <label class="field">
                     <span>Group</span>
@@ -99,8 +102,10 @@
                 </label>
                 <label class="field"><span>Department</span><input asp-for="Input.Department" placeholder="Science" /></label>
 
-                <label class="field"><span>Qualification</span><input asp-for="Input.Qualification" placeholder="M.Sc, B.Ed" /></label>
-                <label class="field"><span>Years of experience</span><input asp-for="Input.ExperienceYears" type="number" min="0" max="80" /></label>
+                <label class="field"><span>Qualification</span><input asp-for="Input.Qualification" placeholder="M.Sc, B.Ed" />
+                    <small class="hint">e.g. M.Sc., B.Ed.</small></label>
+                <label class="field"><span>Years of experience</span><input asp-for="Input.ExperienceYears" type="number" min="0" max="80" />
+                    <small class="hint">Years of teaching. Optional — leave blank to show nothing.</small></label>
 
                 <label class="field"><span>Email</span><input asp-for="Input.Email" type="email" /></label>
                 <label class="field"><span>Phone</span><input asp-for="Input.Phone" /></label>
@@ -109,14 +114,17 @@
                     <span>Photo</span>
                     <span class="upload-row">
                         <input asp-for="Input.PhotoUrl" id="person-photo-url" placeholder="/uploads/… or https://…" />
+                    <small class="hint">A square photograph, around 400 x 400. Browse to pick from the Media library.</small>
                         <button type="button" class="btn btn-secondary btn-sm" data-media-picker="#person-photo-url">Browse media</button>
                     </span>
                 </label>
 
                 <label class="field full"><span>Headline</span><input asp-for="Input.Headline" placeholder="Leading the school since 2016" /></label>
-                <label class="field full"><span>Biography</span><textarea asp-for="Input.Biography" rows="6"></textarea></label>
+                <label class="field full"><span>Biography</span><textarea asp-for="Input.Biography" rows="6"></textarea>
+                    <small class="hint">A short paragraph. Optional.</small></label>
 
-                <label class="field"><span>Display order</span><input asp-for="Input.DisplayOrder" type="number" min="0" /></label>
+                <label class="field"><span>Display order</span><input asp-for="Input.DisplayOrder" type="number" min="0" />
+                    <small class="hint">Lower numbers appear first.</small></label>
 
                 <label class="switch-row full">
                     <input asp-for="Input.IsPublished" />

@@ -259,30 +259,110 @@
   };
 
   const collectionSchemas = {
-    hero: [["imageUrl", "Image"], ["alt", "Image description"]],
-    courses: [["title", "Course title"], ["description", "Description"], ["url", "Page URL"], ["imageUrl", "Image URL"]],
-    departments: [["title", "Department"], ["description", "Description"], ["url", "Page URL"], ["imageUrl", "Image URL"]],
-    why_choose_us: [["title", "Reason"], ["description", "Description"], ["icon", "Icon name"]],
-    announcements: [["title", "Announcement"], ["date", "Date"], ["url", "Link"], ["summary", "Summary"]],
-    // The paragraph under each headline is "summary". Without it here the only way to write one
-    // was the JSON box, and every card rendered as a heading over an empty line.
-    latest_news: [["title", "News title"], ["summary", "Summary"], ["date", "Date"], ["url", "Link"], ["imageUrl", "Image URL"]],
-    upcoming_events: [["title", "Event title"], ["date", "Date"], ["url", "Link"], ["location", "Location"]],
-    gallery: [["title", "Image title"], ["imageUrl", "Image URL"], ["alt", "Image description"]],
-    testimonials: [["name", "Person name"], ["role", "Role / relation"], ["quote", "Testimonial"], ["imageUrl", "Portrait URL"]],
-    achievements: [["title", "Achievement"], ["year", "Year"], ["description", "Description"], ["imageUrl", "Image URL"]],
-    partners: [["name", "Partner name"], ["logoUrl", "Logo URL"], ["url", "Website URL"]],
-    timings: [["wing", "Wing or class range"], ["summer", "First term hours"], ["winter", "Second term hours"]],
-    // The icon is optional: supply one per symbol and the badges become the school's own
-    // pictograms, leave them blank and each row keeps a plain mark.
-    crest: [["symbol", "Symbol"], ["meaning", "What it stands for"], ["iconUrl", "Icon image URL (optional)"]],
-    alumni: [["name", "Name"], ["role", "What they do now"], ["batch", "Class of"], ["imageUrl", "Portrait URL"]],
-    staff_list: [["name", "Name"], ["designation", "Designation"], ["qualification", "Qualification"]],
-    facilities: [["title", "Facility"], ["description", "Description"], ["imageUrl", "Photograph URL"]],
-    founder: [["year", "Year"], ["title", "What happened"], ["description", "Detail"]],
-    downloads: [["title", "Document"], ["fileUrl", "File URL"], ["format", "Format"], ["size", "Size"]],
-    // More than one film. With any row here the single fields above are ignored.
-    video: [["title", "Caption"], ["videoUrl", "YouTube, Vimeo or file URL"], ["posterUrl", "Poster image URL"]]
+    hero: [
+      ["imageUrl", "Image", "Browse and pick the banner. 1920 x 1080 works on every screen."],
+      ["alt", "Image description", "What the picture shows, for anyone who cannot see it."]
+    ],
+    courses: [
+      ["title", "Course title", "e.g. Science, Commerce, Humanities."],
+      ["description", "Description", "One or two lines. Keep them a similar length so the cards match."],
+      ["url", "Page URL", "Optional. Fill it in and the card becomes clickable — e.g. /courses."],
+      ["imageUrl", "Image URL", "Browse to pick a picture. Around 800 x 600. Leave blank for a card with no picture."]
+    ],
+    departments: [
+      ["title", "Department", "e.g. Primary Wing, Science Department."],
+      ["description", "Description", "One or two lines about the department."],
+      ["url", "Page URL", "Optional. e.g. /departments — makes the card clickable."],
+      ["imageUrl", "Image URL", "Browse to pick a picture. Around 800 x 600."]
+    ],
+    why_choose_us: [
+      ["title", "Reason", "Short — three or four words."],
+      ["description", "Description", "One sentence saying what it means for a child here."],
+      ["icon", "Icon name", "Optional. Leave blank if you are unsure."]
+    ],
+    announcements: [
+      ["title", "Announcement", "The notice itself, in a few words."],
+      ["date", "Date", "e.g. 12 March 2027."],
+      ["url", "Link", "Optional. Where to read more."],
+      ["summary", "Summary", "One line under the heading."]
+    ],
+    latest_news: [
+      ["title", "News title", "Used only when Content > News & notices is empty."],
+      ["summary", "Summary", "The line under the headline."],
+      ["date", "Date", "e.g. 12 March 2027."],
+      ["url", "Link", "Optional. Where to read the whole item."],
+      ["imageUrl", "Image URL", "Browse to pick a picture. Around 800 x 600."]
+    ],
+    upcoming_events: [
+      ["title", "Event title", "Used only when Content > Events is empty."],
+      ["date", "Date", "e.g. 14 November, or 14 Nov 2027."],
+      ["url", "Link", "Optional. Where to read more."],
+      ["location", "Location", "e.g. School auditorium."]
+    ],
+    gallery: [
+      ["title", "Image title", "Optional. Shown under the photograph."],
+      ["imageUrl", "Image URL", "Browse to pick the photograph. Around 1200 x 800."],
+      ["alt", "Image description", "What the photograph shows, for anyone who cannot see it."]
+    ],
+    testimonials: [
+      ["name", "Person name", "Who said it."],
+      ["role", "Role / relation", "e.g. Parent, Class of 2019, Alumna."],
+      ["quote", "Testimonial", "Their words. Two or three lines reads best."],
+      ["imageUrl", "Portrait URL", "Optional. A square photograph, around 400 x 400."]
+    ],
+    achievements: [
+      ["title", "Achievement", "e.g. State-level football champions."],
+      ["year", "Year", "e.g. 2026."],
+      ["description", "Description", "One line of detail."],
+      ["imageUrl", "Image URL", "Optional. Around 800 x 600."]
+    ],
+    partners: [
+      ["name", "Partner name", "The organisation's name."],
+      ["logoUrl", "Logo URL", "Browse to pick the logo. A PNG with a clear background looks best."],
+      ["url", "Website URL", "Optional. Their full address, starting https://"]
+    ],
+    timings: [
+      ["wing", "Wing or class range", "e.g. Pre-School, or Classes VI to XII."],
+      ["summer", "First term hours", "e.g. 7:45 to 11:45."],
+      ["winter", "Second term hours", "e.g. 8:45 to 12:45."]
+    ],
+    crest: [
+      ["symbol", "Symbol", "e.g. The book, The torch."],
+      ["meaning", "What it stands for", "e.g. Signifies learning."],
+      ["iconUrl", "Icon image URL (optional)", "A small picture of the symbol for the badge. Leave blank for a plain mark."]
+    ],
+    alumni: [
+      ["name", "Name", "Their full name."],
+      ["role", "What they do now", "e.g. Professor of Computer Science."],
+      ["batch", "Class of", "The year they left, e.g. 1998."],
+      ["imageUrl", "Portrait URL", "A square photograph, around 400 x 400."]
+    ],
+    staff_list: [
+      ["name", "Name", "e.g. Ms. Surabhi Bhargav."],
+      ["designation", "Designation", "e.g. Principal, PGT Physics."],
+      ["qualification", "Qualification", "e.g. M.Sc., B.Ed."]
+    ],
+    facilities: [
+      ["title", "Facility", "e.g. Chemistry laboratory."],
+      ["description", "Description", "One line about it."],
+      ["imageUrl", "Photograph URL", "Browse to pick a photograph. Around 800 x 600."]
+    ],
+    founder: [
+      ["year", "Year", "e.g. 1931."],
+      ["title", "What happened", "e.g. The school opens."],
+      ["description", "Detail", "One line of context."]
+    ],
+    downloads: [
+      ["title", "Document", "e.g. ICSE timetable 2027."],
+      ["fileUrl", "File URL", "Browse to pick the PDF you uploaded in the Media library."],
+      ["format", "Format", "e.g. PDF."],
+      ["size", "Size", "e.g. 240 KB. Parents on a phone deserve to know before they tap."]
+    ],
+    video: [
+      ["title", "Caption", "Shown under the film."],
+      ["videoUrl", "YouTube, Vimeo or file URL", "Paste the address straight from your browser's bar. Watch links, youtu.be and Shorts all work."],
+      ["posterUrl", "Poster image URL", "Optional. The still shown before it plays — YouTube supplies its own."]
+    ]
   };
 
   window.initHomePageEditor = function (options) {
@@ -475,7 +555,11 @@
               card.append(heading);
               const fields = document.createElement("div");
               fields.className = "config-item__fields";
-              collectionSchema.forEach(([key, label]) => {
+              // A third entry on a row field is the line of help under it. Sixty-six of these
+              // fields had none, and they are the ones people actually get stuck on: whether an
+              // address goes in or a picture is chosen, what size it should be, what happens if
+              // it is left blank.
+              collectionSchema.forEach(([key, label, help]) => {
                 const field = document.createElement("label");
                 field.className = "field";
                 const caption = document.createElement("span");
@@ -502,6 +586,13 @@
                   field.append(row);
                 } else {
                   field.append(input);
+                }
+
+                if (help) {
+                  const note = document.createElement("small");
+                  note.className = "hint";
+                  note.textContent = help;
+                  field.append(note);
                 }
 
                 fields.append(field);

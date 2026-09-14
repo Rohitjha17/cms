@@ -40,8 +40,10 @@
                 <input asp-for="EditId" type="hidden" />
                 <div asp-validation-summary="All" class="validation-summary"></div>
                 <div class="field-grid">
-                    <label class="field"><span>Name</span><input asp-for="Input.Name" /></label>
-                    <label class="field"><span>Location key</span><input asp-for="Input.Location" placeholder="header" /></label>
+                    <label class="field"><span>Name</span><input asp-for="Input.Name" />
+                    <small class="hint">A name for this menu, for your own reference — e.g. Main navigation.</small></label>
+                    <label class="field"><span>Location key</span><input asp-for="Input.Location" placeholder="header" />
+                    <small class="hint">Where it appears. “header” is the menu bar across the top.</small></label>
                     <label class="switch-row full"><input asp-for="Input.IsActive" /><span><strong>Active menu</strong><small>Expose this menu through the public navigation API.</small></span></label>
                 </div>
                 <div class="config-collection menu-builder">
