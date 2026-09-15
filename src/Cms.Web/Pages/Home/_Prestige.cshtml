@@ -33,6 +33,10 @@
             }
         </cite>
     </blockquote>
+    @* A heading and a "Read messages" link with no quotes between them is a title over nothing.
+       Drawn when there is something to quote. *@
+    @if (SectionJson.GetArray(testimonialsJson, "items").Any())
+    {
     <div data-section="testimonials">
         <h2>@(testimonials?.Title ?? "Voices from our community")</h2>
         @foreach (var item in SectionJson.GetArray(testimonialsJson, "items").Take(2))
@@ -58,8 +62,11 @@
         }
         <a class="text-link" href="@(basePath)/messages">Read messages</a>
     </div>
+    }
 </section>
-@if (achievements is not null)
+@* Likewise: the section existed, so it was drawn — heading, empty card grid, and the section's
+   own padding under it, whether or not the school had listed a single achievement. *@
+@if (achievements is not null && SectionJson.GetArray(achievementsJson, "items").Any())
 {
     <section data-section="achievements" class="shell section">
         <h2>@achievements.Title</h2>

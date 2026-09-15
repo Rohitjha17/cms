@@ -22,6 +22,33 @@ public static class SectionJson
         }
     }
 
+    /// <summary>
+    /// Whether a section's stored settings actually hold anything — a row in a list, or a field
+    /// with something written in it. A section an editor opened and saved without filling in
+    /// holds <c>{"items":[]}</c>, which is not an empty string and is not content either.
+    ///
+    /// The console decides "Needs content" the same way, so the two agree: a section the console
+    /// calls empty is a section the website does not draw.
+    /// </summary>
+    public static bool HoldsSomething(JsonElement? root)
+    {
+        if (root is null)
+        {
+            return false;
+        }
+
+        return HasValue(root.Value);
+
+        static bool HasValue(JsonElement element) => element.ValueKind switch
+        {
+            JsonValueKind.Object => element.EnumerateObject().Any(p => HasValue(p.Value)),
+            JsonValueKind.Array => element.EnumerateArray().Any(HasValue),
+            JsonValueKind.String => !string.IsNullOrWhiteSpace(element.GetString()),
+            JsonValueKind.Null or JsonValueKind.Undefined or JsonValueKind.False => false,
+            _ => true
+        };
+    }
+
     public static string? GetString(JsonElement? root, string property)
     {
         if (root is null || root.Value.ValueKind != JsonValueKind.Object)

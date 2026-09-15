@@ -87,28 +87,67 @@ public sealed class HomeSectionRenderingTests : IClassFixture<PublicWebFactory>,
     /// having broken. A section with nothing to list is not drawn; the editor is told in the
     /// console instead, which is where "Needs content" belongs.
     /// </summary>
-    [Fact]
-    public async Task ASectionWithNothingInIt_LeavesNoHeadingBehind()
+    [Theory]
+    [InlineData("alumni", "Notable Alumni")]
+    [InlineData("departments", "Our Departments")]
+    [InlineData("testimonials", "Voices From Our Community")]
+    [InlineData("achievements", "School Achievements")]
+    [InlineData("partners", "Affiliations And Partners")]
+    [InlineData("crest", "Crest And Motto")]
+    [InlineData("founder", "Founder And History")]
+    [InlineData("facilities", "Our Facilities")]
+    [InlineData("downloads", "Downloads")]
+    [InlineData("timings", "School Timings")]
+    [InlineData("director", "Director Message")]
+    [InlineData("manager", "Manager Message")]
+    [InlineData("video", "Video Section")]
+    public async Task ASectionWithNothingInIt_LeavesNoHeadingBehind(string key, string title)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
 
         var section = await db.HomePageSections.IgnoreQueryFilters()
-            .FirstAsync(x => x.SiteId == site.Id && x.SectionKey == "alumni");
+            .FirstOrDefaultAsync(x => x.SiteId == site.Id && x.SectionKey == key);
+
+        if (section is null)
+        {
+            section = new Cms.Domain.Entities.HomePageSection
+            {
+                TenantId = site.TenantId,
+                SiteId = site.Id,
+                SectionKey = key,
+                DisplayOrder = 90
+            };
+            db.HomePageSections.Add(section);
+        }
+
+        // The demo site is shared with every other test in this class, so what this one empties
+        // it puts back — otherwise the next test reads a website with thirteen sections missing.
+        var before = (section.IsActive, section.Title, section.SubTitle,
+                      section.Description, section.ImageUrl, section.JsonData);
 
         section.IsActive = true;
-        section.Title = "Notable Alumni";
+        section.Title = title;
         section.SubTitle = null;
         section.Description = null;
         section.ImageUrl = null;
         section.JsonData = """{"items":[]}""";   // opened, saved, never filled in
         await db.SaveChangesAsync();
 
-        var html = await _client.GetStringAsync("/school");
+        try
+        {
+            var html = await _client.GetStringAsync("/school");
 
-        Assert.DoesNotContain("data-section=\"alumni\"", html);
-        Assert.DoesNotContain("Notable Alumni", html);
+            Assert.DoesNotContain($"data-section=\"{key}\"", html);
+            Assert.DoesNotContain(title, html);
+        }
+        finally
+        {
+            (section.IsActive, section.Title, section.SubTitle,
+             section.Description, section.ImageUrl, section.JsonData) = before;
+            await db.SaveChangesAsync();
+        }
     }
 
     /// <summary>

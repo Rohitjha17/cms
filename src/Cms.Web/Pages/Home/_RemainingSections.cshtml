@@ -27,20 +27,30 @@
 
     // A heading with nothing under it reads as the page having broken, and the client's website
     // carried five of them at once — Notable Alumni, Staff List, Facilities, Downloads and
-    // School Timings, each a title over an empty stretch of page. These sections exist to list
-    // things. With nothing listed, nothing written above the list and no picture, there is
-    // nothing to show and the title is noise, so the section is not drawn at all.
+    // School Timings, each a title over an empty stretch of page. Emptying every section on a
+    // demo site turned up six more: Departments, Testimonials, Achievements, Partners, the
+    // crest and the founder, each a title over 45 to 115 pixels of nothing.
     //
-    // The editor hears about it in the console instead, where the section is marked "Needs
-    // content" — which is the right place for it, and the only place a visitor should not see.
-    var listShaped = block.SectionKey is "alumni" or "facilities" or "staff_list"
-        or "downloads" or "timings";
-    var rowCount = block.SectionKey == "staff_list" && items.Count == 0 ? faculty.Count : items.Count;
-    if (listShaped
-        && rowCount == 0
-        && string.IsNullOrWhiteSpace(intro)
-        && string.IsNullOrWhiteSpace(body)
-        && string.IsNullOrWhiteSpace(block.ImageUrl))
+    // So the rule is general rather than a list of section keys. A section is drawn when it has
+    // something to draw: anything written in its settings, a description, a picture, a
+    // subtitle — or a list it is fed from, which is where events, news and the staff table get
+    // their rows even with settings of their own that are empty.
+    //
+    // This is the same test the console uses to mark a section "Needs content", so the two
+    // agree: a section the console calls empty is a section the website does not draw, and the
+    // editor hears about it in the one place a visitor never sees.
+    var fedByAList = block.SectionKey switch
+    {
+        "upcoming_events" => events.Count > 0,
+        "latest_news" or "announcements" => news.Count > 0,
+        "staff_list" => faculty.Count > 0,
+        _ => false
+    };
+    if (!fedByAList
+        && !SectionJson.HoldsSomething(json)
+        && string.IsNullOrWhiteSpace(block.Description)
+        && string.IsNullOrWhiteSpace(block.ImageUrl)
+        && string.IsNullOrWhiteSpace(block.SubTitle))
     {
         continue;
     }
@@ -159,13 +169,17 @@
                     || !string.IsNullOrWhiteSpace(quote)
                     || !string.IsNullOrWhiteSpace(block.Description)
                     || !string.IsNullOrWhiteSpace(person);
+
+                // Guarding only the message left the heading and the section's own padding
+                // behind: "Director Message" over 150px of nothing, and the same again for the
+                // manager. A message nobody has written is not a section of the website yet.
+                if (hasMessage)
+                {
                 <section data-section="@block.SectionKey" class="shell section message-section">
                     <div class="section-head">
                         <p class="eyebrow">@(role ?? block.Title)</p>
                         <h2>@(block.Title ?? role)</h2>
                     </div>
-                    @if (hasMessage)
-                    {
                     <div class="message-block">
                         @if (!string.IsNullOrWhiteSpace(block.ImageUrl))
                         {
@@ -180,8 +194,8 @@
                             }
                         </div>
                     </div>
-                    }
                 </section>
+                }
             }
             break;
 
@@ -275,10 +289,16 @@
                     Poster: SectionJson.GetString(json, "posterUrl"))];
             films = films.Where(x => x.Source is not null).ToList();
 
-            // With no link this application can play there is nothing to build a player from,
-            // but the section is still a heading and a paragraph a school wrote. It falls
-            // through to the ordinary rendering rather than vanishing.
-            if (films.Count == 0) { goto default; }
+            // With no link this application can play there is nothing to build a player from.
+            // A section whose whole purpose is a film, holding no film, is a title and a
+            // subtitle over a blank band — "Video Section", and nothing to watch. It is worth
+            // drawing only if the school also wrote something to read, in which case it falls
+            // through to the ordinary rendering.
+            if (films.Count == 0)
+            {
+                if (string.IsNullOrWhiteSpace(body)) { continue; }
+                goto default;
+            }
 
             @if (films.Count > 0)
             {
