@@ -81,6 +81,37 @@ public sealed class HomeSectionRenderingTests : IClassFixture<PublicWebFactory>,
     }
 
     /// <summary>
+    /// The client's website carried five headings over blank stretches of page at once —
+    /// Notable Alumni, Staff List, Facilities, Downloads and School Timings — because each
+    /// section had been switched on and never filled in. A title over nothing reads as the page
+    /// having broken. A section with nothing to list is not drawn; the editor is told in the
+    /// console instead, which is where "Needs content" belongs.
+    /// </summary>
+    [Fact]
+    public async Task ASectionWithNothingInIt_LeavesNoHeadingBehind()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
+
+        var section = await db.HomePageSections.IgnoreQueryFilters()
+            .FirstAsync(x => x.SiteId == site.Id && x.SectionKey == "alumni");
+
+        section.IsActive = true;
+        section.Title = "Notable Alumni";
+        section.SubTitle = null;
+        section.Description = null;
+        section.ImageUrl = null;
+        section.JsonData = """{"items":[]}""";   // opened, saved, never filled in
+        await db.SaveChangesAsync();
+
+        var html = await _client.GetStringAsync("/school");
+
+        Assert.DoesNotContain("data-section=\"alumni\"", html);
+        Assert.DoesNotContain("Notable Alumni", html);
+    }
+
+    /// <summary>
     /// The hero slideshow: the school's own pictures, moving on their own, with arrows and dots
     /// to move between them. With no pictures the hero keeps its single banner and shows no
     /// controls, so a school that never adds any is not given empty arrows to click.

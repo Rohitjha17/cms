@@ -421,6 +421,101 @@ public sealed class SchoolSectionsTests : IClassFixture<PublicWebFactory>
 
     // ---------------------------------------------------------------- helpers
 
+    /// <summary>
+    /// A school put its badge in the first picture field it met — the small pictogram that sits
+    /// beside one symbol's name — and left that row's words blank. The badge came out 52px wide
+    /// with an empty line of text next to it, and the crest the section is named after never
+    /// appeared. A row with a picture and nothing to read is the crest, not one of its symbols.
+    /// </summary>
+    [Fact]
+    public async Task ABadgeLeftInASymbolsIconField_IsDrawnAsTheCrest()
+    {
+        await SaveSectionAsync(HomePageSectionKeys.Crest, "Crest & Motto", new
+        {
+            items = new[]
+            {
+                new { symbol = "", meaning = "", iconUrl = "/uploads/school-badge.png" }
+            }
+        });
+
+        var html = await _client.GetStringAsync("/");
+
+        // Drawn large, as the crest.
+        Assert.Contains("crest-section__mark", html);
+        Assert.Contains("/uploads/school-badge.png", html);
+        // And not as a row of symbols with nothing written in it.
+        Assert.DoesNotContain("crest-meanings", html);
+    }
+
+    /// <summary>
+    /// The staff list read only the rows typed into its own configuration. A school that entered
+    /// its teachers under People — where the console asks for a name, a designation and a
+    /// qualification, which is this table exactly — got a heading with nothing under it.
+    /// </summary>
+    [Fact]
+    public async Task TheStaffList_ShowsThePeopleTheSchoolMaintains()
+    {
+        await SaveSectionAsync(HomePageSectionKeys.StaffList, "Staff list", new { items = Array.Empty<object>() });
+        await SavePersonAsync("meera-iyer", "Meera Iyer", "Head of Mathematics", "M.Sc, B.Ed");
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("staff-table", html);
+        Assert.Contains("Meera Iyer", html);
+        Assert.Contains("Head of Mathematics", html);
+        Assert.Contains("M.Sc, B.Ed", html);
+    }
+
+    /// <summary>Rows typed into the section still win: a school that typed them meant them.</summary>
+    [Fact]
+    public async Task TypedStaffRows_AreNotReplacedByThePeopleList()
+    {
+        await SaveSectionAsync(HomePageSectionKeys.StaffList, "Staff list", new
+        {
+            items = new[] { new { name = "Typed Row Only", designation = "Librarian", qualification = "M.Lib" } }
+        });
+        await SavePersonAsync("someone-else", "Should Not Appear Here", "Bursar", "B.Com");
+
+        var html = await _client.GetStringAsync("/");
+
+        Assert.Contains("Typed Row Only", html);
+        Assert.DoesNotContain("Should Not Appear Here", html);
+    }
+
+    private async Task SavePersonAsync(string key, string fullName, string designation, string qualification)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
+
+        var entry = await db.ContentEntries.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.SiteId == site.Id && x.ContentType == SchoolContentTypes.Faculty && x.Key == key);
+
+        if (entry is null)
+        {
+            entry = new ContentEntry
+            {
+                TenantId = site.TenantId,
+                SiteId = site.Id,
+                ContentType = SchoolContentTypes.Faculty,
+                Key = key
+            };
+            db.ContentEntries.Add(entry);
+        }
+
+        entry.Title = fullName;
+        entry.IsActive = true;
+        entry.JsonData = JsonSerializer.Serialize(new
+        {
+            designation,
+            qualification,
+            category = "Teaching"
+        });
+
+        await db.SaveChangesAsync();
+    }
+
     private async Task SaveSectionAsync(string key, string title, object json)
     {
         using var scope = _factory.Services.CreateScope();

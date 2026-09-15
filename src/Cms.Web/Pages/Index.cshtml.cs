@@ -30,6 +30,14 @@ public sealed class IndexModel : PageModel
     public IReadOnlyList<SchoolEventDto> Events { get; private set; } = [];
 
     /// <summary>
+    /// The staff the school maintains under People. The staff list section read only the rows
+    /// typed into its own configuration, so a school that added its teachers where the console
+    /// asks for them — name, designation, qualification, all of it — got a heading with nothing
+    /// underneath and no way to tell why.
+    /// </summary>
+    public IReadOnlyList<FacultyMemberDto> Faculty { get; private set; } = [];
+
+    /// <summary>
     /// The school's appearance choices. Read here rather than in the view so a settings record
     /// that cannot be loaded leaves the page with defaults instead of an exception.
     /// </summary>
@@ -43,6 +51,8 @@ public sealed class IndexModel : PageModel
         try { Settings = await _schoolContent.GetSettingsAsync(cancellationToken); }
         catch { Settings = new SiteSettingsDto(); }
 
+        Faculty = await _schoolContent.GetFacultyAsync(includeUnpublished: false, cancellationToken);
+
         var events = await _schoolContent.GetEventsAsync(includeUnpublished: false, cancellationToken);
         var now = DateTime.UtcNow;
         Events = events.Where(e => !e.HasFinished(now)).Concat(events.Where(e => e.HasFinished(now))).ToList();
@@ -50,6 +60,7 @@ public sealed class IndexModel : PageModel
         ViewData["Website"] = Website;
         ViewData["News"] = News;
         ViewData["Events"] = Events;
+        ViewData["Faculty"] = Faculty;
         ViewData["Title"] = Website.Branding.Name;
     }
 }

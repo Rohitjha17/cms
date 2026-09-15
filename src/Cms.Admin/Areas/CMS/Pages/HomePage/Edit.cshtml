@@ -99,6 +99,23 @@
                 <div><strong>Media assets</strong><small>Use high-quality, optimized imagery. Files are isolated by tenant and site.</small></div>
             </header>
             <div class="panel__body field-grid">
+                @{
+                    // "Recommended 1600 x 900" is right for a banner and wrong for everything that
+                    // is not one. A school reading it on the crest section decided the field was not
+                    // for its badge and put the badge in a symbol's pictogram slot instead, where it
+                    // is drawn 52px wide. What the picture is for, per section, in the school's words.
+                    var (imageWhat, imageSize) = Model.SectionKey switch
+                    {
+                        "crest" => ("Your school crest or badge — shown large beside the symbols.",
+                                    "Square PNG with a transparent background, about 600 × 600 px"),
+                        "principal" or "chairman" or "director" or "manager" or "founder"
+                            => ("A photograph of the person, head and shoulders.",
+                                "Portrait, about 600 × 750 px"),
+                        "about" or "welcome" => ("A picture of the school beside the text.",
+                                                 "Landscape, about 1200 × 800 px"),
+                        _ => ("The picture for this section.", "Recommended 1600 × 900 px")
+                    };
+                }
                 <div class="field">
                     <label>Primary image <small>JPEG, PNG, WebP · max 5 MB</small></label>
                     <label class="media-dropzone">
@@ -106,7 +123,8 @@
                         <span>
                             <span class="media-dropzone__icon"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 14v5h14v-5"/></svg></span>
                             <strong>Drop or choose an image</strong>
-                            <small>Recommended 1600 × 900 px</small>
+                            <small>@imageWhat</small>
+                            <small>@imageSize</small>
                         </span>
                     </label>
                     <input asp-for="Input.ImageUrl" id="image-url" placeholder="Or paste an image URL" aria-label="Primary image URL" />

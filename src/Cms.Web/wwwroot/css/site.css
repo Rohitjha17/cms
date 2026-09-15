@@ -165,7 +165,18 @@ p:last-child { margin-bottom: 0; }
   background: var(--brand);
   font-size: .875rem;
 }
-.notice-bar .shell { padding-block: .6rem; }
+/* A notice that does not scroll is a label and a line of text. Both are blocks, so they were
+   stacking — the label on one line and the notice under it — rather than sitting together on
+   one. One centred row, and the label keeps its place at the head of it. */
+.notice-bar .shell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .25rem .9rem;
+  padding-block: .6rem;
+  text-align: center;
+}
 .notice-bar span { display: block; font-weight: 600; letter-spacing: .005em; }
 
 /* Header ------------------------------------------------------------------- */
@@ -2185,6 +2196,15 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   gap: clamp(1.5rem, 5vw, 4rem);
 }
 .crest-layout:not(:has(> .crest-section__mark)) { grid-template-columns: minmax(0, 1fr); }
+/* A crest with no readings beside it has nothing to sit beside. Left in the first column of a
+   two-column grid it hung against the left edge with the rest of the section empty, which is
+   the crest looking dropped rather than placed. Alone, it is the thing on show: centred, and
+   large enough to be looked at. */
+.crest-layout:not(:has(> .crest-meanings)) {
+  grid-template-columns: minmax(0, 320px);
+  justify-content: center;
+}
+.crest-layout:not(:has(> .crest-meanings)) .crest-section__mark { max-width: 320px; }
 @media (max-width: 760px) {
   .crest-layout { grid-template-columns: 1fr; justify-items: center; text-align: start; }
 }
@@ -2198,13 +2218,13 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 .crest-badge {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 52px;
+  height: 52px;
   background: var(--brand);
   border-radius: 50%;
   overflow: hidden;
 }
-.crest-badge img { width: 60%; height: 60%; object-fit: contain; }
+.crest-badge img { width: 72%; height: 72%; object-fit: contain; }
 /* No picture supplied: a plain mark, so the row still reads as one of a set. */
 .crest-badge:empty::after,
 .crest-badge:not(:has(img))::after {
@@ -2515,7 +2535,12 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 
 /* --- Notice label, and contact in the header ------------------------------- */
 
-.notice-bar__tag {
+/* Written as a descendant so it outranks `.notice-bar span { display: block }`, which is one
+   class and one element to this rule's one class. Losing that contest cost the label its
+   `display: inline-flex`, so it was not a flex container, its `align-items: center` did
+   nothing, and the word sat at the top of a box stretched to the full height of the bar —
+   eleven pixels above the notice beside it, which is the label sitting off-centre. */
+.notice-bar .notice-bar__tag {
   /* The notice scrolls past underneath. Both are in normal flow and the marquee comes second,
      so without this it paints over the label and the two read as one smeared line. */
   position: relative;
@@ -3208,7 +3233,9 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
   line-height: 1.45;
 }
 .message-block > div > :last-child { margin-bottom: 0; }
-.message-signature { margin-top: 1rem; color: var(--muted); }
+/* A letter signs off on the right. The name and role are the end of the message, not another
+   line of it, so they range right the way a signature does under a letter. */
+.message-signature { margin-top: 1rem; color: var(--muted); text-align: right; }
 .message-signature strong { color: var(--ink); }
 
 /* --- Facilities ------------------------------------------------------------

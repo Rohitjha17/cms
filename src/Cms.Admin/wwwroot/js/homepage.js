@@ -201,7 +201,7 @@
       ["intro", "Note above the table", "text", "e.g. Timings may change by notice"]
     ],
     crest: [
-      ["intro", "Motto", "text", "The line under the heading"]
+      ["intro", "Motto", "text", "The line under the heading, e.g. Lead, Kindle, Serve."]
     ],
     founder: [
       ["name", "Founder's name", "text", "Shown under the portrait"],
@@ -329,7 +329,7 @@
     crest: [
       ["symbol", "Symbol", "e.g. The book, The torch."],
       ["meaning", "What it stands for", "e.g. Signifies learning."],
-      ["iconUrl", "Icon image URL (optional)", "A small picture of the symbol for the badge. Leave blank for a plain mark."]
+      ["iconUrl", "Small pictogram for this symbol (optional)", "A tiny 52px badge beside this one line — a book, a torch, a flame. NOT the school crest: the crest goes in this section's own Image URL field above, where it is shown large. Leave blank for a plain mark."]
     ],
     alumni: [
       ["name", "Name", "Their full name."],

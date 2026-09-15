@@ -4,6 +4,37 @@
     ViewData["Title"] = "Home page";
 }
 @functions {
+    /// <summary>
+    /// Whether a section's stored settings actually hold anything: a row in a list, or a field
+    /// with something written in it. Empty strings, empty arrays and nulls do not count.
+    /// </summary>
+    private static bool HoldsSomething(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) { return false; }
+
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(json);
+            return HasValue(document.RootElement);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            // Not readable as settings, but somebody put it there. Treat it as content rather
+            // than telling an editor their section is empty when it may not be.
+            return true;
+        }
+
+        static bool HasValue(System.Text.Json.JsonElement element) => element.ValueKind switch
+        {
+            System.Text.Json.JsonValueKind.Object => element.EnumerateObject().Any(p => HasValue(p.Value)),
+            System.Text.Json.JsonValueKind.Array => element.EnumerateArray().Any(HasValue),
+            System.Text.Json.JsonValueKind.String => !string.IsNullOrWhiteSpace(element.GetString()),
+            System.Text.Json.JsonValueKind.Null or System.Text.Json.JsonValueKind.Undefined => false,
+            System.Text.Json.JsonValueKind.False => false,
+            _ => true
+        };
+    }
+
     private static string IconFor(string key) => key switch
     {
         "hero" => """<svg viewBox="0 0 24 24"><path d="M4 20h16M5 17 9 7l4 7 2-4 4 7M15 5h.01"/></svg>""",
@@ -102,9 +133,13 @@
 <div class="section-list" data-sortable-sections>
     @foreach (var item in Model.Sections)
     {
+        // "Content configured" was decided by JsonData being a non-empty string — and a section
+        // an editor has opened and saved without filling in holds the string {"items":[]}, which
+        // is not empty. So five sections that had nothing in them reported themselves as done,
+        // and the first anybody knew of it was a heading over a blank stretch of the website.
         var hasContent = !string.IsNullOrWhiteSpace(item.Description)
             || !string.IsNullOrWhiteSpace(item.ImageUrl)
-            || !string.IsNullOrWhiteSpace(item.JsonData);
+            || HoldsSomething(item.JsonData);
         <article class="section-card"
                  data-section-card
                  data-section-key="@item.SectionKey"

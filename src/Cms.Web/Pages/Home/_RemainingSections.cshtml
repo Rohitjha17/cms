@@ -11,6 +11,7 @@
     var basePath = Model.BasePath;
     var news = ViewData["News"] as IReadOnlyList<NewsArticleDto> ?? [];
     var events = ViewData["Events"] as IReadOnlyList<SchoolEventDto> ?? [];
+    var faculty = ViewData["Faculty"] as IReadOnlyList<FacultyMemberDto> ?? [];
 
     var remaining = Model.HomeSections
         .Where(s => !handled.Contains(s.SectionKey))
@@ -23,6 +24,26 @@
     var items = SectionJson.GetArray(json, "items").ToList();
     var body = RichText.ToPlainText(block.Description);
     var intro = SectionJson.GetString(json, "intro") ?? block.SubTitle;
+
+    // A heading with nothing under it reads as the page having broken, and the client's website
+    // carried five of them at once — Notable Alumni, Staff List, Facilities, Downloads and
+    // School Timings, each a title over an empty stretch of page. These sections exist to list
+    // things. With nothing listed, nothing written above the list and no picture, there is
+    // nothing to show and the title is noise, so the section is not drawn at all.
+    //
+    // The editor hears about it in the console instead, where the section is marked "Needs
+    // content" — which is the right place for it, and the only place a visitor should not see.
+    var listShaped = block.SectionKey is "alumni" or "facilities" or "staff_list"
+        or "downloads" or "timings";
+    var rowCount = block.SectionKey == "staff_list" && items.Count == 0 ? faculty.Count : items.Count;
+    if (listShaped
+        && rowCount == 0
+        && string.IsNullOrWhiteSpace(intro)
+        && string.IsNullOrWhiteSpace(body)
+        && string.IsNullOrWhiteSpace(block.ImageUrl))
+    {
+        continue;
+    }
 
     switch (block.SectionKey)
     {
@@ -362,6 +383,25 @@
                one another with the first column left empty, and on a narrow screen the whole
                thing collapsed to a 78px ribbon of text a word wide. A design can place this
                block; it cannot reach inside it. *@
+            {
+                // A row carrying a picture and no words is not one of the crest's symbols — it is
+                // the crest. Schools put their badge in the first icon field they meet, which is
+                // the 40px pictogram beside a symbol's name, and it came out as a 24px dot with an
+                // empty line of text next to it. So: rows with nothing to read are not drawn, and
+                // if the section has no crest of its own the first of those pictures becomes it.
+                Func<System.Text.Json.JsonElement, bool> hasWords = row =>
+                    !string.IsNullOrWhiteSpace(SectionJson.Item(row, "symbol"))
+                    || !string.IsNullOrWhiteSpace(SectionJson.Item(row, "meaning"));
+
+                var readings = items.Where(hasWords).ToList();
+                var crestMark = block.ImageUrl;
+                if (string.IsNullOrWhiteSpace(crestMark))
+                {
+                    crestMark = items.Where(x => !hasWords(x))
+                        .Select(x => SectionJson.Item(x, "iconUrl"))
+                        .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+                }
+
             <section data-section="@block.SectionKey" class="shell section crest-section">
                 <div class="crest-section__inner">
                     <div class="section-head crest-section__head">
@@ -369,12 +409,14 @@
                         @if (!string.IsNullOrWhiteSpace(intro)) { <p class="motto">@intro</p> }
                     </div>
                     <div class="crest-layout">
-                        @if (!string.IsNullOrWhiteSpace(block.ImageUrl))
+                        @if (!string.IsNullOrWhiteSpace(crestMark))
                         {
-                            <figure class="crest-section__mark"><img src="@block.ImageUrl" alt="@(block.Title ?? "School crest")" loading="lazy" /></figure>
+                            <figure class="crest-section__mark"><img src="@crestMark" alt="@(block.Title ?? "School crest")" loading="lazy" /></figure>
                         }
+                        @if (readings.Count > 0)
+                        {
                         <ul class="crest-meanings">
-                            @foreach (var symbol in items)
+                            @foreach (var symbol in readings)
                             {
                                 var badge = SectionJson.Item(symbol, "iconUrl");
                                 <li>
@@ -391,9 +433,11 @@
                                 </li>
                             }
                         </ul>
+                        }
                     </div>
                 </div>
             </section>
+            }
             break;
 
         case "alumni":
@@ -427,10 +471,31 @@
                     <h2>@(block.Title ?? "Staff list")</h2>
                     @if (!string.IsNullOrWhiteSpace(intro)) { <p>@intro</p> }
                 </div>
-                                @* A heading row with nothing under it reads as the page having failed rather
+                @* Where the names come from.
+
+                   A school keeps its staff under People — that is where the console asks for a
+                   name, a designation and a qualification, which is exactly this table. This
+                   section used to read only the rows typed into its own configuration, so a
+                   school that had entered its whole staff in the obvious place saw a heading
+                   with nothing under it.
+
+                   Rows typed into the section still win, because a school that typed them meant
+                   them. With none, the People list fills the table. *@
+                @{
+                    var staffRows = items.Count > 0
+                        ? items.Select(x => (
+                            Name: SectionJson.Item(x, "name"),
+                            Designation: SectionJson.Item(x, "designation"),
+                            Qualification: SectionJson.Item(x, "qualification"))).ToList()
+                        : faculty.Select(x => (
+                            Name: (string?)x.FullName,
+                            Designation: x.Designation,
+                            Qualification: x.Qualification)).ToList();
+                }
+                @* A heading row with nothing under it reads as the page having failed rather
                    than as a table nobody has filled in yet. The rest of the section still
                    shows, so an intro written before the rows is not lost. *@
-                @if (items.Count > 0)
+                @if (staffRows.Count > 0)
                 {
                 <div class="table-scroll">
                     <table class="staff-table">
@@ -438,13 +503,13 @@
                             <tr><th>#</th><th>Name</th><th>Designation</th><th>Qualification</th></tr>
                         </thead>
                         <tbody>
-                            @for (var i = 0; i < items.Count; i++)
+                            @for (var i = 0; i < staffRows.Count; i++)
                             {
                                 <tr>
                                     <td>@(i + 1)</td>
-                                    <th scope="row">@SectionJson.Item(items[i], "name")</th>
-                                    <td>@SectionJson.Item(items[i], "designation")</td>
-                                    <td>@SectionJson.Item(items[i], "qualification")</td>
+                                    <th scope="row">@staffRows[i].Name</th>
+                                    <td>@staffRows[i].Designation</td>
+                                    <td>@staffRows[i].Qualification</td>
                                 </tr>
                             }
                         </tbody>
