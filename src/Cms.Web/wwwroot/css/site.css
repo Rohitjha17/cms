@@ -2299,19 +2299,14 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 
 .message-block {
   display: grid;
-  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
-  gap: clamp(1.5rem, 3.5vw, 3rem);
+  grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
+  gap: clamp(1.25rem, 3vw, 2.25rem);
   align-items: start;
   /* Bounded and centred. Run across the full width of a wide screen it read as a stray
-     paragraph rather than as the head of the school addressing you. Wide enough that the
-     larger portrait leaves the letter a comfortable line. */
-  max-width: 72rem;
+     paragraph rather than as the head of the school addressing you. */
+  max-width: 64rem;
   margin-inline: auto;
 }
-/* A head of school writes a page, not a paragraph. With the portrait at the top of its column,
-   everything under it down the left was blank — a photograph over a tall empty strip beside a
-   long letter. It sits at the middle of the letter instead, so the two read as one piece. */
-.message-block > .message-portrait { align-self: center; }
 .message-block:not(:has(> .message-portrait)) { grid-template-columns: minmax(0, 1fr); }
 /* Two classes deep on purpose. "​.page-body img" and "​.section img" are both more
    specific than a lone class, so a bare .message-portrait cap loses the cascade — which
@@ -2325,17 +2320,8 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   object-fit: cover;
   border-radius: var(--r-md);
 }
-/* On the home page the portrait is the person addressing the reader, and at 210px beside a
-   long letter it read as a thumbnail. */
-.message-block .message-portrait { max-width: 300px; }
-@media (max-width: 860px) {
-  .message-block { grid-template-columns: minmax(0, 200px) minmax(0, 1fr); }
-}
 @media (max-width: 560px) {
-  /* Too narrow for a portrait beside a letter: the portrait goes above it, centred, and the
-     letter takes the full width rather than a strip beside a 120px thumbnail. */
-  .message-block { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-  .message-block > .message-portrait { justify-self: center; max-width: 220px; }
+  .message-block { grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 1rem; }
 }
 
 /* The founder's portrait is the one place a larger picture is the point, but a
@@ -2442,6 +2428,30 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   border-top: 2px solid var(--line);
 }
 .variant-bulletin .section > * { grid-column: 2; }
+
+/* Bulletin only. The left column holds each section's heading; for a message it holds the
+   person as well — the portrait directly under the heading, and the letter down the right.
+
+   The block steps aside so the portrait and the letter become cells of the section's own grid.
+   The letter spans both rows, and the second row is the flexible one: a spanning item that
+   crosses a flexible track does not size the fixed tracks, so the first row stays exactly the
+   heading's height and the portrait starts right under it rather than halfway down a row
+   stretched by a long letter. */
+@media (min-width: 861px) {
+  .variant-bulletin .message-section { grid-template-rows: auto 1fr; }
+  .variant-bulletin .message-section > .message-block { display: contents; }
+  .variant-bulletin .message-block > .message-portrait {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+    max-width: none;
+  }
+  .variant-bulletin .message-block > div { grid-column: 2; grid-row: 1 / span 2; }
+  /* The heading starts at the rail's left edge like every other Bulletin heading, rather than
+     being centred in it, and hands the gap under it to the grid, so the portrait sits one row
+     gap below the heading instead of a heading margin and a row gap below it. */
+  .variant-bulletin .message-section > .section-head { margin: 0; }
+}
 /* Row 1, not "rows 1 to 20". Spanning twenty rows does not reserve twenty rows of
    nothing — it creates them, and every one of the nineteen gaps between them is real:
    19 × 24px of empty space inside every section, which is why a principal's message
@@ -2816,12 +2826,10 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 }
 
 /* The name reads as the school's, in its own colour, with whatever follows it — the campus,
-   the city, the board — set under the name's right edge rather than under its left. */
+   the city, the board — centred under it. Set against the name's right edge it read as having
+   slid off the end of the name, on every design. */
 .brand strong { color: var(--brand); }
-.brand small { text-align: right; }
-/* Bulletin sets the name large, as a masthead, and a line under the right half of a masthead
-   reads as having slid off it. Under a masthead the line is centred. */
-.variant-bulletin .brand small { text-align: center; }
+.brand small { text-align: center; }
 
 @media (prefers-reduced-motion: reduce) {
   .brand img { transition: none; }
