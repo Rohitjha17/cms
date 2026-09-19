@@ -132,6 +132,41 @@ public sealed class CardContentTests : IClassFixture<PublicWebFactory>
         Assert.Contains("Prize Day", html);
     }
 
+    /// <summary>
+    /// Campus was the one design whose gallery carried no heading — four photographs with nothing
+    /// to say they were a gallery. Every design now titles it with the section's own title.
+    /// </summary>
+    [Fact]
+    public async Task TheCampusGallery_HasItsHeading()
+    {
+        await SaveAsync(HomePageSectionKeys.Gallery, "Life at Greenfield", new
+        {
+            items = new[] { new { imageUrl = "/uploads/quad.jpg", alt = "The quad" } }
+        });
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var site = await db.Sites.IgnoreQueryFilters().FirstAsync(x => x.SiteKey == "school");
+        var before = site.HomeVariant;
+        site.HomeVariant = Cms.Domain.Enums.HomeVariant.Campus;
+        await db.SaveChangesAsync();
+
+        try
+        {
+            var html = await _client.GetStringAsync("/");
+
+            Assert.Contains("variant-campus", html);
+            var gallery = html[html.IndexOf("data-section=\"gallery\"", StringComparison.Ordinal)..];
+            Assert.Contains("<h2>Life at Greenfield</h2>", gallery[..gallery.IndexOf("</section>", StringComparison.Ordinal)]);
+            Assert.Contains("/uploads/quad.jpg", html);
+        }
+        finally
+        {
+            site.HomeVariant = before;
+            await db.SaveChangesAsync();
+        }
+    }
+
     private async Task SaveEntryAsync(string contentType, string key, string title, string imageUrl, string summary)
     {
         using var scope = _factory.Services.CreateScope();
