@@ -69,7 +69,12 @@ public sealed class ContentModel : PageModel
     /// head, stylesheets and scripts — was broken open inside a div. In a frame it is the whole
     /// page, exactly as written, and nothing of the template's reaches it.
     ///
-    /// It is served under the site's own security headers, unchanged.
+    /// It is served under the site's own security headers, with one restriction added: the
+    /// browser sandboxes the document into an origin of its own. The school's HTML is kept
+    /// whole, scripts included, so it must not run as the website — here it cannot read the
+    /// website's cookies or storage, reach into the page that frames it, or reach the console.
+    /// The sandbox is a response header rather than only the frame's attribute, so it holds
+    /// when this address is opened directly as well.
     /// </summary>
     public async Task<IActionResult> OnGetHtmlAsync(string slug, CancellationToken cancellationToken)
     {
@@ -88,6 +93,10 @@ public sealed class ContentModel : PageModel
             return NotFound();
         }
 
+        var policy = Response.Headers.ContentSecurityPolicy.ToString();
+        Response.Headers.ContentSecurityPolicy =
+            (string.IsNullOrWhiteSpace(policy) ? string.Empty : policy.TrimEnd(' ', ';') + "; ")
+            + "sandbox " + CustomHtmlDocument.SandboxFlags;
         return Content(CustomHtmlDocument.Build(page.Content, page.Title), "text/html; charset=utf-8");
     }
 

@@ -107,7 +107,17 @@ public sealed class SiteContentService : ISiteContentService
         page.Title = dto.Title.Trim();
         page.Slug = slug;
         page.Excerpt = dto.Excerpt?.Trim();
-        page.Content = Sanitize(dto.Content);
+        // A page the school builds in its own HTML keeps that HTML whole — its head, its styles,
+        // its classes and scripts. Put through the sanitiser it arrived as bare tags: every
+        // class and style gone, so a designed page rendered as unstyled text. It is safe to keep
+        // because it is never written into the website's pages: it is served only as its own
+        // document, sandboxed by the browser into an origin of its own (see the Content page's
+        // Html handler), where nothing it runs can reach the website, its visitors' cookies or
+        // the console.
+        //
+        // Anything else is sanitised as before — including this same page the moment the switch
+        // is turned off and saved, since its content is then written into the page directly.
+        page.Content = dto.UseCustomHtml ? dto.Content : Sanitize(dto.Content);
         page.JsonData = dto.JsonData;
         page.UseCustomHtml = dto.UseCustomHtml;
         page.FeaturedImageUrl = dto.FeaturedImageUrl?.Trim();
