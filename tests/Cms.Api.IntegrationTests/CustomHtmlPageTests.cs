@@ -24,6 +24,11 @@ public sealed class CustomHtmlPageTests : IClassFixture<PublicWebFactory>
         _client = factory.CreateClient();
     }
 
+    /// <summary>
+    /// With the switch on, the page is a frame and nothing else: no title band and none of the
+    /// built-in layout. The school's markup is served at the frame's address as a document of
+    /// its own, without the design's stylesheet, so the template cannot restyle it.
+    /// </summary>
     [Fact]
     public async Task WithTheSwitchOn_ThePageIsOnlyTheSchoolsOwnMarkup()
     {
@@ -34,12 +39,32 @@ public sealed class CustomHtmlPageTests : IClassFixture<PublicWebFactory>
 
         var page = await _client.GetStringAsync("/gallery");
 
-        Assert.Contains("id=\"mine\"", page);
-        Assert.Contains("Our own gallery", page);
-        Assert.Contains("custom-html", page);
-        // the built-in gallery must not be drawn underneath it
+        Assert.Contains("class=\"custom-page__frame\"", page);
+        Assert.Contains("src=\"?handler=Html\"", page);
+        // the built-in gallery must not be drawn underneath it, nor the title band above it
         Assert.DoesNotContain("gallery-grid", page);
         Assert.DoesNotContain("Built in", page);
+        Assert.DoesNotContain("page-hero", page);
+
+        var document = await _client.GetStringAsync("/gallery?handler=Html");
+
+        Assert.StartsWith("<!doctype html>", document.TrimStart(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("id=\"mine\"", document);
+        Assert.Contains("Our own gallery", document);
+        // the design's stylesheet does not reach the school's page
+        Assert.DoesNotContain("site.css", document);
+    }
+
+    /// <summary>A whole page pasted in — doctype, head, its own styles — is served as written.</summary>
+    [Fact]
+    public async Task AWholeDocument_IsServedExactlyAsWritten()
+    {
+        const string whole = "<!DOCTYPE html><html><head><style>h1{color:rebeccapurple}</style></head><body><h1>Ours</h1></body></html>";
+        await SaveGalleryPageAsync(custom: true, html: whole, items: new { items = Array.Empty<object>() });
+
+        var document = await _client.GetStringAsync("/gallery?handler=Html");
+
+        Assert.Equal(whole, document);
     }
 
     [Fact]
@@ -55,7 +80,11 @@ public sealed class CustomHtmlPageTests : IClassFixture<PublicWebFactory>
         Assert.Contains("An introduction.", page);
         Assert.Contains("gallery-grid", page);
         Assert.Contains("Built in", page);
-        Assert.DoesNotContain("custom-html", page);
+        Assert.DoesNotContain("class=\"custom-page__frame\"", page);
+
+        // and there is no own-HTML document to frame
+        using var frame = await _client.GetAsync("/gallery?handler=Html");
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, frame.StatusCode);
     }
 
     private async Task SaveGalleryPageAsync(bool custom, string html, object items)

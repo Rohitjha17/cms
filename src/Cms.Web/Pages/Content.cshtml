@@ -21,6 +21,20 @@
     }
 }
 
+@if (content.UseCustomHtml)
+{
+    @* The school has taken the page over, so the page is its HTML and nothing else: no title
+       band, no padding, none of the design's styles. It is loaded in a frame of its own — the
+       same address with ?handler=Html — so the design's stylesheet cannot reach it and a whole
+       document, head and scripts included, arrives intact. The frame is as tall as what is in
+       it, so the page scrolls as one page rather than a box scrolling inside another. *@
+    <article class="custom-page">
+        <h1 class="visually-hidden">@content.Title</h1>
+        <iframe class="custom-page__frame" data-custom-html src="?handler=Html" title="@content.Title"></iframe>
+    </article>
+}
+else
+{
 <article class="page-shell">
     <header class="page-hero">
         <div class="shell">
@@ -46,15 +60,7 @@
             <div class="notice">@Model.StatusMessage</div>
         }
 
-        @if (content.UseCustomHtml)
-        {
-            @* The school has taken the page over. Its own markup, the full width of the page,
-               and none of the built-in blocks underneath — otherwise a school that wrote its
-               own gallery would get ours printed under it as well. *@
-            <div class="custom-html">@Html.Raw(content.Content)</div>
-        }
-        else
-        {
+        @{
         @if (!string.IsNullOrWhiteSpace(content.Content))
         {
             <div class="rich-text">@Html.Raw(content.Content)</div>
@@ -423,6 +429,59 @@
         }
     </div>
 </article>
+}
+
+@section Scripts {
+<script>
+(() => {
+  const frame = document.querySelector("[data-custom-html]");
+  if (!frame) return;
+
+  // As tall as its content. A page written to fill the window (100vh) grows the frame, which
+  // grows the page, which grows the frame; that shows as a burst of growth within a second,
+  // and the frame stops following it rather than growing without end.
+  let last = 0;
+  let growth = [];
+  const fit = () => {
+    const doc = frame.contentDocument;
+    if (!doc || !doc.documentElement) return;
+    const height = Math.max(doc.documentElement.offsetHeight, doc.body ? doc.body.scrollHeight : 0);
+    if (Math.abs(height - last) < 2) return;
+    if (height > last) {
+      const now = Date.now();
+      growth = growth.filter(t => now - t < 1000);
+      growth.push(now);
+      if (growth.length > 12) return;
+    }
+    last = height;
+    frame.style.height = height + "px";
+  };
+
+  const wire = () => {
+    const doc = frame.contentDocument;
+    if (!doc || !doc.documentElement) return;
+    fit();
+    new ResizeObserver(fit).observe(doc.documentElement);
+    doc.querySelectorAll("img").forEach(img => img.addEventListener("load", fit));
+    if (doc.fonts) doc.fonts.ready.then(fit);
+
+    // A link in the school's page leads somewhere on the website, so it opens as the whole
+    // page rather than inside the frame. A jump within the page, a link that already names
+    // where it opens, and a download are left as they are.
+    doc.addEventListener("click", event => {
+      const link = event.target.closest && event.target.closest("a[href]");
+      if (!link || link.target || link.hasAttribute("download")) return;
+      const href = link.getAttribute("href") || "";
+      if (href.startsWith("#") || href.toLowerCase().startsWith("javascript:")) return;
+      link.target = "_top";
+    }, true);
+  };
+
+  frame.addEventListener("load", wire);
+  if (frame.contentDocument && frame.contentDocument.readyState === "complete") wire();
+})();
+</script>
+}
 
 @functions {
     /// <summary>

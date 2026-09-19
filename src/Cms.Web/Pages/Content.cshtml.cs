@@ -1,6 +1,7 @@
 using Cms.Application.DTOs.Websites;
 using Cms.Application.Interfaces;
 using Cms.Shared.Exceptions;
+using Cms.Web.Helpers;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -56,6 +57,38 @@ public sealed class ContentModel : PageModel
         ViewData["Website"] = Website;
         ViewData["Title"] = ContentPage.MetaTitle ?? ContentPage.Title;
         return Page();
+    }
+
+    /// <summary>
+    /// The school's own HTML for a page it has taken over, served as a document of its own for
+    /// the page to show in a frame.
+    ///
+    /// Written into the page directly, the school's markup lived under the design's stylesheet:
+    /// every heading, paragraph, table and image it contained was restyled by the template, the
+    /// page's title band and padding sat around it, and a full document pasted in — with its own
+    /// head, stylesheets and scripts — was broken open inside a div. In a frame it is the whole
+    /// page, exactly as written, and nothing of the template's reaches it.
+    ///
+    /// It is served under the site's own security headers, unchanged.
+    /// </summary>
+    public async Task<IActionResult> OnGetHtmlAsync(string slug, CancellationToken cancellationToken)
+    {
+        PublicPageDto page;
+        try
+        {
+            page = await _websiteService.GetPublicPageAsync(slug, cancellationToken);
+        }
+        catch (NotFoundException)
+        {
+            return NotFound();
+        }
+
+        if (!page.UseCustomHtml)
+        {
+            return NotFound();
+        }
+
+        return Content(CustomHtmlDocument.Build(page.Content, page.Title), "text/html; charset=utf-8");
     }
 
     private async Task<Cms.Application.DTOs.SchoolContent.SiteSettingsDto> LoadSettingsAsync(
