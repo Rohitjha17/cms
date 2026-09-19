@@ -2742,7 +2742,10 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 
 .contact-meta li {
   display: grid;
-  grid-template-columns: auto minmax(6.5rem, auto) minmax(0, 1fr);
+  /* The icon column is a fixed width. Sized to its content, it was 18px on the phone and email
+     rows and nothing on the address row, which has no icon — so the address, and its label,
+     started 18px left of everything under them. */
+  grid-template-columns: 18px minmax(6.5rem, auto) minmax(0, 1fr);
   align-items: baseline;
   gap: 0 .75rem;
 }
@@ -2880,6 +2883,17 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
 }
 .contact-block .map { width: 100%; min-height: 320px; border: 0; border-radius: var(--r-md, 14px); }
 @media (max-width: 820px) { .contact-block { grid-template-columns: 1fr; } }
+
+/* Bulletin puts every section's heading in its left column. The contact heading sits inside a
+   wrapper with the details, so the rule never reached it: it stayed over the details in the
+   right column, 280px right of every other heading on the page. On Bulletin the wrapper steps
+   aside, the heading takes the left column like the rest, and the details and the map follow
+   each other down the right. */
+@media (min-width: 861px) {
+  .variant-bulletin .contact-block > div:first-child { display: contents; }
+  .variant-bulletin .contact-block > div:first-child > :not(.section-head),
+  .variant-bulletin .contact-block > .map { grid-column: 2; }
+}
 
 /* Facts the board requires on the disclosure page, above the document table. */
 .disclosure-facts {
