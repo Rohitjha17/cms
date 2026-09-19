@@ -2802,6 +2802,9 @@ body.hero-plain .hero-slides__item.is-active { transform: none; }
    the city, the board — set under the name's right edge rather than under its left. */
 .brand strong { color: var(--brand); }
 .brand small { text-align: right; }
+/* Bulletin sets the name large, as a masthead, and a line under the right half of a masthead
+   reads as having slid off it. Under a masthead the line is centred. */
+.variant-bulletin .brand small { text-align: center; }
 
 @media (prefers-reduced-motion: reduce) {
   .brand img { transition: none; }
