@@ -2299,14 +2299,19 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
 
 .message-block {
   display: grid;
-  grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
-  gap: clamp(1.25rem, 3vw, 2.25rem);
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: clamp(1.5rem, 3.5vw, 3rem);
   align-items: start;
   /* Bounded and centred. Run across the full width of a wide screen it read as a stray
-     paragraph rather than as the head of the school addressing you. */
-  max-width: 64rem;
+     paragraph rather than as the head of the school addressing you. Wide enough that the
+     larger portrait leaves the letter a comfortable line. */
+  max-width: 72rem;
   margin-inline: auto;
 }
+/* A head of school writes a page, not a paragraph. With the portrait at the top of its column,
+   everything under it down the left was blank — a photograph over a tall empty strip beside a
+   long letter. It sits at the middle of the letter instead, so the two read as one piece. */
+.message-block > .message-portrait { align-self: center; }
 .message-block:not(:has(> .message-portrait)) { grid-template-columns: minmax(0, 1fr); }
 /* Two classes deep on purpose. "​.page-body img" and "​.section img" are both more
    specific than a lone class, so a bare .message-portrait cap loses the cascade — which
@@ -2320,8 +2325,17 @@ body:not([class*="btn-style-"]) .btn { background: var(--btn-color, var(--accent
   object-fit: cover;
   border-radius: var(--r-md);
 }
+/* On the home page the portrait is the person addressing the reader, and at 210px beside a
+   long letter it read as a thumbnail. */
+.message-block .message-portrait { max-width: 300px; }
+@media (max-width: 860px) {
+  .message-block { grid-template-columns: minmax(0, 200px) minmax(0, 1fr); }
+}
 @media (max-width: 560px) {
-  .message-block { grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 1rem; }
+  /* Too narrow for a portrait beside a letter: the portrait goes above it, centred, and the
+     letter takes the full width rather than a strip beside a 120px thumbnail. */
+  .message-block { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .message-block > .message-portrait { justify-self: center; max-width: 220px; }
 }
 
 /* The founder's portrait is the one place a larger picture is the point, but a
