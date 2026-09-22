@@ -41,6 +41,45 @@ public sealed class WebsiteRepository : IWebsiteRepository
             .Include(x => x.Domains)
             .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Id == siteId, cancellationToken);
 
+    public async Task<IReadOnlyList<string>> DeleteSiteAsync(
+        Guid tenantId, Guid siteId, CancellationToken cancellationToken)
+    {
+        await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+
+        var storageKeys = await _db.MediaFiles.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId)
+            .Select(x => x.StorageKey)
+            .ToListAsync(cancellationToken);
+
+        // Children before parents: menu items point at menus and pages.
+        await _db.MenuItems.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId).ExecuteDeleteAsync(cancellationToken);
+        await _db.Menus.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId).ExecuteDeleteAsync(cancellationToken);
+        await _db.SeoSettings.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId).ExecuteDeleteAsync(cancellationToken);
+        await _db.ContentEntries.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId).ExecuteDeleteAsync(cancellationToken);
+        await _db.HomePageSections.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId).ExecuteDeleteAsync(cancellationToken);
+        await _db.Pages.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId).ExecuteDeleteAsync(cancellationToken);
+        await _db.ContactSubmissions.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId).ExecuteDeleteAsync(cancellationToken);
+        await _db.MediaFiles.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId).ExecuteDeleteAsync(cancellationToken);
+        await _db.TenantDomains.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId).ExecuteDeleteAsync(cancellationToken);
+        await _db.ActivityLogs.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.SiteId == siteId)
+            .ExecuteUpdateAsync(x => x.SetProperty(log => log.SiteId, (Guid?)null), cancellationToken);
+        await _db.Sites.IgnoreQueryFilters()
+            .Where(x => x.TenantId == tenantId && x.Id == siteId).ExecuteDeleteAsync(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
+        return storageKeys;
+    }
+
     public Task<Site?> GetSiteByKeyAsync(Guid tenantId, string siteKey, CancellationToken cancellationToken) =>
         _db.Sites.IgnoreQueryFilters()
             .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.SiteKey == siteKey, cancellationToken);

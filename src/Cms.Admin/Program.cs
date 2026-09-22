@@ -102,6 +102,8 @@ app.UseRouting();
 app.UseRateLimiter();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthentication();
+// The signed-in account, not the address, decides the institution: see the middleware.
+app.UseMiddleware<ManagementTenantMiddleware>();
 app.UseMiddleware<TenantAuthorizationMiddleware>();
 app.UseAuthorization();
 app.MapRazorPages();

@@ -220,22 +220,31 @@ public sealed class AdminConsoleTests : IClassFixture<AdminFactory>
     }
 
     /// <summary>
-    /// Domain editing must exist in exactly one place. It was previously possible to edit
-    /// hosts from the Tenants form as well, where an absent row silently deactivated them.
+    /// Domain editing exists in exactly one place: the Domains screen. It was once possible to
+    /// edit hosts from the Tenants form as well, where an absent row silently deactivated them.
+    ///
+    /// The fix for that took every domain field off the Tenants form — including the only place
+    /// a brand-new institution's first address could be typed, since the Domains screen works on
+    /// the institution already open. So the Tenants form adds addresses and does nothing else:
+    /// existing ones are shown, not editable, and saving the tenant leaves them exactly as they are.
     /// </summary>
     [Fact]
-    public async Task TenantScreen_DoesNotAlsoEditDomains()
+    public async Task TenantScreen_AddsDomains_ButDoesNotEditThem()
     {
         using var client = _factory.CreateClient(
             new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
         client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, AppRoles.SuperAdmin);
 
-        using var response = await client.GetAsync("/CMS/Tenants/Index");
+        using var response = await client.GetAsync($"/CMS/Tenants/Index?edit={DatabaseSeeder.DemoTenantId}");
         response.EnsureSuccessStatusCode();
         var html = await response.Content.ReadAsStringAsync();
 
-        Assert.DoesNotContain("Input.Domains[0].DomainName", html);
-        Assert.Contains("Open Domains", html);
+        // A blank row to add an address...
+        Assert.Matches(@"<input name=""Input\.Domains\[\d+\]\.DomainName"" value=""""", html);
+        // ...while the demo's existing address is shown, never offered as an editable field.
+        Assert.Contains("<strong>localhost</strong>", html);
+        Assert.DoesNotMatch(@"<input(?![^>]*type=""hidden"")[^>]*value=""localhost""", html);
+        Assert.Contains("/CMS/Domains", html);
     }
 
     /// <summary>
@@ -441,6 +450,9 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
     /// <summary>Lets a test choose the role it acts as, so role boundaries can be exercised.</summary>
     public const string RoleHeader = "X-Test-Role";
 
+    /// <summary>Lets a test sign in as a user of another institution than the demo one.</summary>
+    public const string TenantHeader = "X-Test-Tenant";
+
     public TestAuthHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
@@ -465,7 +477,11 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
         // A super administrator intentionally spans tenants and carries no tenant claim.
         if (role != AppRoles.SuperAdmin)
         {
-            claims.Add(new Claim(AppClaimTypes.TenantId, DatabaseSeeder.DemoTenantId.ToString()));
+            var tenant = Request.Headers.TryGetValue(TenantHeader, out var requestedTenant)
+                && Guid.TryParse(requestedTenant, out var requestedTenantId)
+                    ? requestedTenantId
+                    : DatabaseSeeder.DemoTenantId;
+            claims.Add(new Claim(AppClaimTypes.TenantId, tenant.ToString()));
         }
 
         var identity = new ClaimsIdentity(claims, SchemeName);

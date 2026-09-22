@@ -48,6 +48,42 @@ public sealed class IndexModel : PageModel, IReloadablePage
         }
     }
 
+    /// <summary>
+    /// Deleting a website is two steps: close it — gone from the public web and the console, but
+    /// kept whole — then, from the closed list, delete it permanently by typing its key. A closed
+    /// website can be restored until that second step.
+    /// </summary>
+    public Task<IActionResult> OnPostCloseAsync(Guid id, CancellationToken cancellationToken) =>
+        RunAsync(() => _service.CloseWebsiteAsync(id, cancellationToken),
+            "Website closed. It is off the public web and can be restored from Closed websites below.");
+
+    public Task<IActionResult> OnPostRestoreAsync(Guid id, CancellationToken cancellationToken) =>
+        RunAsync(() => _service.RestoreWebsiteAsync(id, cancellationToken), "Website restored.");
+
+    public Task<IActionResult> OnPostDeleteAsync(Guid id, string? confirmation, CancellationToken cancellationToken) =>
+        RunAsync(() => _service.DeleteWebsitePermanentlyAsync(id, confirmation ?? string.Empty, cancellationToken),
+            "Website deleted permanently.");
+
+    private async Task<IActionResult> RunAsync(Func<Task> action, string done)
+    {
+        if (!CanProvision)
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            await action();
+            StatusMessage = done;
+        }
+        catch (Cms.Shared.Exceptions.AppException ex)
+        {
+            StatusMessage = ex.Message;
+        }
+
+        return RedirectToPage();
+    }
+
     public async Task<IActionResult> OnPostProvisionAsync(CancellationToken cancellationToken)
     {
         if (!CanProvision)

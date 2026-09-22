@@ -117,24 +117,45 @@
                     </table>
                 </div>
 
+                @* Existing addresses are shown, and posted back unchanged so saving the tenant keeps
+                   them. New ones can be added here. Changing or removing one is done on the Domains
+                   screen after switching to this institution from the top menu. *@
                 <div class="full">
-                    <h3>Domains</h3>
+                    <h3>Domains <small class="muted">(optional)</small></h3>
                     <p class="hint">
-                        Domains are managed on their own screen, where host uniqueness is enforced and a
-                        website cannot be left with no live address by accident.
-                        <a asp-area="CMS" asp-page="/Domains/Index">Open Domains</a>
+                        The web address this institution's <strong>public website</strong> opens on, for
+                        example <code>greenvalley.edu.in</code> or <code>site5.shubhsoftsolution.com</code>.
+                        Point its DNS at this server first. You can leave this empty and add it later: the
+                        institution's staff sign in at this same console either way. To change or remove an
+                        address later, choose this institution from the menu at the top, then open Domains.
                     </p>
-                    @if (Model.Input.Domains.Count > 0)
+                    @{
+                        var existingDomains = Model.Input.Domains
+                            .Select((domain, index) => (Domain: domain, Index: index))
+                            .Where(x => !string.IsNullOrWhiteSpace(x.Domain.DomainName))
+                            .ToList();
+                        var newDomains = Model.Input.Domains
+                            .Select((domain, index) => (Domain: domain, Index: index))
+                            .Where(x => string.IsNullOrWhiteSpace(x.Domain.DomainName))
+                            .ToList();
+                    }
+                    @if (existingDomains.Count > 0)
                     {
                         <table class="data-table">
                             <thead>
                                 <tr><th>Domain</th><th>Bound site</th><th>Primary</th><th>Status</th></tr>
                             </thead>
                             <tbody>
-                                @foreach (var domain in Model.Input.Domains)
+                                @foreach (var (domain, i) in existingDomains)
                                 {
                                     <tr>
-                                        <td><strong>@domain.DomainName</strong></td>
+                                        <td>
+                                            <strong>@domain.DomainName</strong>
+                                            <input type="hidden" name="Input.Domains[@i].DomainName" value="@domain.DomainName" />
+                                            <input type="hidden" name="Input.Domains[@i].SiteKey" value="@domain.SiteKey" />
+                                            <input type="hidden" name="Input.Domains[@i].IsPrimary" value="@(domain.IsPrimary ? "true" : "false")" />
+                                            <input type="hidden" name="Input.Domains[@i].IsActive" value="@(domain.IsActive ? "true" : "false")" />
+                                        </td>
                                         <td>@(string.IsNullOrWhiteSpace(domain.SiteKey) ? "All websites" : domain.SiteKey)</td>
                                         <td>@(domain.IsPrimary ? "Yes" : "—")</td>
                                         <td><span class="badge @(domain.IsActive ? "on" : "off")">@(domain.IsActive ? "Live" : "Disabled")</span></td>
@@ -143,11 +164,45 @@
                             </tbody>
                         </table>
                     }
-                    else
-                    {
-                        <div class="empty-state"><strong>No domains bound yet</strong><span>Add one from the Domains screen.</span></div>
-                    }
+
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>@(existingDomains.Count > 0 ? "Add a domain" : "Domain")</th><th>Bound site</th><th>Primary</th><th>Active</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var (domain, i) in newDomains)
+                            {
+                                <tr>
+                                    <td><input name="Input.Domains[@i].DomainName" value="" placeholder="greenvalley.edu.in" autocomplete="off" /></td>
+                                    <td>
+                                        <select name="Input.Domains[@i].SiteKey">
+                                            <option value="">All websites</option>
+                                            @foreach (var key in Model.AvailableSiteKeys)
+                                            {
+                                                <option value="@key">@key</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="Input.Domains[@i].IsPrimary" value="true" @(domain.IsPrimary && existingDomains.Count == 0 ? "checked" : null) />
+                                        <input type="hidden" name="Input.Domains[@i].IsPrimary" value="false" />
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="Input.Domains[@i].IsActive" value="true" checked />
+                                        <input type="hidden" name="Input.Domains[@i].IsActive" value="false" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <p class="hint">Blank rows are ignored. "All websites" opens the institution's default website, and its other websites under their key (for example <code>/college</code>).</p>
                 </div>
+
+                <p class="hint full">
+                    After saving, choose this institution from the menu at the top of the console to add
+                    its pages (Website templates, Page gallery), its content and its users. A school's own
+                    users only ever see their own institution.
+                </p>
 
                 <label class="switch-row full">
                     <input asp-for="Input.IsActive" />

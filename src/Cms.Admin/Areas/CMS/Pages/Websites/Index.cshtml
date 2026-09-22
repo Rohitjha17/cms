@@ -58,7 +58,7 @@
             </div>
         }
         <div class="website-grid">
-            @foreach (var site in Model.Websites)
+            @foreach (var site in Model.Websites.Where(x => x.IsActive))
             {
                 <article class="website-card">
                     <header>
@@ -91,12 +91,62 @@
                         {
                             <a class="btn btn-secondary btn-sm" href="@liveUrl" target="_blank" rel="noopener">View live</a>
                         }
+                        @if (Model.CanProvision)
+                        {
+                            <form method="post" asp-page-handler="Close" asp-route-id="@site.Id"
+                                  onsubmit="return confirm('Close @site.Name? It goes off the public website and out of the console. Everything in it is kept, and you can restore it from Closed websites.');">
+                                <button class="btn btn-secondary btn-sm" type="submit">Close website</button>
+                            </form>
+                        }
                     </div>
                 </article>
             }
         </div>
     </div>
 </section>
+
+@{ var closed = Model.Websites.Where(x => !x.IsActive).ToList(); }
+@if (Model.CanProvision && closed.Count > 0)
+{
+    <section class="panel">
+        <header class="panel__header">
+            <div>
+                <strong>Closed websites</strong>
+                <small>Off the public web and out of the console, with everything in them kept. Restore one to bring it back as it was. Delete one permanently to remove it and all its pages, content, media and domains for good — that cannot be undone.</small>
+            </div>
+        </header>
+        <div class="panel__body">
+            <div class="website-grid">
+                @foreach (var site in closed)
+                {
+                    <article class="website-card">
+                        <header>
+                            <span class="website-card__mark" style="--mark:#9aa1ad">@(site.Name.Length > 0 ? site.Name[0].ToString() : "?")</span>
+                            <span>
+                                <strong>@site.Name</strong>
+                                <small>@site.SiteKey · @site.WebsiteType · Closed</small>
+                            </span>
+                        </header>
+                        <dl class="website-card__facts">
+                            <div><dt>Pages</dt><dd>@site.PageCount</dd></div>
+                        </dl>
+                        <div class="website-card__actions">
+                            <form method="post" asp-page-handler="Restore" asp-route-id="@site.Id">
+                                <button class="btn btn-sm" type="submit">Restore</button>
+                            </form>
+                        </div>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@site.Id" class="field"
+                              onsubmit="return confirm('Delete @site.Name permanently? Its pages, content, media and domains are removed for good.');">
+                            <span>To delete permanently, type its key <code>@site.SiteKey</code></span>
+                            <input name="confirmation" autocomplete="off" placeholder="@site.SiteKey" required />
+                            <button class="btn btn-danger btn-sm" type="submit">Delete permanently</button>
+                        </form>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
 
 @if (Model.CanProvision)
 {

@@ -1,4 +1,5 @@
 using Cms.Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cms.Admin.Services;
 
@@ -36,6 +37,9 @@ public sealed class PublicSiteLink : IPublicSiteLink
     public PublicSiteLink(
         IConfiguration configuration,
         ISiteContext siteContext,
+        ITenantContext tenantContext,
+        Cms.Infrastructure.Persistence.ApplicationDbContext db,
+        Cms.Infrastructure.Tenancy.ITenantHostResolver hostResolver,
         IHttpContextAccessor httpContextAccessor,
         ILogger<PublicSiteLink> logger)
     {
@@ -49,6 +53,7 @@ public sealed class PublicSiteLink : IPublicSiteLink
                 ? configured
                 : null;
 
+        string? originHost = null;
         if (sameHostPath is not null)
         {
             // Anchor to whichever host the operator is actually on, so links are correct on
@@ -60,6 +65,7 @@ public sealed class PublicSiteLink : IPublicSiteLink
             }
 
             _origin = $"{request.Scheme}://{request.Host}{sameHostPath}";
+            originHost = request.Host.Host;
         }
         else if (string.IsNullOrWhiteSpace(configured))
         {
@@ -69,6 +75,7 @@ public sealed class PublicSiteLink : IPublicSiteLink
                  && (absolute.Scheme == Uri.UriSchemeHttp || absolute.Scheme == Uri.UriSchemeHttps))
         {
             _origin = configured;
+            originHost = absolute.Host;
         }
         else
         {
@@ -79,6 +86,28 @@ public sealed class PublicSiteLink : IPublicSiteLink
             return;
         }
 
+        // Every institution is worked on from the same console, but a public address serves one
+        // institution only: its own. A link built on it for any other institution — /school, say —
+        // opens the address owner's school instead, which is worse than no link. So for another
+        // institution its own shared address is used, and with none there is nowhere to link yet.
+        if (originHost is not null
+            && tenantContext.TenantId is Guid tenantId
+            && !BelongsTo(hostResolver, originHost.TrimEnd('.').ToLowerInvariant(), tenantId))
+        {
+            var shared = db.TenantDomains
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(d => d.TenantId == tenantId && d.IsActive && d.SiteId == null)
+                .OrderByDescending(d => d.IsPrimary)
+                .Select(d => d.DomainName)
+                .FirstOrDefault();
+            _origin = shared is null ? null : $"https://{shared}";
+            if (_origin is null)
+            {
+                return;
+            }
+        }
+
         var basePath = siteContext.IsResolved && !string.IsNullOrEmpty(siteContext.BasePath)
             ? siteContext.BasePath
             : "/";
@@ -87,6 +116,14 @@ public sealed class PublicSiteLink : IPublicSiteLink
     }
 
     public string? Url { get; }
+
+    /// <summary>
+    /// Whether the public website on <paramref name="host"/> is this institution's — asked of the
+    /// same resolver the public website uses, so the answer matches what a visitor would see there,
+    /// demo fallback included. The resolver is cached, so this is a lookup, not a query.
+    /// </summary>
+    private static bool BelongsTo(Cms.Infrastructure.Tenancy.ITenantHostResolver resolver, string host, Guid tenantId) =>
+        resolver.ResolveAsync(host).GetAwaiter().GetResult()?.TenantId == tenantId;
 
     public string? ForSite(string? siteKey, IEnumerable<string>? boundDomains = null)
     {

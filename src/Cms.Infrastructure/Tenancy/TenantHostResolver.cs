@@ -38,6 +38,14 @@ public interface ITenantHostResolver
     /// </param>
     Task<ResolvedHost?> ResolveAsync(
         string host, bool refresh = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// A tenant and its websites found by the tenant itself rather than by an address. The
+    /// console serves every institution from one address, so a signed-in user's institution
+    /// comes from their account and not from the host they happened to open it on.
+    /// </summary>
+    Task<ResolvedHost?> ResolveTenantAsync(
+        Guid tenantId, bool refresh = false, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -90,6 +98,31 @@ public sealed class TenantHostResolver : ITenantHostResolver
         return resolved;
     }
 
+    public async Task<ResolvedHost?> ResolveTenantAsync(
+        Guid tenantId, bool refresh = false, CancellationToken cancellationToken = default)
+    {
+        var cacheKey = $"tenant-id::{_generation.Generation}::{tenantId}";
+        if (!refresh
+            && _cacheDuration > TimeSpan.Zero
+            && _cache.TryGetValue<ResolvedHost?>(cacheKey, out var cached))
+        {
+            return cached;
+        }
+
+        var tenant = await _db.Tenants
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == tenantId && item.IsActive, cancellationToken);
+        var resolved = tenant is null ? null : await WithSitesAsync(tenant, null, cancellationToken);
+
+        if (_cacheDuration > TimeSpan.Zero)
+        {
+            _cache.Set(cacheKey, resolved, _cacheDuration);
+        }
+
+        return resolved;
+    }
+
     private async Task<ResolvedHost?> LoadAsync(string host, CancellationToken cancellationToken)
     {
         var domain = await _db.TenantDomains
@@ -112,6 +145,12 @@ public sealed class TenantHostResolver : ITenantHostResolver
             return null;
         }
 
+        return await WithSitesAsync(tenant, domain?.SiteId, cancellationToken);
+    }
+
+    private async Task<ResolvedHost> WithSitesAsync(
+        Cms.Domain.Entities.Tenant tenant, Guid? domainSiteId, CancellationToken cancellationToken)
+    {
         var sites = await _db.Sites
             .IgnoreQueryFilters()
             .AsNoTracking()
@@ -122,7 +161,7 @@ public sealed class TenantHostResolver : ITenantHostResolver
             .ToListAsync(cancellationToken);
 
         // A domain may still point at a site that was since deactivated.
-        Guid? boundSiteId = domain?.SiteId is Guid bound && sites.Any(s => s.Id == bound) ? bound : null;
+        Guid? boundSiteId = domainSiteId is Guid bound && sites.Any(s => s.Id == bound) ? bound : null;
 
         return new ResolvedHost(tenant.Id, tenant.Code, tenant.Name, boundSiteId, sites);
     }

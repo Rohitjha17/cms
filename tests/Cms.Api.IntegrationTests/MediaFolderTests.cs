@@ -129,5 +129,6 @@ public sealed class MediaFolderTests
         public string BasePath => string.Empty;
         public bool IsResolved => true;
         public void Set(Guid siteId, string siteKey, string siteName, string basePath = "") { }
+        public void Clear() { }
     }
 }

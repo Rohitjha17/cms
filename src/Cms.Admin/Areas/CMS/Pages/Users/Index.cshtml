@@ -1,5 +1,6 @@
 @page
 @model Cms.Admin.Areas.CMS.Pages.Users.IndexModel
+@inject Cms.Application.Interfaces.ITenantContext TenantContext
 @{
     ViewData["Title"] = "User accounts";
 }
@@ -124,7 +125,7 @@
                         <label class="field">
                             <span>Institution</span>
                             <select asp-for="Input.TenantId">
-                                <option value="">Current workspace</option>
+                                <option value="">This institution@(string.IsNullOrWhiteSpace(TenantContext.TenantName) ? "" : $" — {TenantContext.TenantName}")</option>
                                 @foreach (var tenant in Model.Tenants)
                                 {
                                     <option value="@tenant.Id">@tenant.Name</option>

@@ -7,6 +7,21 @@ public interface IWebsiteService
     Task<IReadOnlyList<PageTemplateDto>> GetPageTemplatesAsync(CancellationToken cancellationToken);
     Task<PageTemplateDto> SavePageTemplateAsync(Guid? id, SavePageTemplateDto dto, CancellationToken cancellationToken);
     Task<IReadOnlyList<WebsiteSummaryDto>> GetWebsitesAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Takes a website off the public web and out of the console, keeping everything in it so it
+    /// can be restored. The first half of deleting a website.
+    /// </summary>
+    Task CloseWebsiteAsync(Guid siteId, CancellationToken cancellationToken);
+
+    /// <summary>Brings a closed website back exactly as it was.</summary>
+    Task RestoreWebsiteAsync(Guid siteId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deletes a closed website and everything in it, for good. <paramref name="confirmation"/>
+    /// must be the website's key, typed by the person deleting it.
+    /// </summary>
+    Task DeleteWebsitePermanentlyAsync(Guid siteId, string confirmation, CancellationToken cancellationToken);
     Task<WebsiteSummaryDto> ProvisionAsync(ProvisionWebsiteDto dto, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<SiteTemplateSummaryDto>> GetSiteTemplatesAsync(CancellationToken cancellationToken);

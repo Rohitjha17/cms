@@ -116,7 +116,12 @@ public sealed class SaveTenantValidator : AbstractValidator<SaveTenantDto>
         RuleFor(x => x.Code).NotEmpty().MaximumLength(50).Matches("^[a-z0-9-]+$");
         RuleFor(x => x.LogoUrl).Must(url => UrlHelper.IsValidUrl(url))
             .When(x => !string.IsNullOrWhiteSpace(x.LogoUrl));
-        RuleFor(x => x.Domains).NotEmpty().Must(x => x.Count(d => d.IsPrimary) <= 1)
+        // A domain is no longer required to create an institution. The console serves every
+        // institution from one address and the account decides which one a user works in, so an
+        // institution is fully workable without an address of its own; a domain is only what its
+        // public website answers on, and can be added now or later on the Domains screen. Requiring
+        // one here, on a form that offered nowhere to type it, made new institutions impossible.
+        RuleFor(x => x.Domains).Must(x => x.Count(d => d.IsPrimary) <= 1)
             .WithMessage("A tenant can have at most one primary domain.");
         RuleForEach(x => x.Domains).ChildRules(domain =>
         {

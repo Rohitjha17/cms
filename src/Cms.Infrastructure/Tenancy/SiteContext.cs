@@ -17,4 +17,12 @@ public class SiteContext : ISiteContext
         SiteName = siteName;
         BasePath = basePath;
     }
+
+    public void Clear()
+    {
+        SiteId = null;
+        SiteKey = null;
+        SiteName = null;
+        BasePath = string.Empty;
+    }
 }

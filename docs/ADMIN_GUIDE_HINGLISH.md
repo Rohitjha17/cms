@@ -728,6 +728,21 @@ lamba-patla hai to popup bhi lamba-patla ban jayega.
 Nayi school website banana — naam, site key, type, design aur starter pages
 chuno.
 
+**Website hatana (do step me):**
+
+1. Website ke card pe **Close website** dabao aur confirm karo. Website public
+   se aur console se hat jaati hai, par uska saara data rehta hai. Us website
+   ke domain bhi band ho jaate hain, taaki us address pe koi doosri website na
+   khule.
+2. Neeche **Closed websites** me wo dikhegi. Wahan se:
+   - **Restore**: website bilkul pehle jaisi wapas aa jaati hai (domain bhi).
+   - **Delete permanently**: website ki key type karke dabao. Pages, sections,
+     news, media, menu, domain, sab hamesha ke liye mit jaate hain. **Ye wapas
+     nahi aata.**
+
+Sirf SuperAdmin aur TenantAdmin website band ya delete kar sakte hain. Editor
+nahi kar sakta.
+
 ### 12.2 Website templates
 Poore banaye-banaye design — colour, font, section aur sample content pehle
 se bhare hue.
@@ -757,8 +772,39 @@ Kaun login kar sakta hai aur kya kar sakta hai.
 **Har banda apna alag account rakhe** — ek hi login sab use karenge to pata
 hi nahi chalega kisne kya badla.
 
-### 12.6 Tenants
-Alag-alag organisation. Zyadatar school ko kabhi zaroorat nahi padegi.
+### 12.6 Tenants (institutions)
+Har alag school ya organisation ek **tenant** hai. Ek tenant ki saari
+websites, users, domains aur content baaki tenants se bilkul alag rehte hain.
+Tenants sirf **SuperAdmin** bana sakta hai.
+
+**Sab ek hi console pe login karte hain.** Har user login ke baad sirf **apne
+tenant** ki websites dekhta hai. Doosre tenant ka kuch dikhta hi nahi, aur wo
+chun bhi nahi sakta.
+
+**Naya tenant banana:**
+
+1. SuperAdmin se login karo aur **Tenants** kholo
+2. **Institution name** likho (jaise `Green Valley School`) aur **Tenant code**
+   likho (jaise `green-valley`: chhote akshar, number aur `-`)
+3. **Sites** me ek row bharo: Name, Key (jaise `school`), Type, Home design,
+   aur **Default** tick karo
+4. **Domain** (optional): school ki website ka address, jaise
+   `greenvalley.edu.in`. Abhi khaali chhod sakte ho, baad me bhi daal sakte ho
+5. **Save tenant** dabao
+
+**Tenant me kaam karna (SuperAdmin):** upar **Current website** wale menu me
+**Switch institution** se tenant chuno. Poora console, yaani websites, users,
+domains aur content, usi tenant ka ho jaata hai. Wahan se:
+
+- **Website templates / Page gallery** se pages daalo
+- **User accounts** me us school ka **TenantAdmin** banao. Institution me
+  "This institution — Green Valley School" chuna rahega
+- **Domains** me address jodo ya badlo
+
+**Domain kab zaroori hai:** console ke liye kabhi nahi. Domain sirf school ki
+**public website** ke liye chahiye. Domain ka DNS server ke IP pe hona chahiye.
+Jab tak domain nahi hai, **View live** button nahi dikhega. Wo jaan-boojh kar
+chhupaya jaata hai, taaki galti se kisi doosre school ki website na khule.
 
 ---
 

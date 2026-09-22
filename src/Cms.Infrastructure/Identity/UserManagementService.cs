@@ -304,15 +304,11 @@ public sealed class UserManagementService : IUserManagementService
             return;
         }
 
-        var resolvedTenant = _tenantContext.TenantId;
-        var belongsHere = user.TenantId is null || user.TenantId == resolvedTenant;
-        if (!belongsHere)
-        {
-            _logger.LogWarning(
-                "Password reset for {Email} requested from a host bound to a different tenant.", user.Email);
-            return;
-        }
-
+        // Every institution signs in at the same console address, so the address a reset was
+        // asked for from says nothing about whose account it is. It used to be checked against
+        // the account's institution, which meant the staff of any institution but the address's
+        // own asked for a reset and silently never received one. The link goes only to the
+        // account's own mailbox, which is the proof that matters.
         var token = await CreateEncodedResetTokenAsync(user);
         await TrySendAsync(
             user.Email!,

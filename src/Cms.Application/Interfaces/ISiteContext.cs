@@ -15,4 +15,11 @@ public interface ISiteContext
 
     bool IsResolved { get; }
     void Set(Guid siteId, string siteKey, string siteName, string basePath = "");
+
+    /// <summary>
+    /// Forgets the website. Used when the request moves to another institution that has no
+    /// website yet: keeping the previous one would stamp that institution's id onto rows of a
+    /// website it does not own.
+    /// </summary>
+    void Clear();
 }

@@ -6,13 +6,35 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21h16M6 21V7l6-4 6 4v14M9 10h2m2 0h2m-6 4h2m2 0h2m-6 4h6"/></svg>
         </span>
         <span>
-            <small>Current website</small>
-            <strong>@(Model.CurrentSiteName ?? "Select a website")</strong>
+            <small>@(Model.Institutions.Count > 0 && Model.CurrentTenantName is not null ? Model.CurrentTenantName : "Current website")</small>
+            <strong>@(Model.CurrentSiteName ?? "No website yet")</strong>
         </span>
         <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
     </button>
     <div class="site-switcher__menu" data-dropdown-menu>
+        @if (Model.Institutions.Count > 0)
+        {
+            @* SuperAdmin only. Choosing an institution moves the whole console to it: its
+               websites, users, domains and content. *@
+            <div class="dropdown-label">Switch institution</div>
+            @foreach (var institution in Model.Institutions)
+            {
+                <a class="site-option @(institution.Id == Model.CurrentTenantId ? "is-active" : null)"
+                   href="?tenant=@institution.Id">
+                    <span class="site-option__icon">@institution.Name[..1]</span>
+                    <span><strong>@institution.Name</strong><small>@institution.Code</small></span>
+                    @if (institution.Id == Model.CurrentTenantId)
+                    {
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+                    }
+                </a>
+            }
+        }
         <div class="dropdown-label">Switch website</div>
+        @if (Model.Sites.Count == 0)
+        {
+            <div class="site-option"><span><strong>No website yet</strong><small>Create one under Websites</small></span></div>
+        }
         @foreach (var site in Model.Sites)
         {
             <a class="site-option @(site.Key == Model.CurrentSiteKey ? "is-active" : null)"

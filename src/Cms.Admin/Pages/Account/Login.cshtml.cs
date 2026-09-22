@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Cms.Application.Interfaces;
 using Cms.Domain.Constants;
 using Cms.Infrastructure.Identity;
+using Cms.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -14,16 +15,16 @@ public class LoginModel : PageModel
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ITenantContext _tenantContext;
+    private readonly ITenantHostResolver _tenants;
 
     public LoginModel(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
-        ITenantContext tenantContext)
+        ITenantHostResolver tenants)
     {
         _signInManager = signInManager;
         _userManager = userManager;
-        _tenantContext = tenantContext;
+        _tenants = tenants;
     }
 
     [BindProperty]
@@ -57,9 +58,16 @@ public class LoginModel : PageModel
         }
 
         var isSuperAdmin = await _userManager.IsInRoleAsync(user, AppRoles.SuperAdmin);
-        if (!isSuperAdmin && (!_tenantContext.TenantId.HasValue || user.TenantId != _tenantContext.TenantId))
+        // Every institution signs in at the same console address, and the account decides which
+        // institution the user then works in (see ManagementTenantMiddleware). Signing in used to
+        // require the address to belong to the user's own institution, so the staff of any school
+        // without a console address of its own could not sign in at all. What is still required
+        // is that the account belongs to an institution, and that the institution is active.
+        if (!isSuperAdmin
+            && (user.TenantId is not Guid ownTenant
+                || await _tenants.ResolveTenantAsync(ownTenant, refresh: true) is null))
         {
-            ModelState.AddModelError(string.Empty, "This account does not have access to the current institution.");
+            ModelState.AddModelError(string.Empty, "This account's institution is not active. Please contact the platform administrator.");
             return Page();
         }
 

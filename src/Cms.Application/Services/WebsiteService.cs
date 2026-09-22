@@ -24,6 +24,7 @@ public sealed class WebsiteService : IWebsiteService
     private readonly IValidator<SubmitContactDto> _contactValidator;
     private readonly IValidator<SaveSiteDomainDto> _domainValidator;
     private readonly ITenantHostCache _hostCache;
+    private readonly IFileStorageService _storage;
 
     public WebsiteService(
         IWebsiteRepository repository,
@@ -35,7 +36,8 @@ public sealed class WebsiteService : IWebsiteService
         IValidator<SiteBrandingDto> brandingValidator,
         IValidator<SubmitContactDto> contactValidator,
         IValidator<SaveSiteDomainDto> domainValidator,
-        ITenantHostCache hostCache)
+        ITenantHostCache hostCache,
+        IFileStorageService storage)
     {
         _repository = repository;
         _contentRepository = contentRepository;
@@ -47,6 +49,7 @@ public sealed class WebsiteService : IWebsiteService
         _contactValidator = contactValidator;
         _domainValidator = domainValidator;
         _hostCache = hostCache;
+        _storage = storage;
     }
 
     public async Task<IReadOnlyList<PageTemplateDto>> GetPageTemplatesAsync(CancellationToken cancellationToken)
@@ -275,6 +278,111 @@ public sealed class WebsiteService : IWebsiteService
             CreatedDate = DateTime.UtcNow,
             CreatedBy = Actor
         };
+
+    public async Task CloseWebsiteAsync(Guid siteId, CancellationToken cancellationToken)
+    {
+        var tenantId = RequireTenant();
+        var site = await _repository.GetSiteAsync(tenantId, siteId, cancellationToken)
+            ?? throw new NotFoundException("Website was not found.");
+        if (!site.IsActive)
+        {
+            return;
+        }
+
+        site.IsActive = false;
+        site.UpdatedDate = DateTime.UtcNow;
+        site.UpdatedBy = Actor;
+
+        // A domain bound to a closed website must stop answering, not quietly start serving the
+        // institution's default website instead — a closed school's address showing another
+        // school. The binding is kept, switched off, so a restore can switch it back on.
+        foreach (var domain in site.Domains.Where(d => d.IsActive))
+        {
+            domain.IsActive = false;
+        }
+
+        // The default passes to another open website, so the institution's shared address keeps
+        // answering with something that is still open.
+        if (site.IsDefault)
+        {
+            site.IsDefault = false;
+            var successor = (await _repository.GetSitesAsync(tenantId, cancellationToken))
+                .FirstOrDefault(x => x.Id != site.Id && x.IsActive);
+            if (successor is not null)
+            {
+                successor.IsDefault = true;
+            }
+        }
+
+        await _repository.SaveChangesAsync(cancellationToken);
+        _hostCache.Invalidate();
+    }
+
+    public async Task RestoreWebsiteAsync(Guid siteId, CancellationToken cancellationToken)
+    {
+        var tenantId = RequireTenant();
+        var site = await _repository.GetSiteAsync(tenantId, siteId, cancellationToken)
+            ?? throw new NotFoundException("Website was not found.");
+        if (site.IsActive)
+        {
+            return;
+        }
+
+        site.IsActive = true;
+        site.UpdatedDate = DateTime.UtcNow;
+        site.UpdatedBy = Actor;
+        foreach (var domain in site.Domains)
+        {
+            domain.IsActive = true;
+        }
+
+        // An institution whose websites were all closed has no default; the one coming back is it.
+        var others = await _repository.GetSitesAsync(tenantId, cancellationToken);
+        if (!others.Any(x => x.Id != site.Id && x.IsActive && x.IsDefault))
+        {
+            site.IsDefault = true;
+        }
+
+        await _repository.SaveChangesAsync(cancellationToken);
+        _hostCache.Invalidate();
+    }
+
+    public async Task DeleteWebsitePermanentlyAsync(Guid siteId, string confirmation, CancellationToken cancellationToken)
+    {
+        var tenantId = RequireTenant();
+        var site = await _repository.GetSiteAsync(tenantId, siteId, cancellationToken)
+            ?? throw new NotFoundException("Website was not found.");
+
+        // Deleting is two steps on purpose. An open website has to be closed first, so nothing a
+        // visitor can see is ever deleted in one click.
+        if (site.IsActive)
+        {
+            throw new ValidationAppException("Close this website before deleting it permanently.");
+        }
+
+        if (!string.Equals(confirmation?.Trim(), site.SiteKey, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ValidationAppException(
+                $"Type the website's key, {site.SiteKey}, to confirm deleting it permanently.");
+        }
+
+        var storageKeys = await _repository.DeleteSiteAsync(tenantId, siteId, cancellationToken);
+        _hostCache.Invalidate();
+
+        // The rows are gone and committed; files are removed after, one by one. A file that cannot
+        // be removed is left behind in storage rather than undoing a delete that has succeeded.
+        foreach (var key in storageKeys.Where(k => !string.IsNullOrWhiteSpace(k)))
+        {
+            try
+            {
+                await _storage.DeleteAsync(key, cancellationToken);
+            }
+            catch (Exception) when (!cancellationToken.IsCancellationRequested)
+            {
+                // Best effort, as above.
+            }
+        }
+    }
 
     public async Task<IReadOnlyList<WebsiteSummaryDto>> GetWebsitesAsync(CancellationToken cancellationToken)
     {

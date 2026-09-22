@@ -28,6 +28,18 @@ public sealed class SiteSwitcherViewComponent : ViewComponent
             return View(new SiteSwitcherViewModel());
         }
 
+        // A SuperAdmin works across institutions and picks one here; everybody else is fixed to
+        // their own and is not shown the others at all.
+        var institutions = HttpContext.User.IsInRole(Cms.Domain.Constants.AppRoles.SuperAdmin)
+            ? await _db.Tenants
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .Select(x => new InstitutionItem(x.Id, x.Name, x.Code))
+                .ToListAsync()
+            : [];
+
         var sites = await _db.Sites
             .IgnoreQueryFilters()
             .AsNoTracking()
@@ -41,6 +53,9 @@ public sealed class SiteSwitcherViewComponent : ViewComponent
         {
             CurrentSiteKey = _siteContext.SiteKey,
             CurrentSiteName = _siteContext.SiteName,
+            CurrentTenantId = _tenantContext.TenantId,
+            CurrentTenantName = _tenantContext.TenantName,
+            Institutions = institutions,
             Sites = sites
         });
     }
@@ -51,6 +66,13 @@ public sealed class SiteSwitcherViewModel
     public string? CurrentSiteKey { get; init; }
     public string? CurrentSiteName { get; init; }
     public IReadOnlyList<SiteSwitcherItem> Sites { get; init; } = [];
+    public Guid? CurrentTenantId { get; init; }
+    public string? CurrentTenantName { get; init; }
+
+    /// <summary>Every active institution — filled only for a SuperAdmin.</summary>
+    public IReadOnlyList<InstitutionItem> Institutions { get; init; } = [];
 }
+
+public sealed record InstitutionItem(Guid Id, string Name, string Code);
 
 public sealed record SiteSwitcherItem(string Key, string Name, string Type);

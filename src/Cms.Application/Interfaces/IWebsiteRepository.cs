@@ -32,5 +32,14 @@ public interface IWebsiteRepository
     Task<ContactSubmission?> GetContactAsync(Guid tenantId, Guid siteId, Guid id, CancellationToken cancellationToken);
     Task<int> CountPagesAsync(Guid tenantId, Guid siteId, CancellationToken cancellationToken);
     Task EnsureHomeSectionsAsync(Guid tenantId, Guid siteId, CancellationToken cancellationToken);
+    /// <summary>
+    /// Removes a website and everything that belongs to it — its pages, home page sections,
+    /// content, menus, SEO settings, messages, media records and the domains bound to it — in one
+    /// transaction, so a failure part-way leaves the website whole rather than half gone. Activity
+    /// history is kept, detached from the website. Returns the storage keys of the media files it
+    /// held, for the caller to remove from storage once the rows are gone.
+    /// </summary>
+    Task<IReadOnlyList<string>> DeleteSiteAsync(Guid tenantId, Guid siteId, CancellationToken cancellationToken);
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }
