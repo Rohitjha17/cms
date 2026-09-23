@@ -86,7 +86,18 @@
                             <td>
                                 @if (domain.IsShared)
                                 {
+                                    @* "All websites" says what the address can reach, not what it
+                                       opens. Its root opens the default website, and a website
+                                       created later is not the default — so a school that pointed
+                                       its address here, then built its new site, saw the old one
+                                       and nothing it did on the new site changed that. Say which
+                                       website the address actually opens. *@
                                     <span class="chip">All websites</span>
+                                    <small class="field-help">
+                                        Opens @(Model.DefaultWebsiteName ?? "no website — none is set as default").
+                                        Other websites at <code>/site-key</code>.
+                                        To open a different one here, set <strong>Serves</strong> to it.
+                                    </small>
                                 }
                                 else
                                 {

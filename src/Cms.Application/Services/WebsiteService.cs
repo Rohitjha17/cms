@@ -318,6 +318,28 @@ public sealed class WebsiteService : IWebsiteService
         _hostCache.Invalidate();
     }
 
+    public async Task SetDefaultWebsiteAsync(Guid siteId, CancellationToken cancellationToken)
+    {
+        var tenantId = RequireTenant();
+        var sites = await _repository.GetSitesAsync(tenantId, cancellationToken);
+        var site = sites.FirstOrDefault(x => x.Id == siteId)
+            ?? throw new NotFoundException("Website was not found.");
+        if (!site.IsActive)
+        {
+            throw new ValidationAppException("Restore this website before making it the default.");
+        }
+
+        foreach (var other in sites)
+        {
+            other.IsDefault = other.Id == siteId;
+        }
+
+        site.UpdatedDate = DateTime.UtcNow;
+        site.UpdatedBy = Actor;
+        await _repository.SaveChangesAsync(cancellationToken);
+        _hostCache.Invalidate();
+    }
+
     public async Task RestoreWebsiteAsync(Guid siteId, CancellationToken cancellationToken)
     {
         var tenantId = RequireTenant();

@@ -57,6 +57,10 @@ public sealed class IndexModel : PageModel, IReloadablePage
         RunAsync(() => _service.CloseWebsiteAsync(id, cancellationToken),
             "Website closed. It is off the public web and can be restored from Closed websites below.");
 
+    public Task<IActionResult> OnPostDefaultAsync(Guid id, CancellationToken cancellationToken) =>
+        RunAsync(() => _service.SetDefaultWebsiteAsync(id, cancellationToken),
+            "Default website changed. Addresses that are not bound to one website now open this one.");
+
     public Task<IActionResult> OnPostRestoreAsync(Guid id, CancellationToken cancellationToken) =>
         RunAsync(() => _service.RestoreWebsiteAsync(id, cancellationToken), "Website restored.");
 

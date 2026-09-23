@@ -81,6 +81,10 @@
                             <dd>@(site.Domains.Count == 0 ? "Not bound" : string.Join(", ", site.Domains))</dd>
                         </div>
                         <div><dt>Status</dt><dd>@(site.IsActive ? "Active" : "Disabled")</dd></div>
+                        @if (site.IsDefault)
+                        {
+                            <div><dt>Opens at</dt><dd>The root of any address not bound to one website</dd></div>
+                        }
                     </dl>
 
                     <div class="website-card__actions">
@@ -90,6 +94,16 @@
                         @if (liveUrl is not null)
                         {
                             <a class="btn btn-secondary btn-sm" href="@liveUrl" target="_blank" rel="noopener">View live</a>
+                        }
+                        @if (Model.CanProvision && !site.IsDefault)
+                        {
+                            @* An address bound to no single website opens the default one. Without
+                               this there was nowhere to change which that is, so a school pointed
+                               its address at the workspace, built a new website, and kept seeing
+                               the old one whatever it did. *@
+                            <form method="post" asp-page-handler="Default" asp-route-id="@site.Id">
+                                <button class="btn btn-secondary btn-sm" type="submit">Make default</button>
+                            </form>
                         }
                         @if (Model.CanProvision)
                         {

@@ -273,6 +273,40 @@ public sealed class InstitutionWorkspaceTests : IClassFixture<AdminFactory>
         }
     }
 
+    /// <summary>
+    /// An address bound to no single website opens the institution's default one. A website built
+    /// afterwards is not the default, so the address kept opening the old website and nothing done
+    /// on the new one changed it — with nowhere in the console to say which website is the default.
+    /// </summary>
+    [Fact]
+    public async Task AnUnboundAddress_OpensTheDefaultWebsite_AndTheDefaultCanBeChanged()
+    {
+        var (tenantId, oldSiteId) = await SeedInstitutionAsync("Fern Hill", "fern-hill", "old", "Fern Hill Old Site", withDomain: null);
+        var newSiteId = await AddSiteAsync(tenantId, "new", "Fern Hill New Site");
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            // Pointed at the institution, not at one of its websites.
+            db.TenantDomains.Add(new TenantDomain { TenantId = tenantId, SiteId = null, DomainName = "fernhill.edu.in", IsPrimary = true });
+            await db.SaveChangesAsync();
+        }
+
+        var client = Client(AppRoles.TenantAdmin, tenantId);
+        var page = await GetAsync(client, "/CMS/Domains/Index");
+        Assert.Contains("Opens Fern Hill Old Site", page);
+
+        await PostFormAsync(client, "/CMS/Websites/Index", "Default", new(), $"&id={newSiteId}");
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            Assert.True((await db.Sites.IgnoreQueryFilters().SingleAsync(x => x.Id == newSiteId)).IsDefault);
+            Assert.False((await db.Sites.IgnoreQueryFilters().SingleAsync(x => x.Id == oldSiteId)).IsDefault);
+        }
+
+        Assert.Contains("Opens Fern Hill New Site", await GetAsync(client, "/CMS/Domains/Index"));
+    }
+
     [Fact]
     public async Task AnOpenWebsite_OrAWrongKey_IsNeverDeletedForGood()
     {

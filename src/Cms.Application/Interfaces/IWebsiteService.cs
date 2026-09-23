@@ -22,6 +22,12 @@ public interface IWebsiteService
     /// </summary>
     Task CloseWebsiteAsync(Guid siteId, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Makes this the website an address with no website of its own opens at its root, in place of
+    /// whichever website held that before.
+    /// </summary>
+    Task SetDefaultWebsiteAsync(Guid siteId, CancellationToken cancellationToken);
+
     /// <summary>Brings a closed website back exactly as it was.</summary>
     Task RestoreWebsiteAsync(Guid siteId, CancellationToken cancellationToken);
 

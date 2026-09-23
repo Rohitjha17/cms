@@ -753,12 +753,19 @@ Kaunsa web address kaunsi website dikhaye.
 | Column | Matlab |
 |---|---|
 | **Domain** | Address, jaise `noida.cambridgeschool.edu.in`. Sirf host naam — `https://` mat likho, `/` ke baad kuch mat likho |
-| **Serves** | Kaunsi website dikhegi. Ek se bandh doge to us school ko saaf address milte hain (`/about`). Khula chhod doge to ek address saari websites ko `/school/about` jaise path se dikhata hai |
+| **Serves** | Kaunsi website dikhegi. Ek se bandh doge to us school ko saaf address milte hain (`/about`). Khula chhod doge (**All websites**) to address ka root **default website** kholega, aur baaki websites `/site-key` path pe milengi |
 | **Primary** | Main address, jo links aur Google me use hoga |
 | **Status** | Live, ya delete kiye bina band |
 
 **Address kis website ko dikhaye — badalna:** **Edit** dabao → **Serves**
 badlo → **Save domain**.
+
+> **Nayi website banayi par address purani website hi dikha raha hai?** Address
+> shayad **All websites** pe hai. Aisa address hamesha **default website**
+> kholta hai, aur nayi website apne aap default nahi banti. Do me se ek karo:
+> **Domains → Edit → Serves** me nayi website chuno, **ya** **Websites** page
+> pe nayi website ke card me **Make default** dabao. 30 second baad refresh
+> karo, address cache hota hai.
 
 **Address hatana:** **Remove** dabao → confirm karo. Kuch bhi block nahi hai.
 Agar kisi school ka aakhri address hata doge to page **upar warning** dikha

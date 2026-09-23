@@ -39,6 +39,9 @@ public sealed class IndexModel : PageModel, IReloadablePage
 
     public IReadOnlyList<SiteDomainDto> Domains { get; private set; } = [];
     public IReadOnlyList<WebsiteSummaryDto> Websites { get; private set; } = [];
+
+    /// <summary>The website an unbound address opens at its root: this workspace's default.</summary>
+    public string? DefaultWebsiteName { get; private set; }
     public bool CanManage => User.IsInRole(AppRoles.SuperAdmin) || User.IsInRole(AppRoles.TenantAdmin);
 
     [TempData] public string? StatusMessage { get; set; }
@@ -123,6 +126,7 @@ public sealed class IndexModel : PageModel, IReloadablePage
     {
         Domains = await _service.GetDomainsAsync(cancellationToken);
         Websites = await _service.GetWebsitesAsync(cancellationToken);
+        DefaultWebsiteName = Websites.FirstOrDefault(x => x.IsDefault && x.IsActive)?.Name;
 
         var sharedHostExists = Domains.Any(x => x.IsShared && x.IsActive);
         UnreachableWebsites = sharedHostExists
