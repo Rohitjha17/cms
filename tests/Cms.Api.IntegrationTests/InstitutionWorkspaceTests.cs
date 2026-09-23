@@ -84,7 +84,20 @@ public sealed class InstitutionWorkspaceTests : IClassFixture<AdminFactory>
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var tenant = await db.Tenants.IgnoreQueryFilters().SingleAsync(x => x.Code == "lotus-academy");
-        Assert.True(await db.Sites.IgnoreQueryFilters().AnyAsync(x => x.TenantId == tenant.Id && x.SiteKey == "lotus"));
+        var site = await db.Sites.IgnoreQueryFilters().SingleAsync(x => x.TenantId == tenant.Id && x.SiteKey == "lotus");
+
+        // A website created here is a website like any other, not an empty shell: the school that
+        // opens its own address must find its pages, its menu and its home page, not nothing.
+        Assert.NotEmpty(await db.Pages.IgnoreQueryFilters().Where(x => x.SiteId == site.Id).ToListAsync());
+        Assert.NotEmpty(await db.Menus.IgnoreQueryFilters().Where(x => x.SiteId == site.Id).ToListAsync());
+        Assert.NotEmpty(await db.HomePageSections.IgnoreQueryFilters().Where(x => x.SiteId == site.Id).ToListAsync());
+
+        // And its sample wording names this school, not the demo one it was written for, which is
+        // what made every new website read as somebody else's.
+        var welcome = await db.HomePageSections.IgnoreQueryFilters()
+            .FirstAsync(x => x.SiteId == site.Id && x.SectionKey == "welcome");
+        Assert.Contains("Lotus Academy", welcome.Description ?? string.Empty);
+        Assert.DoesNotContain("Demo Academy", welcome.Description ?? string.Empty);
     }
 
     [Fact]

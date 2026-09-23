@@ -13,17 +13,23 @@ public sealed class TenantManagementService : ITenantManagementService
     private readonly IValidator<SaveTenantDto> _validator;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantHostCache _hostCache;
+    private readonly IWebsiteService _websites;
+    private readonly IWebsiteRepository _websiteRepository;
 
     public TenantManagementService(
         ITenantManagementRepository repository,
         IValidator<SaveTenantDto> validator,
         ICurrentUserContext currentUser,
-        ITenantHostCache hostCache)
+        ITenantHostCache hostCache,
+        IWebsiteService websites,
+        IWebsiteRepository websiteRepository)
     {
         _repository = repository;
         _validator = validator;
         _currentUser = currentUser;
         _hostCache = hostCache;
+        _websites = websites;
+        _websiteRepository = websiteRepository;
     }
 
     public async Task<IReadOnlyList<TenantManagementDto>> GetAllAsync(CancellationToken cancellationToken) =>
@@ -79,6 +85,7 @@ public sealed class TenantManagementService : ITenantManagementService
             existing.IsActive = false;
             existing.IsDefault = false;
         }
+        var created = new List<Site>();
         foreach (var input in dto.Sites)
         {
             var site = tenant.Sites.FirstOrDefault(x => x.SiteKey == input.SiteKey);
@@ -86,6 +93,7 @@ public sealed class TenantManagementService : ITenantManagementService
             {
                 site = new Site { SiteKey = input.SiteKey, CreatedDate = DateTime.UtcNow, CreatedBy = Actor };
                 tenant.Sites.Add(site);
+                created.Add(site);
             }
             site.Name = input.Name.Trim();
             site.WebsiteType = Enum.Parse<WebsiteType>(input.WebsiteType, true);
@@ -122,7 +130,22 @@ public sealed class TenantManagementService : ITenantManagementService
             });
         }
 
+        // A website created here is a website like any other: it gets its menu, its starter pages,
+        // its search settings and its home page sections. Without them a new institution's site
+        // opened with no pages and nothing in the menu, which is what a school first seeing its
+        // own address reports as everything being empty.
+        foreach (var site in created)
+        {
+            site.TenantId = tenant.Id;
+            await _websites.AddStarterContentAsync(tenant.Id, site, null, cancellationToken);
+        }
+
         await _repository.SaveChangesAsync(cancellationToken);
+
+        foreach (var site in created)
+        {
+            await _websiteRepository.EnsureHomeSectionsAsync(tenant.Id, site.Id, cancellationToken);
+        }
 
         // Tenants own their domains and websites, so this can change what any host serves.
         _hostCache.Invalidate();

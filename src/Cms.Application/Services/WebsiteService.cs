@@ -486,6 +486,30 @@ public sealed class WebsiteService : IWebsiteService
             }, cancellationToken);
         }
 
+        await AddStarterContentAsync(tenantId, website, dto.TemplateKeys, cancellationToken);
+
+        await _repository.SaveChangesAsync(cancellationToken);
+        await _repository.EnsureHomeSectionsAsync(tenantId, website.Id, cancellationToken);
+
+        // The new website must answer on its /{siteKey} URL immediately, not once the
+        // host-resolution cache happens to expire.
+        _hostCache.Invalidate();
+
+        return (await GetWebsitesAsync(cancellationToken)).First(x => x.Id == website.Id);
+    }
+
+    /// <summary>
+    /// What a website needs to exist as a website: its menu, its starter pages and its search
+    /// settings. Provisioning always did this. Creating a website on the Tenants screen did not,
+    /// so a new institution's website opened with no pages at all and nothing in the menu — the
+    /// "everything is empty" a school sees the first time it opens its own address.
+    ///
+    /// Adds only; the caller saves.
+    /// </summary>
+    public async Task AddStarterContentAsync(
+        Guid tenantId, Site website, IReadOnlyList<string>? templateKeys, CancellationToken cancellationToken)
+    {
+        var keys = templateKeys is { Count: > 0 } chosen ? chosen : PageTemplateKeys.StarterPages.ToList();
         var menuItems = new List<MenuItem>
         {
             new()
@@ -502,7 +526,7 @@ public sealed class WebsiteService : IWebsiteService
         };
 
         var order = 1;
-        foreach (var templateKey in dto.TemplateKeys.Distinct(StringComparer.OrdinalIgnoreCase))
+        foreach (var templateKey in keys.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var template = await _repository.GetPageTemplateAsync(templateKey, cancellationToken)
                 ?? throw new ValidationAppException($"Unknown page template '{templateKey}'.");
@@ -568,15 +592,6 @@ public sealed class WebsiteService : IWebsiteService
             CreatedDate = DateTime.UtcNow,
             CreatedBy = Actor
         }, cancellationToken);
-
-        await _repository.SaveChangesAsync(cancellationToken);
-        await _repository.EnsureHomeSectionsAsync(tenantId, website.Id, cancellationToken);
-
-        // The new website must answer on its /{siteKey} URL immediately, not once the
-        // host-resolution cache happens to expire.
-        _hostCache.Invalidate();
-
-        return (await GetWebsitesAsync(cancellationToken)).First(x => x.Id == website.Id);
     }
 
     // -----------------------------------------------------------------------

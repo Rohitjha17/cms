@@ -7,8 +7,25 @@ namespace Cms.Infrastructure.Persistence.Seed;
 
 public static class HomePageSeed
 {
+    /// <summary>The name in the sample wording of the demo website it was written for.</summary>
+    private const string SeedSchoolName = "Demo Academy";
+
     public static async Task EnsureSectionsAsync(ApplicationDbContext db, Guid tenantId, Guid siteId, CancellationToken cancellationToken = default)
     {
+        // The sample wording names a school. Left as written, every school's website opened
+        // introducing "Demo Academy" — so a new school's site read as somebody else's, which is
+        // exactly what a school seeing it for the first time reports as "the old site is showing".
+        var siteName = await db.Sites
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(x => x.Id == siteId)
+            .Select(x => x.Name)
+            .FirstOrDefaultAsync(cancellationToken);
+        string? Named(string? text) =>
+            string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(siteName)
+                ? text
+                : text.Replace(SeedSchoolName, siteName, StringComparison.Ordinal);
+
         var existingSections = await db.HomePageSections
             .IgnoreQueryFilters()
             .Where(x => x.TenantId == tenantId && x.SiteId == siteId)
@@ -33,9 +50,9 @@ public static class HomePageSeed
                 Title = displayName,
                 DisplayOrder = order,
                 IsActive = true,
-                JsonData = DefaultJson(key),
-                SubTitle = DefaultSubtitle(key),
-                Description = DefaultDescription(key),
+                JsonData = Named(DefaultJson(key)),
+                SubTitle = Named(DefaultSubtitle(key)),
+                Description = Named(DefaultDescription(key)),
                 ButtonText = DefaultButtonText(key),
                 ButtonLink = DefaultButtonLink(key),
                 CreatedDate = DateTime.UtcNow,
@@ -48,11 +65,19 @@ public static class HomePageSeed
                      x.CreatedBy == "seed" && x.UpdatedDate is null))
         {
             section.IsActive = true;
-            section.SubTitle ??= DefaultSubtitle(section.SectionKey);
-            section.Description ??= DefaultDescription(section.SectionKey);
+            section.SubTitle ??= Named(DefaultSubtitle(section.SectionKey));
+            section.Description ??= Named(DefaultDescription(section.SectionKey));
             section.ButtonText ??= DefaultButtonText(section.SectionKey);
             section.ButtonLink ??= DefaultButtonLink(section.SectionKey);
-            section.JsonData ??= DefaultJson(section.SectionKey);
+            section.JsonData ??= Named(DefaultJson(section.SectionKey));
+
+            // Rows already seeded with the sample school's name, never touched by an editor.
+            if (!string.IsNullOrWhiteSpace(siteName))
+            {
+                section.SubTitle = Named(section.SubTitle);
+                section.Description = Named(section.Description);
+                section.JsonData = Named(section.JsonData);
+            }
         }
 
         if (toAdd.Count > 0)

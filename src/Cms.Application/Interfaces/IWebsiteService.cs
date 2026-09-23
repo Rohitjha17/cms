@@ -9,6 +9,14 @@ public interface IWebsiteService
     Task<IReadOnlyList<WebsiteSummaryDto>> GetWebsitesAsync(CancellationToken cancellationToken);
 
     /// <summary>
+    /// Gives a website just created the content a website needs: its menu, its starter pages and
+    /// its search settings. Adds only — the caller saves. Home page sections are seeded separately,
+    /// by <see cref="IWebsiteRepository.EnsureHomeSectionsAsync"/>, once the rows exist.
+    /// </summary>
+    Task AddStarterContentAsync(
+        Guid tenantId, Cms.Domain.Entities.Site website, IReadOnlyList<string>? templateKeys, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Takes a website off the public web and out of the console, keeping everything in it so it
     /// can be restored. The first half of deleting a website.
     /// </summary>
