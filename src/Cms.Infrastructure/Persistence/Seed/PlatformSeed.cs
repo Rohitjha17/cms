@@ -119,6 +119,25 @@ public static class PlatformSeed
             logger.LogWarning(
                 "Platform:Domain '{Domain}' is already bound to another tenant; leaving it unchanged.", domain);
         }
+        else if (!existingDomain.IsActive || !tenant.IsActive)
+        {
+            // The console's own address, switched off. Nothing in the product can switch it back
+            // on, because everything that could is behind the console this address opens: the
+            // operator is locked out for good, on every restart, and the website answers every
+            // visitor with "No active website is configured for this domain".
+            //
+            // This is the one host the operator has asked for by name, in configuration, so it is
+            // switched back on. A school's own address is never touched: that case is the branch
+            // above, and it leaves the address alone.
+            existingDomain.IsActive = true;
+            existingDomain.UpdatedDate = DateTime.UtcNow;
+            existingDomain.UpdatedBy = "platform-seed";
+            tenant.IsActive = true;
+            await db.SaveChangesAsync(cancellationToken);
+            logger.LogWarning(
+                "Platform console host {Domain} was switched off; it has been switched back on so the "
+                + "console can be reached.", domain);
+        }
 
         var superAdmin = await userManager.FindByEmailAsync(email);
         if (superAdmin is not null)
